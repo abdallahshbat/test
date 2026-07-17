@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>منصة حفّاظ — تسجيل الدخول</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a3c2e 0%, #0f2318 100%);
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 48px 40px 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #1a3c2e;
+      letter-spacing: -1px;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      font-size: 0.95rem;
+      margin-bottom: 36px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      text-align: right;
+      margin-bottom: 20px;
+    }
+
+    .field label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+
+    .field input {
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+      direction: rtl;
+      font-family: inherit;
+    }
+
+    .field input:focus {
+      border-color: #1a3c2e;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: #1a3c2e;
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s, transform 0.1s;
+      font-family: inherit;
+    }
+
+    .btn:hover { background: #245c44; }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { background: #9ca3af; cursor: not-allowed; }
+
+    .error {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      color: #dc2626;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      margin-top: 16px;
+      text-align: right;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 3px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-left: 8px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">منصة حفّاظ</div>
+  <p class="subtitle">منصة تعليم الأحاديث النبوية</p>
+
+  <form id="loginForm">
+    <div class="field">
+      <label for="username">اسم المستخدم</label>
+      <input
+        type="text"
+        id="username"
+        placeholder="أدخل اسم المستخدم"
+        autocomplete="username"
+        required
+      />
+    </div>
+
+    <div class="field">
+      <label for="password">كلمة المرور</label>
+      <input
+        type="password"
+        id="password"
+        placeholder="أدخل كلمة المرور"
+        autocomplete="current-password"
+        required
+      />
+    </div>
+
+    <button type="submit" class="btn" id="loginBtn">دخول</button>
+    <div class="error" id="errorMsg"></div>
+  </form>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://aeonokdakdvqgiisfhwv.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlb25va2Rha2R2cWdpaXNmaHd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzMDQ1MDUsImV4cCI6MjA5OTg4MDUwNX0.g1mtt9GZRod2V_Fbe1qXQhv7Hf_LVfx-IvItth9PCgI';
+
+  const { createClient } = supabase;
+  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      persistSession: true,
+      storageKey: 'huffaz-auth',
+      storage: window.sessionStorage,
+      autoRefreshToken: true,
+      detectSessionInUrl: false
+    }
+  });
+
+  // إذا كان المستخدم مسجلاً دخوله مسبقاً وجّهه مباشرة
+  supabaseClient.auth.getSession().then(({ data: { session } }) => {
+    if (session) redirectByRole(session.user);
+  });
+
+  const form = document.getElementById('loginForm');
+  const btn  = document.getElementById('loginBtn');
+  const err  = document.getElementById('errorMsg');
+
+  function showError(msg) {
+    err.textContent = msg;
+    err.style.display = 'block';
+  }
+
+  function hideError() {
+    err.style.display = 'none';
+  }
+
+  function setLoading(loading) {
+    if (loading) {
+      btn.disabled = true;
+      btn.innerHTML = 'جارٍ الدخول… <span class="spinner"></span>';
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'دخول';
+    }
+  }
+
+  function redirectByRole(user) {
+    const role = user?.user_metadata?.role;
+    if (role === 'admin')        window.location.href = 'admin/dashboard.html';
+    else if (role === 'teacher') window.location.href = 'teacher/dashboard.html';
+    else                         window.location.href = 'student/dashboard.html';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError();
+
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (!username || !password) {
+      showError('يرجى إدخال اسم المستخدم وكلمة المرور.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // الخطوة 1: جلب email من جدول users عبر username
+      const { data: users, error: lookupError } = await supabaseClient
+        .from('users')
+        .select('email')
+        .eq('username', username)
+        .limit(1);
+
+      if (lookupError || !users || users.length === 0) {
+        showError('اسم المستخدم غير موجود.');
+        return;
+      }
+
+      const email = users[0].email;
+
+      // الخطوة 2: تسجيل الدخول عبر Supabase Auth
+      // الجلسة تُحفظ تلقائياً في sessionStorage عبر الـ client
+      const { data, error: signInError } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (signInError) {
+        showError('كلمة المرور غير صحيحة.');
+        return;
+      }
+
+      redirectByRole(data.user);
+
+    } catch (error) {
+      showError('حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.');
+    } finally {
+      setLoading(false);
+    }
+  });
+</script>
+
+</body>
+</html>
