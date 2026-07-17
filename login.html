@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>منصة حفّاظ — تسجيل الدخول</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -149,9 +150,26 @@
   </form>
 </div>
 
-<script type="module">
+<script>
   const SUPABASE_URL = 'https://aeonokdakdvqgiisfhwv.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlb25va2Rha2R2cWdpaXNmaHd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzMDQ1MDUsImV4cCI6MjA5OTg4MDUwNX0.g1mtt9GZRod2V_Fbe1qXQhv7Hf_LVfx-IvItth9PCgI';
+
+  // تهيئة Supabase client — يدير الجلسة تلقائياً في httpOnly cookie عبر pkce
+  const { createClient } = supabase;
+  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      persistSession: true,
+      storageKey: 'huffaz-auth',
+      storage: window.sessionStorage, // sessionStorage أكثر أماناً من localStorage
+      autoRefreshToken: true,
+      detectSessionInUrl: false
+    }
+  });
+
+  // إذا كان المستخدم مسجلاً دخوله مسبقاً وجّهه مباشرة
+  supabaseClient.auth.getSession().then(({ data: { session } }) => {
+    if (session) redirectByRole(session.user);
+  });
 
   const form = document.getElementById('loginForm');
   const btn  = document.getElementById('loginBtn');
@@ -176,6 +194,13 @@
     }
   }
 
+  function redirectByRole(user) {
+    const role = user?.user_metadata?.role;
+    if (role === 'admin')        window.location.href = 'admin/dashboard.html';
+    else if (role === 'teacher') window.location.href = 'teacher/dashboard.html';
+    else                         window.location.href = 'student/dashboard.html';
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideError();
@@ -191,21 +216,14 @@
     setLoading(true);
 
     try {
-      // الخطوة 1: جلب الـ email المرتبط بـ username من جدول users
-      const lookupRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/users?username=eq.${encodeURIComponent(username)}&select=email`,
-        {
-          headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      // الخطوة 1: جلب email من جدول users عبر username
+      const { data: users, error: lookupError } = await supabaseClient
+        .from('users')
+        .select('email')
+        .eq('username', username)
+        .limit(1);
 
-      const users = await lookupRes.json();
-
-      if (!users || users.length === 0) {
+      if (lookupError || !users || users.length === 0) {
         showError('اسم المستخدم غير موجود.');
         return;
       }
@@ -213,41 +231,21 @@
       const email = users[0].email;
 
       // الخطوة 2: تسجيل الدخول عبر Supabase Auth
-      const signInRes = await fetch(
-        `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
-        {
-          method: 'POST',
-          headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ email, password })
-        }
-      );
+      // الجلسة تُحفظ تلقائياً في sessionStorage عبر الـ client ولا تُكتب يدوياً
+      const { data, error: signInError } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
 
-      const signInData = await signInRes.json();
-
-      if (!signInRes.ok) {
+      if (signInError) {
         showError('كلمة المرور غير صحيحة.');
         return;
       }
 
-      // حفظ التوكن في localStorage
-      localStorage.setItem('huffaz_session', JSON.stringify(signInData));
-      localStorage.setItem('huffaz_email', email);
-
-      // توجيه المستخدم حسب دوره
-      const role = signInData.user?.user_metadata?.role;
-      if (role === 'admin') {
-        window.location.href = 'admin/dashboard.html';
-      } else if (role === 'teacher') {
-        window.location.href = 'teacher/dashboard.html';
-      } else {
-        window.location.href = 'student/dashboard.html';
-      }
+      redirectByRole(data.user);
 
     } catch (error) {
-      showError('حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.');
+      showError('حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.')
     } finally {
       setLoading(false);
     }
