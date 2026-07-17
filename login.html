@@ -117,6 +117,7 @@
   </style>
 </head>
 <body>
+<div style="display:none">v2-fixed</div>
 
 <div class="card">
   <div class="logo">منصة حفّاظ</div>
@@ -165,7 +166,6 @@
     }
   });
 
-  // إذا كان المستخدم مسجّلاً دخوله مسبقاً وجّهه مباشرة
   supabaseClient.auth.getSession().then(({ data: { session } }) => {
     if (session) redirectByRole(session.user);
   });
@@ -215,7 +215,6 @@
     setLoading(true);
 
     try {
-      // الخطوة 1: جلب email عبر دالة RPC آمنة (SECURITY DEFINER) تتجاوز RLS
       const { data: email, error: rpcError } = await supabaseClient
         .rpc('get_email_by_username', { p_username: username });
 
@@ -224,7 +223,6 @@
         return;
       }
 
-      // الخطوة 2: تسجيل الدخول عبر Supabase Auth
       const { data, error: signInError } = await supabaseClient.auth.signInWithPassword({
         email,
         password
