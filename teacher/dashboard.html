@@ -368,6 +368,9 @@ async function checkAuth() {
 }
 
 async function loadTeacher(userId) {
+  const { data: { session } } = await supabase.auth.getSession();
+  console.log('session:', session);
+  console.log('user id:', session?.user?.id);
   const { data, error } = await supabase.from('teachers').select('id, max_students').eq('user_id', userId).single();
   console.log('teacher data:', data);
   console.log('teacher error:', error);
