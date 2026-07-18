@@ -369,6 +369,8 @@ async function checkAuth() {
 
 async function loadTeacher(userId) {
   const { data, error } = await supabase.from('teachers').select('id, max_students').eq('user_id', userId).single();
+  console.log('teacher data:', data);
+  console.log('teacher error:', error);
   if (error || !data) { showToast('خطأ في تحميل بيانات المعلم', 'error'); return; }
   currentTeacher = data;
   await loadStudents();
