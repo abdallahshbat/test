@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة المعلم - حفّاظ</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f0f4f8;color:#1a202c;min-height:100vh;direction:rtl}
+:root{--primary:#2d6a4f;--primary-light:#52b788;--accent:#f4a261;--danger:#e63946;--bg:#f0f4f8;--card:#fff;--text:#1a202c;--muted:#718096;--border:#e2e8f0;--radius:12px;--shadow:0 2px 8px rgba(0,0,0,.08)}
+
+/* TOP BAR */
+.topbar{position:fixed;top:0;right:0;left:0;height:56px;background:var(--primary);color:#fff;display:flex;align-items:center;padding:0 16px;z-index:100;gap:12px}
+.topbar h1{font-size:1.1rem;font-weight:700;flex:1}
+.topbar .teacher-name{font-size:.85rem;opacity:.85}
+.btn-logout{background:rgba(255,255,255,.15);border:none;color:#fff;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.85rem;font-family:inherit}
+.btn-logout:hover{background:rgba(255,255,255,.25)}
+
+/* BOTTOM NAV (mobile) */
+.bottom-nav{position:fixed;bottom:0;right:0;left:0;height:60px;background:#fff;border-top:1px solid var(--border);display:flex;z-index:100}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;cursor:pointer;color:var(--muted);font-family:inherit;font-size:.7rem;padding:4px}
+.nav-item.active{color:var(--primary)}
+.nav-item svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* SIDEBAR (desktop) */
+.sidebar{display:none}
+@media(min-width:768px){
+  .bottom-nav{display:none}
+  .sidebar{display:flex;flex-direction:column;position:fixed;top:56px;right:0;width:240px;bottom:0;background:#fff;border-left:1px solid var(--border);padding:16px 0;z-index:50}
+  .sidebar .nav-item{flex-direction:row;justify-content:flex-start;padding:12px 20px;font-size:.95rem;gap:10px;border-radius:0;color:var(--text)}
+  .sidebar .nav-item.active{background:#e8f5e9;color:var(--primary);font-weight:600}
+  .sidebar .nav-item svg{width:20px;height:20px}
+  .main-content{margin-right:240px}
+}
+
+/* MAIN */
+.main-content{margin-top:56px;margin-bottom:68px;padding:16px}
+@media(min-width:768px){.main-content{margin-bottom:0;padding:24px}}
+
+/* VIEW */
+.view{display:none}
+.view.active{display:block}
+
+/* CARDS */
+.card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:16px}
+.card-title{font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:12px;border-bottom:2px solid var(--border);padding-bottom:8px}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.stat-box{background:var(--card);border-radius:var(--radius);padding:14px 10px;text-align:center;box-shadow:var(--shadow)}
+.stat-box .num{font-size:1.8rem;font-weight:800;color:var(--primary)}
+.stat-box .lbl{font-size:.72rem;color:var(--muted);margin-top:4px}
+
+/* WELCOME */
+.welcome-banner{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.welcome-banner h2{font-size:1.2rem;margin-bottom:4px}
+.welcome-banner p{font-size:.85rem;opacity:.85}
+
+/* LAST SESSION */
+.last-session-row{display:flex;justify-content:space-between;font-size:.85rem;padding:4px 0;border-bottom:1px solid var(--border)}
+.last-session-row:last-child{border:none}
+.last-session-row .key{color:var(--muted)}
+
+/* FORM */
+label{display:block;font-size:.85rem;font-weight:600;color:#4a5568;margin-bottom:4px;margin-top:12px}
+label:first-child{margin-top:0}
+input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.95rem;font-family:inherit;outline:none;transition:border .2s;direction:rtl;background:#fff}
+input:focus,select:focus,textarea:focus{border-color:var(--primary)}
+textarea{resize:vertical;min-height:70px}
+
+/* SEARCH */
+.search-wrap{position:relative}
+.search-wrap input{padding-left:36px}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.dropdown-list{position:absolute;top:100%;right:0;left:0;background:#fff;border:1.5px solid var(--border);border-radius:8px;max-height:200px;overflow-y:auto;z-index:200;box-shadow:var(--shadow)}
+.dropdown-item{padding:10px 14px;cursor:pointer;font-size:.9rem;border-bottom:1px solid var(--border)}
+.dropdown-item:last-child{border:none}
+.dropdown-item:hover{background:#f7fafc}
+
+/* STUDENT INFO */
+.student-info-card{background:#e8f5e9;border-radius:var(--radius);padding:14px;margin-bottom:8px;display:none}
+.student-info-card.show{display:block}
+.info-row{display:flex;justify-content:space-between;font-size:.85rem;padding:3px 0}
+.info-row .key{color:var(--muted);font-weight:600}
+.info-row .val{color:var(--text);font-weight:700}
+
+/* FORM ROW */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ERROR COUNTERS */
+.error-section{margin-bottom:16px}
+.error-type{background:#fff7f7;border:1.5px solid #ffd6d6;border-radius:var(--radius);padding:14px;margin-bottom:10px}
+.error-type-title{font-size:.82rem;font-weight:700;color:var(--danger);margin-bottom:4px}
+.error-type-sub{font-size:.75rem;color:#718096;margin-bottom:10px;line-height:1.5}
+.counter-row{display:flex;align-items:center;gap:12px;justify-content:center}
+.counter-btn{width:52px;height:52px;border-radius:50%;border:none;font-size:1.5rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .1s}
+.counter-btn:active{transform:scale(.93)}
+.btn-minus{background:#fee2e2;color:var(--danger)}
+.btn-plus{background:#dcfce7;color:#16a34a}
+.counter-val{font-size:1.5rem;font-weight:800;color:var(--text);min-width:36px;text-align:center}
+.counter-penalty{font-size:.75rem;color:var(--muted);text-align:center;margin-top:4px}
+
+/* SCORE */
+.score-display{background:var(--primary);color:#fff;border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:16px}
+.score-display .score-num{font-size:3.5rem;font-weight:900;line-height:1}
+.score-display .score-lbl{font-size:.9rem;opacity:.8;margin-top:4px}
+
+/* BUTTONS */
+.btn-primary{width:100%;padding:14px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s}
+.btn-primary:hover{background:#1b4332}
+.btn-primary:disabled{background:#a0aec0;cursor:not-allowed}
+.btn-secondary{padding:8px 14px;background:#edf2f7;color:var(--text);border:none;border-radius:8px;font-size:.82rem;cursor:pointer;font-family:inherit}
+.btn-edit{padding:6px 12px;background:#ebf8ff;color:#2b6cb0;border:none;border-radius:6px;font-size:.8rem;cursor:pointer;font-family:inherit}
+
+/* HISTORY TABLE */
+.history-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:540px}
+th{background:#f7fafc;color:var(--muted);font-weight:700;padding:8px 10px;text-align:right;border-bottom:2px solid var(--border)}
+td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:#f7fafc}
+
+/* TOAST */
+.toast-wrap{position:fixed;top:68px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:10px 20px;border-radius:10px;font-size:.9rem;font-weight:600;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.15);animation:fadeUp .3s ease}
+.toast.success{background:#2d6a4f}.toast.error{background:#e63946}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.empty{text-align:center;color:var(--muted);padding:24px;font-size:.9rem}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700}
+.badge-green{background:#dcfce7;color:#15803d}
+.badge-yellow{background:#fef9c3;color:#a16207}
+.badge-red{background:#fee2e2;color:#b91c1c}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <h1>حفّاظ</h1>
+  <span class="teacher-name" id="teacherNameTop"></span>
+  <button class="btn-logout" onclick="logout()">خروج</button>
+</div>
+
+<!-- SIDEBAR (desktop) -->
+<nav class="sidebar">
+  <button class="nav-item active" id="sb-home" onclick="showView('home')">
+    <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+    الرئيسية
+  </button>
+  <button class="nav-item" id="sb-record" onclick="showView('record')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    تسجيل جلسة
+  </button>
+</nav>
+
+<!-- BOTTOM NAV (mobile) -->
+<nav class="bottom-nav">
+  <button class="nav-item active" id="bn-home" onclick="showView('home')">
+    <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+    الرئيسية
+  </button>
+  <button class="nav-item" id="bn-record" onclick="showView('record')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    تسجيل جلسة
+  </button>
+</nav>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- MAIN -->
+<div class="main-content">
+
+  <!-- HOME VIEW -->
+  <div class="view active" id="view-home">
+    <div class="welcome-banner">
+      <h2 id="welcomeMsg">أهلاً بك</h2>
+      <p id="welcomeSub">لوحة تحكم المعلم</p>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-box"><div class="num" id="statStudents">—</div><div class="lbl">طلابي</div></div>
+      <div class="stat-box"><div class="num" id="statToday">—</div><div class="lbl">جلسات اليوم</div></div>
+      <div class="stat-box"><div class="num" id="statTotal">—</div><div class="lbl">إجمالي الجلسات</div></div>
+    </div>
+    <div class="card" id="lastSessionCard" style="display:none">
+      <div class="card-title">آخر جلسة مسجلة</div>
+      <div id="lastSessionContent"></div>
+    </div>
+    <div class="card" style="text-align:center;color:var(--muted);padding:32px" id="homeEmptyCard">
+      <p style="font-size:2rem">📖</p>
+      <p style="margin-top:8px">لا توجد جلسات بعد</p>
+    </div>
+  </div>
+
+  <!-- RECORD VIEW -->
+  <div class="view" id="view-record">
+
+    <!-- Student Search -->
+    <div class="card">
+      <div class="card-title">اختر الطالب</div>
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="#718096" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="studentSearch" placeholder="ابحث عن طالب..." autocomplete="off" oninput="filterStudents()" onfocus="showDropdown()" onblur="hideDropdownDelayed()">
+        <div class="dropdown-list" id="studentDropdown" style="display:none"></div>
+      </div>
+      <!-- Student info -->
+      <div class="student-info-card" id="studentInfo">
+        <div class="info-row"><span class="key">الاسم</span><span class="val" id="infoName">—</span></div>
+        <div class="info-row"><span class="key">آخر محفوظ</span><span class="val" id="infoLastMem">—</span></div>
+        <div class="info-row"><span class="key">آخر مسموع</span><span class="val" id="infoLastRec">—</span></div>
+        <div class="info-row"><span class="key">الفوات</span><span class="val" id="infoGap">—</span></div>
+      </div>
+    </div>
+
+    <!-- Session Form -->
+    <div class="card">
+      <div class="card-title">تفاصيل الجلسة</div>
+      <label>المجلد (الجزء)</label>
+      <input type="number" id="folder" min="1" placeholder="رقم المجلد">
+      <div class="form-row">
+        <div>
+          <label>الحديث من</label>
+          <input type="number" id="hadithFrom" min="1" placeholder="من">
+        </div>
+        <div>
+          <label>الحديث إلى</label>
+          <input type="number" id="hadithTo" min="1" placeholder="إلى">
+        </div>
+      </div>
+      <label>عدد مرات التكرار</label>
+      <input type="number" id="repetitions" min="1" placeholder="عدد التكرارات">
+      <div class="form-row">
+        <div>
+          <label>الربط من صفحة</label>
+          <input type="number" id="linkingFrom" min="1" placeholder="من صفحة">
+        </div>
+        <div>
+          <label>الربط إلى صفحة</label>
+          <input type="number" id="linkingTo" min="1" placeholder="إلى صفحة">
+        </div>
+      </div>
+      <label>توجيهات المراجعة الذاتية</label>
+      <textarea id="selfReviewNotes" placeholder="اكتب توجيهاتك للطالب..."></textarea>
+    </div>
+
+    <!-- Error Counters -->
+    <div class="card">
+      <div class="card-title">الأخطاء</div>
+
+      <div class="error-type">
+        <div class="error-type-title">النوع الأول — خصم كامل (1-)</div>
+        <div class="error-type-sub">خطأ في أصل المتن/الراوي &bull; التوقف الطويل &bull; الفتح</div>
+        <div class="counter-row">
+          <button class="counter-btn btn-minus" onclick="adjustError('full',-1)">−</button>
+          <div>
+            <div class="counter-val" id="fullVal">0</div>
+            <div class="counter-penalty">خصم كامل</div>
+          </div>
+          <button class="counter-btn btn-plus" onclick="adjustError('full',1)">+</button>
+        </div>
+      </div>
+
+      <div class="error-type">
+        <div class="error-type-title">النوع الثاني — خصم نصفي (0.5-)</div>
+        <div class="error-type-sub">اللحن الجلي النحوي &bull; التردد أو التلعثم</div>
+        <div class="counter-row">
+          <button class="counter-btn btn-minus" onclick="adjustError('half',-1)">−</button>
+          <div>
+            <div class="counter-val" id="halfVal">0</div>
+            <div class="counter-penalty">خصم نصف</div>
+          </div>
+          <button class="counter-btn btn-plus" onclick="adjustError('half',1)">+</button>
+        </div>
+      </div>
+
+      <div class="error-type">
+        <div class="error-type-title">النوع الثالث — خصم ربع (0.25-)</div>
+        <div class="error-type-sub">الخلط بين الأحاديث &bull; إبدال كلمة بمرادف &bull; اللحن الخفي النطقي</div>
+        <div class="counter-row">
+          <button class="counter-btn btn-minus" onclick="adjustError('quarter',-1)">−</button>
+          <div>
+            <div class="counter-val" id="quarterVal">0</div>
+            <div class="counter-penalty">خصم ربع</div>
+          </div>
+          <button class="counter-btn btn-plus" onclick="adjustError('quarter',1)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Score -->
+    <div class="score-display">
+      <div class="score-num" id="scoreDisplay">10.00</div>
+      <div class="score-lbl">الدرجة من 10</div>
+    </div>
+
+    <!-- Notes + Submit -->
+    <div class="card">
+      <label>ملاحظات (اختياري)</label>
+      <textarea id="sessionNotes" placeholder="ملاحظات إضافية..."></textarea>
+      <div style="margin-top:16px">
+        <button class="btn-primary" id="submitBtn" onclick="submitSession()">رصد الجلسة</button>
+      </div>
+      <div style="margin-top:10px;text-align:center">
+        <button class="btn-secondary" id="cancelEditBtn" style="display:none" onclick="cancelEdit()">إلغاء التعديل</button>
+      </div>
+    </div>
+
+    <!-- Session History -->
+    <div class="card" id="historyCard" style="display:none">
+      <div class="card-title">سجل الجلسات</div>
+      <div class="history-wrap">
+        <table id="historyTable">
+          <thead>
+            <tr>
+              <th>التاريخ</th>
+              <th>الحديث</th>
+              <th>الدرجة</th>
+              <th>ملاحظات</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /view-record -->
+</div><!-- /main-content -->
+
+<script>
+const SUPABASE_URL = 'https://aeonokdakdvqgiisfhwv.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlb25va2Rha2R2cWdpaXNmaHd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI3NjAxNjUsImV4cCI6MjA2ODMzNjE2NX0.VGdJjV-7Z21mQBzCqiAO8jGxWUHF30RCh1VTnlv8f98';
+
+let supabase;
+let currentTeacher = null;
+let allStudents = [];
+let selectedStudent = null;
+let errors = {full:0, half:0, quarter:0};
+let editingSessionId = null;
+
+// --- INIT SUPABASE ---
+async function initSupabase() {
+  const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+  supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { storage: sessionStorage, storageKey: 'huffaz-auth', autoRefreshToken: true, persistSession: true }
+  });
+}
+
+// --- AUTH CHECK ---
+async function checkAuth() {
+  await initSupabase();
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) { location.href = '../login.html'; return; }
+  const meta = session.user.user_metadata;
+  if (meta.role !== 'teacher') { location.href = '../login.html'; return; }
+  document.getElementById('teacherNameTop').textContent = meta.name || '';
+  document.getElementById('welcomeMsg').textContent = 'أهلاً، ' + (meta.name || 'معلم');
+  await loadTeacher(session.user.id);
+}
+
+async function loadTeacher(userId) {
+  const { data, error } = await supabase.from('teachers').select('id, max_students').eq('user_id', userId).single();
+  if (error || !data) { showToast('خطأ في تحميل بيانات المعلم', 'error'); return; }
+  currentTeacher = data;
+  await loadStudents();
+  await loadHomeStats();
+}
+
+// --- STUDENTS ---
+async function loadStudents() {
+  if (!currentTeacher) return;
+  const { data, error } = await supabase
+    .from('students')
+    .select('id, memorized_hadiths, users(name)')
+    .eq('teacher_id', currentTeacher.id)
+    .eq('status', 'active');
+  if (error) { showToast('خطأ في تحميل الطلاب', 'error'); return; }
+  allStudents = (data || []).map(s => ({
+    id: s.id,
+    name: s.users?.name || 'طالب',
+    memorized: s.memorized_hadiths || 0
+  }));
+  renderDropdown(allStudents);
+}
+
+function renderDropdown(list) {
+  const dd = document.getElementById('studentDropdown');
+  dd.innerHTML = '';
+  if (!list.length) {
+    dd.innerHTML = '<div class="dropdown-item" style="color:#718096">لا يوجد طلاب</div>';
+    return;
+  }
+  list.forEach(s => {
+    const d = document.createElement('div');
+    d.className = 'dropdown-item';
+    d.textContent = s.name;
+    d.onmousedown = () => selectStudent(s);
+    dd.appendChild(d);
+  });
+}
+
+function filterStudents() {
+  const q = document.getElementById('studentSearch').value.trim().toLowerCase();
+  const filtered = q ? allStudents.filter(s => s.name.includes(q)) : allStudents;
+  renderDropdown(filtered);
+  showDropdown();
+}
+
+function showDropdown() {
+  document.getElementById('studentDropdown').style.display = 'block';
+}
+
+function hideDropdownDelayed() {
+  setTimeout(() => { document.getElementById('studentDropdown').style.display = 'none'; }, 200);
+}
+
+async function selectStudent(s) {
+  selectedStudent = s;
+  document.getElementById('studentSearch').value = s.name;
+  document.getElementById('studentDropdown').style.display = 'none';
+  document.getElementById('infoName').textContent = s.name;
+  document.getElementById('infoLastMem').textContent = s.memorized || '—';
+
+  // fetch last recitation session
+  const { data: sessions } = await supabase
+    .from('recitation_sessions')
+    .select('hadith_to, score, date')
+    .eq('student_id', s.id)
+    .order('date', { ascending: false })
+    .limit(1);
+
+  if (sessions && sessions.length) {
+    const last = sessions[0];
+    document.getElementById('infoLastRec').textContent = last.hadith_to || '—';
+    const gap = s.memorized - (last.hadith_to || 0);
+    document.getElementById('infoGap').textContent = gap > 0 ? gap + ' حديث' : '—';
+  } else {
+    document.getElementById('infoLastRec').textContent = '—';
+    document.getElementById('infoGap').textContent = '—';
+  }
+
+  document.getElementById('studentInfo').classList.add('show');
+  loadSessionHistory(s.id);
+}
+
+// --- HOME STATS ---
+async function loadHomeStats() {
+  if (!currentTeacher) return;
+  const { count: totalStudents } = await supabase
+    .from('students')
+    .select('id', { count: 'exact', head: true })
+    .eq('teacher_id', currentTeacher.id);
+  document.getElementById('statStudents').textContent = totalStudents ?? 0;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const { count: todaySessions } = await supabase
+    .from('recitation_sessions')
+    .select('id', { count: 'exact', head: true })
+    .eq('teacher_id', currentTeacher.id)
+    .eq('date', today);
+  document.getElementById('statToday').textContent = todaySessions ?? 0;
+
+  const { count: totalSessions } = await supabase
+    .from('recitation_sessions')
+    .select('id', { count: 'exact', head: true })
+    .eq('teacher_id', currentTeacher.id);
+  document.getElementById('statTotal').textContent = totalSessions ?? 0;
+
+  const { data: lastArr } = await supabase
+    .from('recitation_sessions')
+    .select('date, hadith_from, hadith_to, score, students(users(name))')
+    .eq('teacher_id', currentTeacher.id)
+    .order('date', { ascending: false })
+    .limit(1);
+
+  if (lastArr && lastArr.length) {
+    const l = lastArr[0];
+    const name = l.students?.users?.name || '—';
+    document.getElementById('lastSessionContent').innerHTML = `
+      <div class="last-session-row"><span class="key">الطالب</span><span>${name}</span></div>
+      <div class="last-session-row"><span class="key">التاريخ</span><span>${l.date || '—'}</span></div>
+      <div class="last-session-row"><span class="key">الأحاديث</span><span>${l.hadith_from || '—'} – ${l.hadith_to || '—'}</span></div>
+      <div class="last-session-row"><span class="key">الدرجة</span><span>${l.score ?? '—'}</span></div>
+    `;
+    document.getElementById('lastSessionCard').style.display = 'block';
+    document.getElementById('homeEmptyCard').style.display = 'none';
+  } else {
+    document.getElementById('lastSessionCard').style.display = 'none';
+    document.getElementById('homeEmptyCard').style.display = 'block';
+  }
+}
+
+// --- ERROR COUNTERS ---
+function adjustError(type, delta) {
+  errors[type] = Math.max(0, errors[type] + delta);
+  document.getElementById(type + 'Val').textContent = errors[type];
+  updateScore();
+}
+
+function updateScore() {
+  const score = Math.max(0, 10 - errors.full * 1 - errors.half * 0.5 - errors.quarter * 0.25);
+  document.getElementById('scoreDisplay').textContent = score.toFixed(2);
+}
+
+// --- SUBMIT SESSION ---
+async function submitSession() {
+  if (!selectedStudent) { showToast('اختر طالباً أولاً', 'error'); return; }
+  const folder = parseInt(document.getElementById('folder').value) || null;
+  const hadithFrom = parseInt(document.getElementById('hadithFrom').value) || null;
+  const hadithTo = parseInt(document.getElementById('hadithTo').value) || null;
+  const repetitions = parseInt(document.getElementById('repetitions').value) || null;
+  const linkingFrom = parseInt(document.getElementById('linkingFrom').value) || null;
+  const linkingTo = parseInt(document.getElementById('linkingTo').value) || null;
+  const selfReviewNotes = document.getElementById('selfReviewNotes').value.trim() || null;
+  const notes = document.getElementById('sessionNotes').value.trim() || null;
+  const score = Math.max(0, 10 - errors.full - errors.half * 0.5 - errors.quarter * 0.25);
+  const today = new Date().toISOString().slice(0, 10);
+
+  const payload = {
+    student_id: selectedStudent.id,
+    teacher_id: currentTeacher.id,
+    date: today,
+    folder,
+    hadith_from: hadithFrom,
+    hadith_to: hadithTo,
+    repetitions,
+    linking_from: linkingFrom,
+    linking_to: linkingTo,
+    self_review_notes: selfReviewNotes,
+    full_mark_errors: errors.full,
+    half_mark_errors: errors.half,
+    quarter_mark_errors: errors.quarter,
+    score,
+    notes
+  };
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'جاري الحفظ...';
+
+  let result;
+  if (editingSessionId) {
+    result = await supabase.from('recitation_sessions').update(payload).eq('id', editingSessionId);
+  } else {
+    result = await supabase.from('recitation_sessions').insert(payload);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'رصد الجلسة';
+
+  if (result.error) {
+    showToast('خطأ: ' + result.error.message, 'error');
+    return;
+  }
+  showToast(editingSessionId ? 'تم تعديل الجلسة ✓' : 'تم رصد الجلسة ✓', 'success');
+  cancelEdit();
+  resetForm(false);
+  loadSessionHistory(selectedStudent.id);
+  loadHomeStats();
+}
+
+function resetForm(clearStudent) {
+  if (clearStudent !== false) {
+    selectedStudent = null;
+    document.getElementById('studentSearch').value = '';
+    document.getElementById('studentInfo').classList.remove('show');
+    document.getElementById('historyCard').style.display = 'none';
+  }
+  document.getElementById('folder').value = '';
+  document.getElementById('hadithFrom').value = '';
+  document.getElementById('hadithTo').value = '';
+  document.getElementById('repetitions').value = '';
+  document.getElementById('linkingFrom').value = '';
+  document.getElementById('linkingTo').value = '';
+  document.getElementById('selfReviewNotes').value = '';
+  document.getElementById('sessionNotes').value = '';
+  errors = {full:0, half:0, quarter:0};
+  document.getElementById('fullVal').textContent = '0';
+  document.getElementById('halfVal').textContent = '0';
+  document.getElementById('quarterVal').textContent = '0';
+  document.getElementById('scoreDisplay').textContent = '10.00';
+}
+
+function cancelEdit() {
+  editingSessionId = null;
+  document.getElementById('submitBtn').textContent = 'رصد الجلسة';
+  document.getElementById('cancelEditBtn').style.display = 'none';
+  resetForm(false);
+}
+
+// --- SESSION HISTORY ---
+async function loadSessionHistory(studentId) {
+  const { data, error } = await supabase
+    .from('recitation_sessions')
+    .select('id, date, hadith_from, hadith_to, score, notes, folder, repetitions, linking_from, linking_to, self_review_notes, full_mark_errors, half_mark_errors, quarter_mark_errors')
+    .eq('student_id', studentId)
+    .eq('teacher_id', currentTeacher.id)
+    .order('date', { ascending: false });
+
+  const card = document.getElementById('historyCard');
+  const body = document.getElementById('historyBody');
+
+  if (error || !data || !data.length) {
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = 'block';
+  body.innerHTML = '';
+
+  data.forEach(s => {
+    const scoreVal = parseFloat(s.score);
+    let badgeClass = 'badge-green';
+    if (scoreVal < 7) badgeClass = 'badge-red';
+    else if (scoreVal < 8.5) badgeClass = 'badge-yellow';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${s.date || '—'}</td>
+      <td>${s.hadith_from || '—'} – ${s.hadith_to || '—'}</td>
+      <td><span class="badge ${badgeClass}">${scoreVal.toFixed(2)}</span></td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.notes || '—'}</td>
+      <td><button class="btn-edit" onclick="editSession(${JSON.stringify(s).replace(/"/g,'&quot;')})">تعديل</button></td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+function editSession(s) {
+  editingSessionId = s.id;
+  document.getElementById('folder').value = s.folder || '';
+  document.getElementById('hadithFrom').value = s.hadith_from || '';
+  document.getElementById('hadithTo').value = s.hadith_to || '';
+  document.getElementById('repetitions').value = s.repetitions || '';
+  document.getElementById('linkingFrom').value = s.linking_from || '';
+  document.getElementById('linkingTo').value = s.linking_to || '';
+  document.getElementById('selfReviewNotes').value = s.self_review_notes || '';
+  document.getElementById('sessionNotes').value = s.notes || '';
+  errors.full = s.full_mark_errors || 0;
+  errors.half = s.half_mark_errors || 0;
+  errors.quarter = s.quarter_mark_errors || 0;
+  document.getElementById('fullVal').textContent = errors.full;
+  document.getElementById('halfVal').textContent = errors.half;
+  document.getElementById('quarterVal').textContent = errors.quarter;
+  updateScore();
+  document.getElementById('submitBtn').textContent = 'حفظ التعديل';
+  document.getElementById('cancelEditBtn').style.display = 'block';
+  document.getElementById('view-record').scrollTop = 0;
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// --- VIEW SWITCH ---
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  ['home','record'].forEach(n => {
+    const cls = n === name ? 'active' : '';
+    const bn = document.getElementById('bn-' + n);
+    const sb = document.getElementById('sb-' + n);
+    if (bn) bn.className = 'nav-item ' + cls;
+    if (sb) sb.className = 'nav-item ' + cls;
+  });
+}
+
+// --- LOGOUT ---
+async function logout() {
+  await supabase.auth.signOut();
+  sessionStorage.removeItem('huffaz-auth');
+  location.href = '../login.html';
+}
+
+// --- TOAST ---
+function showToast(msg, type) {
+  const w = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type || 'success');
+  t.textContent = msg;
+  w.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// START
+checkAuth();
+</script>
+</body>
+</html>
