@@ -397,7 +397,7 @@
   const SUPABASE_URL = 'https://aeonokdakdvqgiisfhwv.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlb25va2Rha2R2cWdpaXNmaHd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzMDQ1MDUsImV4cCI6MjA5OTg4MDUwNX0.g1mtt9GZRod2V_Fbe1qXQhv7Hf_LVfx-IvItth9PCgI';
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { persistSession: true, storageKey: 'huffaz-auth', storage: window.sessionStorage, autoRefreshToken: true, detectSessionInUrl: false }
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: localStorage, storageKey: 'huffaz-auth' }
   });
 
   const viewMeta = {

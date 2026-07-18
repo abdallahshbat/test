@@ -159,10 +159,10 @@
   const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
       persistSession: true,
-      storageKey: 'huffaz-auth',
-      storage: window.sessionStorage, // sessionStorage أكثر أماناً من localStorage
       autoRefreshToken: true,
-      detectSessionInUrl: false
+      detectSessionInUrl: true,
+      storage: localStorage,
+      storageKey: 'huffaz-auth'
     }
   });
 
