@@ -351,7 +351,11 @@ let editingSessionId = null;
 async function initSupabase() {
   const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
   supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { storage: sessionStorage, storageKey: 'huffaz-auth', autoRefreshToken: true, persistSession: true }
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
   });
 }
 
