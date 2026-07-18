@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الملف الشخصي — منصة حفّاظ</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f3f4f6;color:#1f2937;min-height:100vh;direction:rtl}
+:root{--primary:#2d6a4f;--accent:#52b788;--danger:#dc2626;--border:#e5e7eb;--card:#fff;--muted:#6b7280;--radius:14px;--shadow:0 2px 8px rgba(0,0,0,.07)}
+
+.topbar{position:fixed;top:0;right:0;left:0;height:56px;background:var(--primary);color:#fff;display:flex;align-items:center;padding:0 16px;z-index:100;gap:12px}
+.topbar h1{font-size:1rem;font-weight:700;flex:1}
+.btn-back{background:rgba(255,255,255,.15);border:none;color:#fff;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.85rem;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn-back:hover{background:rgba(255,255,255,.25)}
+
+.main{margin-top:64px;padding:16px;max-width:680px;margin-left:auto;margin-right:auto}
+@media(min-width:768px){.main{padding:28px}}
+
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:18px;overflow:hidden}
+.card-header{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.card-header .icon{font-size:1.3rem;width:38px;height:38px;border-radius:10px;background:#d1fae5;display:flex;align-items:center;justify-content:center}
+.card-header h2{font-size:1rem;font-weight:700;color:var(--primary)}
+.card-body{padding:20px 22px}
+
+/* AVATAR */
+.avatar-wrap{display:flex;align-items:center;gap:18px}
+.avatar-img{width:80px;height:80px;border-radius:50%;background:var(--primary);color:#fff;font-size:2rem;font-weight:800;display:flex;align-items:center;justify-content:center;object-fit:cover;flex-shrink:0;border:3px solid #d1fae5}
+.avatar-info h3{font-size:1rem;font-weight:700;color:#1f2937}
+.avatar-info p{font-size:.82rem;color:var(--muted);margin-top:3px}
+.btn-upload-wrap{margin-top:10px}
+.btn-upload{display:inline-block;padding:7px 16px;background:#e8f5e9;color:var(--primary);border:1.5px solid #a7f3d0;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;transition:background .2s}
+.btn-upload:hover{background:#d1fae5}
+#avatarFile{display:none}
+
+/* INFO TABLE */
+.info-table{width:100%;border-collapse:collapse}
+.info-table td{padding:9px 4px;border-bottom:1px solid var(--border);font-size:.88rem;vertical-align:top}
+.info-table td:first-child{color:var(--muted);width:38%;font-weight:600}
+.info-table td:last-child{color:#1f2937;font-weight:500}
+.info-table tr:last-child td{border:none}
+
+/* FORM */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:480px){.form-row{grid-template-columns:1fr}}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.83rem;font-weight:600;color:#374151;margin-bottom:5px}
+.form-control{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;font-family:inherit;color:#1f2937;background:#fff;outline:none;transition:border .2s;direction:rtl}
+.form-control:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(45,106,79,.1)}
+select.form-control{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%236b7280'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 10px center}
+
+.btn-save{padding:10px 28px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s}
+.btn-save:hover:not(:disabled){background:#1b4332}
+.btn-save:disabled{opacity:.6;cursor:not-allowed}
+
+/* PASSWORD */
+.field-error{font-size:.78rem;color:var(--danger);margin-top:4px;display:none}
+.field-error.show{display:block}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2937;color:#fff;padding:11px 22px;border-radius:10px;font-size:.88rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:999;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.success{background:#065f46}
+#toast.error{background:#991b1b}
+
+/* LOADING */
+#loadingScreen{position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:14px}
+.loader{width:38px;height:38px;border:4px solid #e5e7eb;border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div id="loadingScreen">
+  <div class="loader"></div>
+  <div style="font-size:.88rem;color:#6b7280">جارٍ التحميل…</div>
+</div>
+
+<div id="toast"></div>
+
+<div class="topbar">
+  <a id="backBtn" href="../login.html" class="btn-back">← رجوع</a>
+  <h1>الملف الشخصي</h1>
+</div>
+
+<div class="main">
+
+  <!-- AVATAR -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon">👤</div>
+      <h2>الصورة الشخصية</h2>
+    </div>
+    <div class="card-body">
+      <div class="avatar-wrap">
+        <img id="avatarImg" class="avatar-img" src="" alt="صورة" onerror="this.style.display='none';document.getElementById('avatarInitial').style.display='flex'" style="display:none">
+        <div id="avatarInitial" class="avatar-img">م</div>
+        <div class="avatar-info">
+          <h3 id="profileName">…</h3>
+          <p id="profileRole">…</p>
+          <div class="btn-upload-wrap">
+            <label class="btn-upload" for="avatarFile">📷 تغيير الصورة</label>
+            <input type="file" id="avatarFile" accept="image/jpeg,image/png,image/webp,image/gif" onchange="uploadAvatar(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATIC INFO -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon">ℹ️</div>
+      <h2>المعلومات الأساسية</h2>
+    </div>
+    <div class="card-body">
+      <table class="info-table">
+        <tr><td>الاسم الكامل</td><td id="infoName">—</td></tr>
+        <tr><td>اسم المستخدم</td><td id="infoUsername">—</td></tr>
+        <tr><td>الدور</td><td id="infoRole">—</td></tr>
+        <tr><td>تاريخ التسجيل</td><td id="infoCreated">—</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- PERSONAL INFO -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon">📋</div>
+      <h2>المعلومات الشخصية</h2>
+    </div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>البريد الإلكتروني</label>
+          <input type="email" id="fieldEmail" class="form-control" placeholder="example@email.com">
+        </div>
+        <div class="form-group">
+          <label>تاريخ الميلاد</label>
+          <input type="date" id="fieldBirthDate" class="form-control">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>الجنس</label>
+          <select id="fieldGender" class="form-control">
+            <option value="">— اختر —</option>
+            <option value="male">ذكر</option>
+            <option value="female">أنثى</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>الجنسية</label>
+          <input type="text" id="fieldNationality" class="form-control" placeholder="سعودي، يمني…">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>المدينة</label>
+          <input type="text" id="fieldCity" class="form-control" placeholder="المدينة">
+        </div>
+        <div class="form-group">
+          <label>جهة العمل</label>
+          <input type="text" id="fieldWorkplace" class="form-control" placeholder="جهة العمل">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>المؤهلات العلمية</label>
+        <input type="text" id="fieldQualifications" class="form-control" placeholder="بكالوريوس، دبلوم…">
+      </div>
+      <div class="form-group">
+        <label>حفظ القرآن</label>
+        <input type="text" id="fieldQuranMem" class="form-control" placeholder="مثال: 10 أجزاء">
+      </div>
+      <div class="form-group">
+        <label>المهارات</label>
+        <input type="text" id="fieldSkills" class="form-control" placeholder="مهارات أخرى">
+      </div>
+      <button class="btn-save" id="saveInfoBtn" onclick="savePersonalInfo()">حفظ المعلومات</button>
+    </div>
+  </div>
+
+  <!-- PASSWORD CHANGE -->
+  <div class="card">
+    <div class="card-header">
+      <div class="icon">🔒</div>
+      <h2>تغيير كلمة المرور</h2>
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <label>كلمة المرور الجديدة</label>
+        <input type="password" id="fieldNewPass" class="form-control" placeholder="6 أحرف على الأقل" minlength="6">
+      </div>
+      <div class="form-group">
+        <label>تأكيد كلمة المرور</label>
+        <input type="password" id="fieldConfirmPass" class="form-control" placeholder="أعد كتابة كلمة المرور">
+        <div class="field-error" id="passError">كلمتا المرور غير متطابقتين</div>
+      </div>
+      <button class="btn-save" id="savePassBtn" onclick="changePassword()">تغيير كلمة المرور</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://aeonokdakdvqgiisfhwv.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlb25va2Rha2R2cWdpaXNmaHd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzMDQ1MDUsImV4cCI6MjA5OTg4MDUwNX0.g1mtt9GZRod2V_Fbe1qXQhv7Hf_LVfx-IvItth9PCgI';
+
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, storageKey: 'huffaz-auth', storage: window.sessionStorage, autoRefreshToken: true, detectSessionInUrl: false }
+});
+
+let currentUser = null;
+let userId = null;
+
+const roleLabels = { admin: 'مشرف', teacher: 'معلم', student: 'طالب' };
+const backLinks  = { admin: 'admin/dashboard.html', teacher: 'teacher/dashboard.html', student: 'student/dashboard.html' };
+
+async function init() {
+  const { data: { session } } = await client.auth.getSession();
+  if (!session) { location.href = 'login.html'; return; }
+  currentUser = session.user;
+  userId = currentUser.id;
+  const meta = currentUser.user_metadata || {};
+  const role = meta.role || 'student';
+
+  document.getElementById('backBtn').href = backLinks[role] || 'login.html';
+
+  const name = meta.name || currentUser.email || '؟';
+  const initial = name.charAt(0);
+  document.getElementById('profileName').textContent = name;
+  document.getElementById('profileRole').textContent = roleLabels[role] || role;
+  document.getElementById('avatarInitial').textContent = initial;
+
+  document.getElementById('fieldEmail').value = currentUser.email || '';
+
+  await loadUserInfo();
+  await loadProfile();
+
+  document.getElementById('loadingScreen').style.display = 'none';
+}
+
+async function loadUserInfo() {
+  const { data } = await client.from('users').select('name, username, role, created_at').eq('id', userId).single();
+  if (!data) return;
+  document.getElementById('infoName').textContent = data.name || '—';
+  document.getElementById('infoUsername').textContent = data.username || '—';
+  document.getElementById('infoRole').textContent = roleLabels[data.role] || data.role || '—';
+  if (data.created_at) {
+    document.getElementById('infoCreated').textContent = new Date(data.created_at).toLocaleDateString('ar-SA', { year:'numeric', month:'long', day:'numeric' });
+  }
+}
+
+async function loadProfile() {
+  const { data } = await client.from('user_profiles').select('*').eq('id', userId).single();
+  if (!data) return;
+  if (data.avatar_url) {
+    const img = document.getElementById('avatarImg');
+    img.src = data.avatar_url;
+    img.style.display = 'flex';
+    document.getElementById('avatarInitial').style.display = 'none';
+  }
+  if (data.birth_date) document.getElementById('fieldBirthDate').value = data.birth_date;
+  if (data.gender)     document.getElementById('fieldGender').value     = data.gender;
+  if (data.nationality) document.getElementById('fieldNationality').value = data.nationality;
+  if (data.city)       document.getElementById('fieldCity').value       = data.city;
+  if (data.workplace)  document.getElementById('fieldWorkplace').value  = data.workplace;
+  if (data.qualifications) document.getElementById('fieldQualifications').value = data.qualifications;
+  if (data.quran_memorization) document.getElementById('fieldQuranMem').value = data.quran_memorization;
+  if (data.skills)     document.getElementById('fieldSkills').value     = data.skills;
+}
+
+async function uploadAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('الحجم يتجاوز 5 ميغابايت', 'error'); return; }
+
+  showToast('جارٍ رفع الصورة…');
+  const ext = file.name.split('.').pop();
+  const path = `${userId}/avatar.${ext}`;
+  const { error: upErr } = await client.storage.from('avatars').upload(path, file, { upsert: true });
+  if (upErr) { showToast('خطأ في الرفع: ' + upErr.message, 'error'); return; }
+
+  const { data: { publicUrl } } = client.storage.from('avatars').getPublicUrl(path);
+  const { error: dbErr } = await client.from('user_profiles').upsert({ id: userId, avatar_url: publicUrl, updated_at: new Date().toISOString() });
+  if (dbErr) { showToast('خطأ في الحفظ: ' + dbErr.message, 'error'); return; }
+
+  const img = document.getElementById('avatarImg');
+  img.src = publicUrl + '?t=' + Date.now();
+  img.style.display = 'flex';
+  document.getElementById('avatarInitial').style.display = 'none';
+  showToast('تم تحديث الصورة ✓', 'success');
+}
+
+async function savePersonalInfo() {
+  const btn = document.getElementById('saveInfoBtn');
+  btn.disabled = true; btn.textContent = 'جارٍ الحفظ…';
+
+  const email = document.getElementById('fieldEmail').value.trim();
+  const profileData = {
+    id: userId,
+    birth_date:          document.getElementById('fieldBirthDate').value   || null,
+    gender:              document.getElementById('fieldGender').value       || null,
+    nationality:         document.getElementById('fieldNationality').value.trim() || null,
+    city:                document.getElementById('fieldCity').value.trim()  || null,
+    workplace:           document.getElementById('fieldWorkplace').value.trim() || null,
+    qualifications:      document.getElementById('fieldQualifications').value.trim() || null,
+    quran_memorization:  document.getElementById('fieldQuranMem').value.trim() || null,
+    skills:              document.getElementById('fieldSkills').value.trim() || null,
+    updated_at:          new Date().toISOString()
+  };
+
+  const [profileRes, emailRes] = await Promise.all([
+    client.from('user_profiles').upsert(profileData),
+    email && email !== currentUser.email ? client.auth.updateUser({ email }) : Promise.resolve({ error: null })
+  ]);
+
+  btn.disabled = false; btn.textContent = 'حفظ المعلومات';
+
+  if (profileRes.error) { showToast('خطأ: ' + profileRes.error.message, 'error'); return; }
+  if (emailRes.error)   { showToast('خطأ في البريد: ' + emailRes.error.message, 'error'); return; }
+  showToast('تم الحفظ بنجاح ✓', 'success');
+}
+
+async function changePassword() {
+  const newPass     = document.getElementById('fieldNewPass').value;
+  const confirmPass = document.getElementById('fieldConfirmPass').value;
+  const errEl       = document.getElementById('passError');
+
+  if (newPass !== confirmPass) { errEl.classList.add('show'); return; }
+  errEl.classList.remove('show');
+  if (newPass.length < 6) { showToast('كلمة المرور أقل من 6 أحرف', 'error'); return; }
+
+  const btn = document.getElementById('savePassBtn');
+  btn.disabled = true; btn.textContent = 'جارٍ التغيير…';
+  const { error } = await client.auth.updateUser({ password: newPass });
+  btn.disabled = false; btn.textContent = 'تغيير كلمة المرور';
+
+  if (error) { showToast('خطأ: ' + error.message, 'error'); return; }
+  document.getElementById('fieldNewPass').value = '';
+  document.getElementById('fieldConfirmPass').value = '';
+  showToast('تم تغيير كلمة المرور ✓', 'success');
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (type ? ' ' + type : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = ''; }, 3500);
+}
+
+init();
+</script>
+</body>
+</html>
