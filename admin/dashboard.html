@@ -343,7 +343,7 @@
           <div class="icon">👨‍🏫</div>
           <div>
             <h2>إضافة معلم جديد</h2>
-            <p>سيُنشأ البريد الإلكتروني تلقائياً — يسجّل الدخول باسم المستخدم فقط</p>
+            <p>يسجّل الدخول باسم المستخدم — الإيميل اختياري وإذا تُرك فارغاً يُنشأ تلقائياً</p>
           </div>
         </div>
         <form id="teacherForm" onsubmit="submitTeacher(event)">
@@ -365,33 +365,15 @@
                 <input type="password" id="tf-password" class="form-control" placeholder="6 أحرف على الأقل" minlength="6" required />
               </div>
               <div class="form-group">
-                <label>رقم الجوال</label>
+                <label>الإيميل <span style="color:var(--muted);font-weight:400">(اختياري)</span></label>
+                <input type="email" id="tf-email" class="form-control" placeholder="teacher@example.com" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>رقم الجوال <span style="color:var(--muted);font-weight:400">(اختياري)</span></label>
                 <input type="tel" id="tf-phone" class="form-control" placeholder="05xxxxxxxx" />
               </div>
-            </div>
-            <div class="form-group">
-              <label>أيام التسميع</label>
-              <div class="days-grid">
-                <label class="day-chip"><input type="checkbox" name="days" value="الأحد" /> الأحد</label>
-                <label class="day-chip"><input type="checkbox" name="days" value="الاثنين" /> الاثنين</label>
-                <label class="day-chip"><input type="checkbox" name="days" value="الثلاثاء" /> الثلاثاء</label>
-                <label class="day-chip"><input type="checkbox" name="days" value="الأربعاء" /> الأربعاء</label>
-                <label class="day-chip"><input type="checkbox" name="days" value="الخميس" /> الخميس</label>
-                <label class="day-chip"><input type="checkbox" name="days" value="الجمعة" /> الجمعة</label>
-                <label class="day-chip"><input type="checkbox" name="days" value="السبت" /> السبت</label>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>الفترة</label>
-              <div class="period-group">
-                <label class="period-option"><input type="radio" name="period" value="صباحي" /><span class="period-dot"></span>صباحي (8 12)</label>
-                <label class="period-option"><input type="radio" name="period" value="مسائي" /><span class="period-dot"></span>مسائي (5 9)</label>
-                <label class="period-option"><input type="radio" name="period" value="الفترتان" /><span class="period-dot"></span>الفترتان</label>
-              </div>
-            </div>
-            <div class="form-group" style="max-width:200px">
-              <label>الحد الأقصى للطلاب</label>
-              <input type="number" id="tf-maxstudents" class="form-control" value="10" min="1" max="100" />
             </div>
           </div>
           <div class="form-footer">
@@ -620,15 +602,12 @@
     btn.disabled = true;
     btn.textContent = 'جارٍ الحفظ…';
 
-    const name        = document.getElementById('tf-name').value.trim();
-    const username    = document.getElementById('tf-username').value.trim();
-    const password    = document.getElementById('tf-password').value;
-    const phone       = document.getElementById('tf-phone').value.trim();
-    const maxStudents = parseInt(document.getElementById('tf-maxstudents').value) || 10;
-    const days        = [...document.querySelectorAll('input[name="days"]:checked')].map(c => c.value);
-    const periodEl    = document.querySelector('input[name="period"]:checked');
-    const period      = periodEl ? periodEl.value : null;
-    const email       = `user_${Date.now()}@huffaz.com`;
+    const name     = document.getElementById('tf-name').value.trim();
+    const username = document.getElementById('tf-username').value.trim();
+    const password = document.getElementById('tf-password').value;
+    const phone    = document.getElementById('tf-phone').value.trim();
+    const emailRaw = document.getElementById('tf-email').value.trim();
+    const email    = emailRaw || `user_${Date.now()}@huffaz.com`;
 
     try {
       const { data: { session } } = await client.auth.getSession();
@@ -639,7 +618,7 @@
           'Authorization': `Bearer ${session.access_token}`,
           'apikey': SUPABASE_ANON_KEY,
         },
-        body: JSON.stringify({ name, username, email, password, phone, days, period, max_students: maxStudents }),
+        body: JSON.stringify({ name, username, email, password, phone }),
       });
       const result = await resp.json();
       if (!resp.ok || result.error) {
