@@ -140,7 +140,6 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-text { font-size: 0.9rem; color: var(--text-muted); }
 
-    /* FORM */
     .form-card { background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.06); max-width: 680px; }
     .form-card-header { padding: 22px 28px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
     .form-card-header .icon { width: 42px; height: 42px; border-radius: 10px; background: #d1fae5; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
@@ -186,6 +185,41 @@
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     #toast.success { background: #065f46; }
     #toast.error   { background: #991b1b; }
+
+    .students-table-wrap { background: var(--card-bg); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; }
+    .students-toolbar { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+    .search-input { flex: 1; padding: 8px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.88rem; font-family: inherit; outline: none; }
+    .search-input:focus { border-color: var(--accent); }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #f9fafb; color: var(--text-muted); font-size: 0.78rem; font-weight: 700; padding: 10px 16px; text-align: right; border-bottom: 1px solid var(--border); }
+    td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 0.88rem; vertical-align: middle; }
+    tr:last-child td { border: none; }
+    tr:hover td { background: #f9fafb; }
+    .btn-view { padding: 5px 14px; background: #d1fae5; color: #065f46; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .btn-view:hover { background: #a7f3d0; }
+    .empty-row { text-align: center; color: var(--text-muted); padding: 40px; font-size: 0.9rem; }
+
+    .detail-header { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+    .detail-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .detail-name { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
+    .detail-sub { font-size: 0.82rem; color: var(--text-muted); margin-top: 3px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+    .detail-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 18px; }
+    .detail-card h3 { font-size: 0.88rem; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .detail-field { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .detail-field:last-child { border: none; }
+    .detail-field .key { color: var(--text-muted); }
+    .detail-field .val { font-weight: 600; color: var(--text-main); }
+    .btn-back-list { padding: 8px 18px; background: #f3f4f6; color: var(--text-main); border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; margin-bottom: 20px; }
+    .btn-back-list:hover { background: #e5e7eb; }
+    .sessions-mini { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 18px; }
+    .sessions-mini h3 { font-size: 0.88rem; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; }
+    .session-mini-row { display: flex; justify-content: space-between; font-size: 0.83rem; padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .session-mini-row:last-child { border: none; }
+    .score-chip { padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+    .chip-green { background: #d1fae5; color: #065f46; }
+    .chip-yellow { background: #fef9c3; color: #92400e; }
+    .chip-red { background: #fee2e2; color: #991b1b; }
   </style>
 </head>
 <body>
@@ -211,13 +245,13 @@
     <div class="nav-section-title">التشغيل اليومي</div>
     <div class="nav-item active" onclick="showView('home')"><span class="nav-icon">🏠</span> الرئيسية</div>
     <div class="nav-item" onclick="showView('attendance')"><span class="nav-icon">📊</span> متابعة الحضور</div>
-    <div class="nav-item" onclick="showView('recitation')"><span class="nav-icon">🎙️</span> رصد جلسة تسميع</div>
+    <div class="nav-item" onclick="showView('recitation')"><span class="nav-icon">🎤</span> رصد جلسة تسميع</div>
   </div>
 
   <div class="nav-section">
     <div class="nav-section-title">الطلاب</div>
     <div class="nav-item" onclick="showView('add-student')"><span class="nav-icon">➕</span> إضافة طالب</div>
-    <div class="nav-item" onclick="showView('student-files')"><span class="nav-icon">📁</span> ملفات الطلاب</div>
+    <div class="nav-item" onclick="showView('student-files');loadStudentFiles()"><span class="nav-icon">📁</span> ملفات الطلاب</div>
     <div class="nav-item" onclick="showView('top-students')"><span class="nav-icon">🏆</span> قائمة المتميزين</div>
     <div class="nav-item" onclick="showView('exams')"><span class="nav-icon">📝</span> الاختبارات المرحلية</div>
     <div class="nav-item" onclick="showView('import-students')"><span class="nav-icon">📥</span> استيراد طلاب (Excel)</div>
@@ -236,6 +270,7 @@
     <div class="nav-item" onclick="showView('course-days')"><span class="nav-icon">📅</span> أيام الدورة</div>
     <div class="nav-item" onclick="showView('graduation')"><span class="nav-icon">🎓</span> لوحة ختام الدورة</div>
     <div class="nav-item" onclick="showView('settings')"><span class="nav-icon">⚙️</span> الإعدادات العامة</div>
+    <div class="nav-item" onclick="window.location.href='../profile.html'"><span class="nav-icon">👤</span> ملفي الشخصي</div>
   </div>
 
   <div class="sidebar-footer">
@@ -264,21 +299,38 @@
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-icon green">👨‍🎓</div><div><div class="stat-value" id="statStudents">—</div><div class="stat-label">إجمالي الطلاب</div></div></div>
         <div class="stat-card"><div class="stat-icon blue">👨‍🏫</div><div><div class="stat-value" id="statTeachers">—</div><div class="stat-label">إجمالي المعلمين</div></div></div>
-        <div class="stat-card"><div class="stat-icon amber">🎙️</div><div><div class="stat-value" id="statSessions">—</div><div class="stat-label">جلسات اليوم</div></div></div>
+        <div class="stat-card"><div class="stat-icon amber">🎤</div><div><div class="stat-value" id="statSessions">—</div><div class="stat-label">جلسات اليوم</div></div></div>
         <div class="stat-card"><div class="stat-icon purple">📅</div><div><div class="stat-value" id="statDate">—</div><div class="stat-label">تاريخ اليوم</div></div></div>
       </div>
     </div>
 
     <div class="view" id="view-attendance"><div class="section-placeholder"><div class="ph-icon">📊</div><h3>متابعة الحضور</h3><p>سيتم عرض نسبة حضور الطلاب والمعلمين هنا</p></div></div>
-    <div class="view" id="view-recitation"><div class="section-placeholder"><div class="ph-icon">🎙️</div><h3>رصد جلسة تسميع</h3><p>سيتم عرض جلسات التسميع النشطة وتفاصيلها هنا</p></div></div>
+    <div class="view" id="view-recitation"><div class="section-placeholder"><div class="ph-icon">🎤</div><h3>رصد جلسة تسميع</h3><p>سيتم عرض جلسات التسميع النشطة وتفاصيلها هنا</p></div></div>
     <div class="view" id="view-add-student"><div class="section-placeholder"><div class="ph-icon">➕</div><h3>إضافة طالب</h3><p>نموذج إضافة طالب جديد سيكون هنا</p></div></div>
-    <div class="view" id="view-student-files"><div class="section-placeholder"><div class="ph-icon">📁</div><h3>ملفات الطلاب</h3><p>قائمة الطلاب المسجلين وملفاتهم ستظهر هنا</p></div></div>
+
+    <div class="view" id="view-student-files">
+      <div class="students-table-wrap">
+        <div class="students-toolbar">
+          <input type="text" class="search-input" id="studentSearch" placeholder="ابحث باسم الطالب…" oninput="filterStudentsTable()">
+        </div>
+        <div id="studentFilesBody">
+          <p class="empty-row">جارٍ التحميل…</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="view-student-detail">
+      <button class="btn-back-list" onclick="showView('student-files');loadStudentFiles()">← رجوع إلى قائمة الطلاب</button>
+      <div id="studentDetailContent">
+        <p style="color:var(--text-muted)">جارٍ التحميل…</p>
+      </div>
+    </div>
+
     <div class="view" id="view-top-students"><div class="section-placeholder"><div class="ph-icon">🏆</div><h3>قائمة المتميزين</h3><p>أفضل الطلاب أداءً وحفظاً سيظهرون هنا</p></div></div>
     <div class="view" id="view-exams"><div class="section-placeholder"><div class="ph-icon">📝</div><h3>الاختبارات المرحلية</h3><p>جدول الاختبارات ونتائجها ستظهر هنا</p></div></div>
     <div class="view" id="view-import-students"><div class="section-placeholder"><div class="ph-icon">📥</div><h3>استيراد طلاب (Excel)</h3><p>رفع ملف Excel لاستيراد بيانات الطلاب دفعة واحدة</p></div></div>
     <div class="view" id="view-import-plans"><div class="section-placeholder"><div class="ph-icon">📋</div><h3>استيراد خطط</h3><p>رفع خطط الحفظ وتوزيعها على الطلاب</p></div></div>
 
-    <!-- ADD TEACHER FORM -->
     <div class="view" id="view-add-teacher">
       <div class="form-card">
         <div class="form-card-header">
@@ -326,8 +378,8 @@
             <div class="form-group">
               <label>الفترة</label>
               <div class="period-group">
-                <label class="period-option"><input type="radio" name="period" value="صباحي" /><span class="period-dot"></span>صباحي (8 12)</label>
-                <label class="period-option"><input type="radio" name="period" value="مسائي" /><span class="period-dot"></span>مسائي (5 9)</label>
+                <label class="period-option"><input type="radio" name="period" value="صباحي" /><span class="period-dot"></span>صباحي (8 12)</label>
+                <label class="period-option"><input type="radio" name="period" value="مسائي" /><span class="period-dot"></span>مسائي (5 9)</label>
                 <label class="period-option"><input type="radio" name="period" value="الفترتان" /><span class="period-dot"></span>الفترتان</label>
               </div>
             </div>
@@ -361,22 +413,25 @@
   });
 
   const viewMeta = {
-    'home':            { title: 'الرئيسية',              breadcrumb: 'منصة حفّاظ › لوحة المشرف' },
-    'attendance':      { title: 'متابعة الحضور',          breadcrumb: 'التشغيل اليومي › متابعة الحضور' },
-    'recitation':      { title: 'رصد جلسة تسميع',         breadcrumb: 'التشغيل اليومي › رصد جلسة تسميع' },
-    'add-student':     { title: 'إضافة طالب',             breadcrumb: 'الطلاب › إضافة طالب' },
-    'student-files':   { title: 'ملفات الطلاب',           breadcrumb: 'الطلاب › ملفات الطلاب' },
-    'top-students':    { title: 'قائمة المتميزين',         breadcrumb: 'الطلاب › قائمة المتميزين' },
-    'exams':           { title: 'الاختبارات المرحلية',     breadcrumb: 'الطلاب › الاختبارات المرحلية' },
-    'import-students': { title: 'استيراد طلاب',           breadcrumb: 'الطلاب › استيراد طلاب (Excel)' },
-    'import-plans':    { title: 'استيراد خطط',            breadcrumb: 'الطلاب › استيراد خطط' },
-    'add-teacher':     { title: 'إضافة معلم',             breadcrumb: 'المعلمون › إضافة معلم' },
-    'teacher-files':   { title: 'ملفات المعلمين',          breadcrumb: 'المعلمون › ملفات المعلمين' },
-    'import-teachers': { title: 'استيراد معلمين',         breadcrumb: 'المعلمون › استيراد معلمين (Excel)' },
-    'course-days':     { title: 'أيام الدورة',             breadcrumb: 'الإعدادات › أيام الدورة' },
-    'graduation':      { title: 'لوحة ختام الدورة',       breadcrumb: 'الإعدادات › لوحة ختام الدورة' },
-    'settings':        { title: 'الإعدادات العامة',        breadcrumb: 'الإعدادات › الإعدادات العامة' },
+    'home':             { title: 'الرئيسية',              breadcrumb: 'منصة حفّاظ › لوحة المشرف' },
+    'attendance':       { title: 'متابعة الحضور',          breadcrumb: 'التشغيل اليومي › متابعة الحضور' },
+    'recitation':       { title: 'رصد جلسة تسميع',         breadcrumb: 'التشغيل اليومي › رصد جلسة تسميع' },
+    'add-student':      { title: 'إضافة طالب',             breadcrumb: 'الطلاب › إضافة طالب' },
+    'student-files':    { title: 'ملفات الطلاب',           breadcrumb: 'الطلاب › ملفات الطلاب' },
+    'student-detail':   { title: 'ملف الطالب',             breadcrumb: 'الطلاب › ملفات الطلاب › ملف الطالب' },
+    'top-students':     { title: 'قائمة المتميزين',         breadcrumb: 'الطلاب › قائمة المتميزين' },
+    'exams':            { title: 'الاختبارات المرحلية',     breadcrumb: 'الطلاب › الاختبارات المرحلية' },
+    'import-students':  { title: 'استيراد طلاب',           breadcrumb: 'الطلاب › استيراد طلاب (Excel)' },
+    'import-plans':     { title: 'استيراد خطط',            breadcrumb: 'الطلاب › استيراد خطط' },
+    'add-teacher':      { title: 'إضافة معلم',             breadcrumb: 'المعلمون › إضافة معلم' },
+    'teacher-files':    { title: 'ملفات المعلمين',          breadcrumb: 'المعلمون › ملفات المعلمين' },
+    'import-teachers':  { title: 'استيراد معلمين',         breadcrumb: 'المعلمون › استيراد معلمين (Excel)' },
+    'course-days':      { title: 'أيام الدورة',             breadcrumb: 'الإعدادات › أيام الدورة' },
+    'graduation':       { title: 'لوحة ختام الدورة',       breadcrumb: 'الإعدادات › لوحة ختام الدورة' },
+    'settings':         { title: 'الإعدادات العامة',        breadcrumb: 'الإعدادات › الإعدادات العامة' },
   };
+
+  let allStudentsData = [];
 
   function showView(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -388,6 +443,135 @@
     const meta = viewMeta[id] || { title: id, breadcrumb: '' };
     document.getElementById('topbarTitle').textContent = meta.title;
     document.getElementById('topbarBreadcrumb').textContent = meta.breadcrumb;
+  }
+
+  async function loadStudentFiles() {
+    const body = document.getElementById('studentFilesBody');
+    body.innerHTML = '<p class="empty-row">جارٍ التحميل…</p>';
+
+    const { data, error } = await client
+      .from('students')
+      .select('id, memorized_hadiths, status, user_id, users(id, name, username, created_at), teachers(users(name))')
+      .order('id', { ascending: false });
+
+    if (error || !data || !data.length) {
+      body.innerHTML = '<p class="empty-row">لا يوجد طلاب مسجلون بعد</p>';
+      return;
+    }
+
+    allStudentsData = data;
+    renderStudentsTable(data);
+  }
+
+  function renderStudentsTable(data) {
+    const body = document.getElementById('studentFilesBody');
+    if (!data.length) { body.innerHTML = '<p class="empty-row">لا توجد نتائج</p>'; return; }
+    body.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>اسم الطالب</th>
+            <th>اسم المستخدم</th>
+            <th>المعلم</th>
+            <th>الأحاديث المحفوظة</th>
+            <th>الحالة</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.map((s, i) => `
+            <tr>
+              <td style="color:var(--text-muted)">${i + 1}</td>
+              <td style="font-weight:600">${s.users?.name || '—'}</td>
+              <td style="color:var(--text-muted)">${s.users?.username || '—'}</td>
+              <td>${s.teachers?.users?.name || '—'}</td>
+              <td>${s.memorized_hadiths ?? '—'}</td>
+              <td><span style="padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;background:${s.status === 'active' ? '#d1fae5' : '#f3f4f6'};color:${s.status === 'active' ? '#065f46' : '#6b7280'}">${s.status === 'active' ? 'نشط' : (s.status || '—')}</span></td>
+              <td><button class="btn-view" onclick="openStudentDetail('${s.id}','${(s.users?.id || '')}')">عرض الملف</button></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function filterStudentsTable() {
+    const q = document.getElementById('studentSearch').value.trim().toLowerCase();
+    if (!q) { renderStudentsTable(allStudentsData); return; }
+    const filtered = allStudentsData.filter(s =>
+      (s.users?.name || '').toLowerCase().includes(q) ||
+      (s.users?.username || '').toLowerCase().includes(q)
+    );
+    renderStudentsTable(filtered);
+  }
+
+  async function openStudentDetail(studentId, userId) {
+    showView('student-detail');
+    const content = document.getElementById('studentDetailContent');
+    content.innerHTML = '<p style="color:var(--text-muted)">جارٍ التحميل…</p>';
+
+    const [userRes, profileRes, sessionsRes] = await Promise.all([
+      client.from('users').select('name, username, role, created_at').eq('id', userId).single(),
+      client.from('user_profiles').select('*').eq('id', userId).single(),
+      client.from('recitation_sessions').select('date, hadith_from, hadith_to, score').eq('student_id', studentId).order('date', { ascending: false }).limit(5)
+    ]);
+
+    const user    = userRes.data    || {};
+    const profile = profileRes.data || {};
+    const sessions = sessionsRes.data || [];
+
+    const genderLabel = { male: 'ذكر', female: 'أنثى' };
+    const name = user.name || '—';
+    const initial = name.charAt(0);
+
+    const createdAt = user.created_at
+      ? new Date(user.created_at).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })
+      : '—';
+
+    const sessionsHTML = sessions.length
+      ? sessions.map(s => {
+          const sc = parseFloat(s.score);
+          const cls = sc >= 8.5 ? 'chip-green' : sc >= 7 ? 'chip-yellow' : 'chip-red';
+          return `<div class="session-mini-row">
+            <span>${s.date || '—'} — أحاديث ${s.hadith_from || '—'}–${s.hadith_to || '—'}</span>
+            <span class="score-chip ${cls}">${isNaN(sc) ? '—' : sc.toFixed(2)}/10</span>
+          </div>`;
+        }).join('')
+      : '<p style="color:var(--text-muted);font-size:.85rem;text-align:center;padding:12px">لا توجد جلسات بعد</p>';
+
+    content.innerHTML = `
+      <div class="detail-header">
+        <div class="detail-avatar">${initial}</div>
+        <div>
+          <div class="detail-name">${name}</div>
+          <div class="detail-sub">${user.username || ''}</div>
+        </div>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-card">
+          <h3>المعلومات الأساسية</h3>
+          <div class="detail-field"><span class="key">الاسم</span><span class="val">${name}</span></div>
+          <div class="detail-field"><span class="key">اسم المستخدم</span><span class="val">${user.username || '—'}</span></div>
+          <div class="detail-field"><span class="key">تاريخ التسجيل</span><span class="val">${createdAt}</span></div>
+        </div>
+        <div class="detail-card">
+          <h3>المعلومات الشخصية</h3>
+          <div class="detail-field"><span class="key">تاريخ الميلاد</span><span class="val">${profile.birth_date || '—'}</span></div>
+          <div class="detail-field"><span class="key">الجنس</span><span class="val">${genderLabel[profile.gender] || '—'}</span></div>
+          <div class="detail-field"><span class="key">الجنسية</span><span class="val">${profile.nationality || '—'}</span></div>
+          <div class="detail-field"><span class="key">المدينة</span><span class="val">${profile.city || '—'}</span></div>
+          <div class="detail-field"><span class="key">جهة العمل</span><span class="val">${profile.workplace || '—'}</span></div>
+          <div class="detail-field"><span class="key">المؤهلات</span><span class="val">${profile.qualifications || '—'}</span></div>
+          <div class="detail-field"><span class="key">حفظ القرآن</span><span class="val">${profile.quran_memorization || '—'}</span></div>
+          <div class="detail-field"><span class="key">المهارات</span><span class="val">${profile.skills || '—'}</span></div>
+        </div>
+      </div>
+      <div class="sessions-mini">
+        <h3>آخر الجلسات</h3>
+        ${sessionsHTML}
+      </div>
+    `;
   }
 
   async function logout() {
