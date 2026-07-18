@@ -152,28 +152,40 @@ RETURNS UUID AS $$
   SELECT id FROM students WHERE user_id = auth.uid()
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
+-- =============================================
 -- RLS POLICIES: users
+-- =============================================
+
 CREATE POLICY "admin_all_users" ON users
   FOR ALL USING (get_current_user_role() = 'admin');
 
 CREATE POLICY "self_view_users" ON users
   FOR SELECT USING (id = auth.uid());
 
+-- =============================================
 -- RLS POLICIES: programs
+-- =============================================
+
 CREATE POLICY "admin_all_programs" ON programs
   FOR ALL USING (get_current_user_role() = 'admin');
 
 CREATE POLICY "teacher_student_read_programs" ON programs
   FOR SELECT USING (get_current_user_role() IN ('teacher', 'student'));
 
+-- =============================================
 -- RLS POLICIES: teachers
+-- =============================================
+
 CREATE POLICY "admin_all_teachers" ON teachers
   FOR ALL USING (get_current_user_role() = 'admin');
 
 CREATE POLICY "teacher_self" ON teachers
   FOR SELECT USING (user_id = auth.uid());
 
+-- =============================================
 -- RLS POLICIES: students
+-- =============================================
+
 CREATE POLICY "admin_all_students" ON students
   FOR ALL USING (get_current_user_role() = 'admin');
 
@@ -189,7 +201,10 @@ CREATE POLICY "student_self" ON students
     AND user_id = auth.uid()
   );
 
+-- =============================================
 -- RLS POLICIES: student_plans
+-- =============================================
+
 CREATE POLICY "admin_all_student_plans" ON student_plans
   FOR ALL USING (get_current_user_role() = 'admin');
 
@@ -207,7 +222,10 @@ CREATE POLICY "student_own_plans" ON student_plans
     AND student_id = get_student_id_for_current_user()
   );
 
+-- =============================================
 -- RLS POLICIES: recitation_sessions
+-- =============================================
+
 CREATE POLICY "admin_all_recitation_sessions" ON recitation_sessions
   FOR ALL USING (get_current_user_role() = 'admin');
 
@@ -223,7 +241,10 @@ CREATE POLICY "student_own_recitation_sessions" ON recitation_sessions
     AND student_id = get_student_id_for_current_user()
   );
 
+-- =============================================
 -- RLS POLICIES: attendance
+-- =============================================
+
 CREATE POLICY "admin_all_attendance" ON attendance
   FOR ALL USING (get_current_user_role() = 'admin');
 
@@ -241,7 +262,10 @@ CREATE POLICY "student_own_attendance" ON attendance
     AND student_id = get_student_id_for_current_user()
   );
 
+-- =============================================
 -- RLS POLICIES: periodic_exams
+-- =============================================
+
 CREATE POLICY "admin_all_periodic_exams" ON periodic_exams
   FOR ALL USING (get_current_user_role() = 'admin');
 
@@ -259,7 +283,10 @@ CREATE POLICY "student_own_periodic_exams" ON periodic_exams
     AND student_id = get_student_id_for_current_user()
   );
 
+-- =============================================
 -- RLS POLICIES: daily_reviews
+-- =============================================
+
 CREATE POLICY "admin_all_daily_reviews" ON daily_reviews
   FOR ALL USING (get_current_user_role() = 'admin');
 
