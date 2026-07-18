@@ -30,7 +30,6 @@
       display: flex;
     }
 
-    /* ===== SIDEBAR ===== */
     #sidebar {
       width: var(--sidebar-w);
       min-height: 100vh;
@@ -38,615 +37,205 @@
       display: flex;
       flex-direction: column;
       position: fixed;
-      right: 0;
-      top: 0;
-      bottom: 0;
+      right: 0; top: 0; bottom: 0;
       z-index: 100;
       overflow-y: auto;
     }
 
-    .sidebar-header {
-      padding: 24px 20px 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .sidebar-logo {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: #fff;
-      letter-spacing: -0.5px;
-    }
-
-    .sidebar-role {
-      font-size: 0.75rem;
-      color: rgba(255,255,255,0.5);
-      margin-top: 2px;
-    }
+    .sidebar-header { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-logo { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+    .sidebar-role { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 2px; }
 
     .sidebar-user {
       padding: 14px 20px;
       border-bottom: 1px solid rgba(255,255,255,0.1);
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: flex; align-items: center; gap: 10px;
     }
 
     .user-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
+      width: 36px; height: 36px; border-radius: 50%;
       background: var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: 700;
-      font-size: 0.9rem;
-      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
     }
 
-    .user-name {
-      font-size: 0.88rem;
-      color: #fff;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .user-name { font-size: 0.88rem; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .nav-section {
-      padding: 12px 0 4px;
-    }
-
-    .nav-section-title {
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: rgba(255,255,255,0.35);
-      letter-spacing: 1px;
-      padding: 0 20px 6px;
-      text-transform: uppercase;
-    }
+    .nav-section { padding: 12px 0 4px; }
+    .nav-section-title { font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.35); letter-spacing: 1px; padding: 0 20px 6px; text-transform: uppercase; }
 
     .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: flex; align-items: center; gap: 10px;
       padding: 10px 20px;
-      color: rgba(255,255,255,0.75);
-      font-size: 0.88rem;
+      color: rgba(255,255,255,0.75); font-size: 0.88rem;
       cursor: pointer;
       transition: background 0.15s, color 0.15s;
       border-right: 3px solid transparent;
       user-select: none;
     }
+    .nav-item:hover { background: var(--sidebar-hover); color: #fff; }
+    .nav-item.active { background: var(--sidebar-active); color: #fff; border-right-color: #7eddb0; }
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
 
-    .nav-item:hover {
-      background: var(--sidebar-hover);
-      color: #fff;
-    }
-
-    .nav-item.active {
-      background: var(--sidebar-active);
-      color: #fff;
-      border-right-color: #7eddb0;
-    }
-
-    .nav-icon {
-      font-size: 1rem;
-      width: 20px;
-      text-align: center;
-      flex-shrink: 0;
-    }
-
-    .sidebar-footer {
-      margin-top: auto;
-      padding: 16px 20px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
-
+    .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
     .btn-logout {
-      width: 100%;
-      padding: 10px;
-      background: rgba(220,38,38,0.15);
-      color: #fca5a5;
-      border: 1px solid rgba(220,38,38,0.3);
-      border-radius: 8px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-      font-family: inherit;
+      width: 100%; padding: 10px;
+      background: rgba(220,38,38,0.15); color: #fca5a5;
+      border: 1px solid rgba(220,38,38,0.3); border-radius: 8px;
+      font-size: 0.88rem; font-weight: 600; cursor: pointer;
+      transition: background 0.2s; font-family: inherit;
     }
+    .btn-logout:hover { background: rgba(220,38,38,0.3); color: #fff; }
 
-    .btn-logout:hover {
-      background: rgba(220,38,38,0.3);
-      color: #fff;
-    }
-
-    /* ===== MAIN CONTENT ===== */
-    #main {
-      margin-right: var(--sidebar-w);
-      flex: 1;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+    #main { margin-right: var(--sidebar-w); flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
 
     .topbar {
-      background: var(--card-bg);
-      border-bottom: 1px solid var(--border);
+      background: var(--card-bg); border-bottom: 1px solid var(--border);
       padding: 16px 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
     }
+    .topbar-title { font-size: 1.05rem; font-weight: 700; color: var(--text-main); }
+    .topbar-breadcrumb { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
 
-    .topbar-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--text-main);
-    }
+    .content-area { padding: 28px; flex: 1; }
 
-    .topbar-breadcrumb {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    .content-area {
-      padding: 28px;
-      flex: 1;
-    }
-
-    /* ===== HOME STATS ===== */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 18px;
-      margin-bottom: 28px;
-    }
-
-    .stat-card {
-      background: var(--card-bg);
-      border-radius: 14px;
-      padding: 22px 24px;
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .stat-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4rem;
-      flex-shrink: 0;
-    }
-
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 28px; }
+    .stat-card { background: var(--card-bg); border-radius: 14px; padding: 22px 24px; border: 1px solid var(--border); display: flex; align-items: center; gap: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
     .stat-icon.green  { background: #d1fae5; }
     .stat-icon.blue   { background: #dbeafe; }
     .stat-icon.amber  { background: #fef3c7; }
     .stat-icon.purple { background: #ede9fe; }
-
-    .stat-value {
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: var(--text-main);
-      line-height: 1;
-    }
-
-    .stat-label {
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
+    .stat-value { font-size: 1.8rem; font-weight: 800; color: var(--text-main); line-height: 1; }
+    .stat-label { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; }
 
     .welcome-card {
       background: linear-gradient(135deg, #1a3c2e 0%, #2d7a57 100%);
-      border-radius: 16px;
-      padding: 28px 32px;
-      color: #fff;
+      border-radius: 16px; padding: 28px 32px; color: #fff;
       margin-bottom: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
     }
+    .welcome-text h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 6px; }
+    .welcome-text p { font-size: 0.9rem; color: rgba(255,255,255,0.75); }
+    .welcome-emoji { font-size: 3rem; }
 
-    .welcome-text h2 {
-      font-size: 1.4rem;
-      font-weight: 800;
-      margin-bottom: 6px;
-    }
-
-    .welcome-text p {
-      font-size: 0.9rem;
-      color: rgba(255,255,255,0.75);
-    }
-
-    .welcome-emoji {
-      font-size: 3rem;
-    }
-
-    /* ===== PLACEHOLDER SECTIONS ===== */
     .section-placeholder {
-      background: var(--card-bg);
-      border-radius: 14px;
-      border: 2px dashed var(--border);
-      padding: 60px 40px;
-      text-align: center;
+      background: var(--card-bg); border-radius: 14px;
+      border: 2px dashed var(--border); padding: 60px 40px; text-align: center;
     }
+    .section-placeholder .ph-icon { font-size: 3rem; margin-bottom: 16px; }
+    .section-placeholder h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+    .section-placeholder p { font-size: 0.88rem; color: var(--text-muted); }
 
-    .section-placeholder .ph-icon {
-      font-size: 3rem;
-      margin-bottom: 16px;
-    }
-
-    .section-placeholder h3 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--text-main);
-      margin-bottom: 8px;
-    }
-
-    .section-placeholder p {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-    }
-
-    /* ===== VIEWS ===== */
     .view { display: none; }
     .view.active { display: block; }
 
-    /* ===== LOADING ===== */
     #loading-screen {
-      position: fixed;
-      inset: 0;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      flex-direction: column;
-      gap: 16px;
+      position: fixed; inset: 0; background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; flex-direction: column; gap: 16px;
     }
-
-    .loader {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #e5e7eb;
-      border-top-color: #1a3c2e;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
+    .loader { width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top-color: #1a3c2e; border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 0.9rem; color: var(--text-muted); }
 
-    .loading-text {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-    }
+    /* FORM */
+    .form-card { background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.06); max-width: 680px; }
+    .form-card-header { padding: 22px 28px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+    .form-card-header .icon { width: 42px; height: 42px; border-radius: 10px; background: #d1fae5; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+    .form-card-header h2 { font-size: 1.05rem; font-weight: 700; }
+    .form-card-header p { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+    .form-body { padding: 26px 28px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 6px; }
+    .form-group .hint { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px; display: block; }
+    .form-control { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: inherit; color: var(--text-main); background: #fff; transition: border-color 0.2s; outline: none; }
+    .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(45,122,87,0.1); }
 
-    /* ===== FORM CARD ===== */
-    .form-card {
-      background: var(--card-bg);
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-      max-width: 680px;
-    }
-
-    .form-card-header {
-      padding: 22px 28px 18px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .form-card-header .icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
-      background: #d1fae5;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-    }
-
-    .form-card-header h2 {
-      font-size: 1.05rem;
-      font-weight: 700;
-    }
-
-    .form-card-header p {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    .form-body {
-      padding: 26px 28px;
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    .form-group {
-      margin-bottom: 18px;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--text-main);
-      margin-bottom: 6px;
-    }
-
-    .form-group .hint {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-      display: block;
-    }
-
-    .form-control {
-      width: 100%;
-      padding: 9px 12px;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.9rem;
-      font-family: inherit;
-      color: var(--text-main);
-      background: #fff;
-      transition: border-color 0.2s;
-      outline: none;
-    }
-
-    .form-control:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(45,122,87,0.1);
-    }
-
-    /* Days checkboxes */
-    .days-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-
-    .day-chip {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 10px;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      user-select: none;
-      transition: all 0.15s;
-    }
-
+    .days-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .day-chip { display: flex; align-items: center; gap: 6px; padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); user-select: none; transition: all 0.15s; }
     .day-chip input { display: none; }
+    .day-chip:has(input:checked) { border-color: var(--accent); background: #d1fae5; color: #065f46; }
 
-    .day-chip:has(input:checked) {
-      border-color: var(--accent);
-      background: #d1fae5;
-      color: #065f46;
-    }
-
-    /* Period radios */
-    .period-group {
-      display: flex;
-      gap: 10px;
-    }
-
-    .period-option {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 14px;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      user-select: none;
-      transition: all 0.15s;
-    }
-
+    .period-group { display: flex; gap: 10px; }
+    .period-option { flex: 1; display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); user-select: none; transition: all 0.15s; }
     .period-option input { display: none; }
+    .period-option:has(input:checked) { border-color: var(--accent); background: #d1fae5; color: #065f46; }
+    .period-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; flex-shrink: 0; }
+    .period-option:has(input:checked) .period-dot { background: var(--accent); border-color: var(--accent); }
 
-    .period-option:has(input:checked) {
-      border-color: var(--accent);
-      background: #d1fae5;
-      color: #065f46;
-    }
-
-    .period-dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      border: 2px solid currentColor;
-      flex-shrink: 0;
-    }
-
-    .period-option:has(input:checked) .period-dot {
-      background: var(--accent);
-      border-color: var(--accent);
-    }
-
-    /* Submit */
-    .form-footer {
-      padding: 18px 28px 24px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .btn-submit {
-      padding: 10px 28px;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: inherit;
-      transition: background 0.2s, opacity 0.2s;
-    }
-
+    .form-footer { padding: 18px 28px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+    .btn-submit { padding: 10px 28px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.2s, opacity 0.2s; }
     .btn-submit:hover:not(:disabled) { background: #245c44; }
     .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    .btn-reset {
-      padding: 10px 20px;
-      background: transparent;
-      color: var(--text-muted);
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-      transition: border-color 0.2s, color 0.2s;
-    }
-
+    .btn-reset { padding: 10px 20px; background: transparent; color: var(--text-muted); border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: border-color 0.2s, color 0.2s; }
     .btn-reset:hover { border-color: #9ca3af; color: var(--text-main); }
 
-    /* Toast */
     #toast {
-      position: fixed;
-      bottom: 28px;
-      left: 50%;
+      position: fixed; bottom: 28px; left: 50%;
       transform: translateX(-50%) translateY(20px);
-      background: #1f2937;
-      color: #fff;
-      padding: 12px 22px;
-      border-radius: 10px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      opacity: 0;
-      pointer-events: none;
+      background: #1f2937; color: #fff;
+      padding: 12px 22px; border-radius: 10px;
+      font-size: 0.9rem; font-weight: 600;
+      opacity: 0; pointer-events: none;
       transition: opacity 0.3s, transform 0.3s;
-      z-index: 999;
-      white-space: nowrap;
+      z-index: 999; white-space: nowrap;
     }
-
-    #toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     #toast.success { background: #065f46; }
     #toast.error   { background: #991b1b; }
   </style>
 </head>
 <body>
 
-<!-- Loading Screen -->
 <div id="loading-screen">
   <div class="loader"></div>
   <div class="loading-text">جارٍ التحقق من الجلسة…</div>
 </div>
 
-<!-- Toast -->
 <div id="toast"></div>
 
-<!-- Sidebar -->
 <nav id="sidebar">
   <div class="sidebar-header">
     <div class="sidebar-logo">منصة حفّاظ</div>
     <div class="sidebar-role">لوحة المشرف</div>
   </div>
-
   <div class="sidebar-user">
     <div class="user-avatar" id="avatarLetter">م</div>
     <div class="user-name" id="sidebarName">…</div>
   </div>
 
-  <!-- ١. التشغيل اليومي -->
   <div class="nav-section">
     <div class="nav-section-title">التشغيل اليومي</div>
-    <div class="nav-item active" onclick="showView('home')">
-      <span class="nav-icon">🏠</span> الرئيسية
-    </div>
-    <div class="nav-item" onclick="showView('attendance')">
-      <span class="nav-icon">📊</span> متابعة الحضور
-    </div>
-    <div class="nav-item" onclick="showView('recitation')">
-      <span class="nav-icon">🎙️</span> رصد جلسة تسميع
-    </div>
+    <div class="nav-item active" onclick="showView('home')"><span class="nav-icon">🏠</span> الرئيسية</div>
+    <div class="nav-item" onclick="showView('attendance')"><span class="nav-icon">📊</span> متابعة الحضور</div>
+    <div class="nav-item" onclick="showView('recitation')"><span class="nav-icon">🎙️</span> رصد جلسة تسميع</div>
   </div>
 
-  <!-- ٢. الطلاب -->
   <div class="nav-section">
     <div class="nav-section-title">الطلاب</div>
-    <div class="nav-item" onclick="showView('add-student')">
-      <span class="nav-icon">➕</span> إضافة طالب
-    </div>
-    <div class="nav-item" onclick="showView('student-files')">
-      <span class="nav-icon">📁</span> ملفات الطلاب
-    </div>
-    <div class="nav-item" onclick="showView('top-students')">
-      <span class="nav-icon">🏆</span> قائمة المتميزين
-    </div>
-    <div class="nav-item" onclick="showView('exams')">
-      <span class="nav-icon">📝</span> الاختبارات المرحلية
-    </div>
-    <div class="nav-item" onclick="showView('import-students')">
-      <span class="nav-icon">📥</span> استيراد طلاب (Excel)
-    </div>
-    <div class="nav-item" onclick="showView('import-plans')">
-      <span class="nav-icon">📋</span> استيراد خطط
-    </div>
+    <div class="nav-item" onclick="showView('add-student')"><span class="nav-icon">➕</span> إضافة طالب</div>
+    <div class="nav-item" onclick="showView('student-files')"><span class="nav-icon">📁</span> ملفات الطلاب</div>
+    <div class="nav-item" onclick="showView('top-students')"><span class="nav-icon">🏆</span> قائمة المتميزين</div>
+    <div class="nav-item" onclick="showView('exams')"><span class="nav-icon">📝</span> الاختبارات المرحلية</div>
+    <div class="nav-item" onclick="showView('import-students')"><span class="nav-icon">📥</span> استيراد طلاب (Excel)</div>
+    <div class="nav-item" onclick="showView('import-plans')"><span class="nav-icon">📋</span> استيراد خطط</div>
   </div>
 
-  <!-- ٣. المعلمون -->
   <div class="nav-section">
     <div class="nav-section-title">المعلمون</div>
-    <div class="nav-item" onclick="showView('add-teacher')">
-      <span class="nav-icon">➕</span> إضافة معلم
-    </div>
-    <div class="nav-item" onclick="showView('teacher-files')">
-      <span class="nav-icon">📁</span> ملفات المعلمين
-    </div>
-    <div class="nav-item" onclick="showView('import-teachers')">
-      <span class="nav-icon">📥</span> استيراد معلمين (Excel)
-    </div>
+    <div class="nav-item" onclick="showView('add-teacher')"><span class="nav-icon">➕</span> إضافة معلم</div>
+    <div class="nav-item" onclick="showView('teacher-files')"><span class="nav-icon">📁</span> ملفات المعلمين</div>
+    <div class="nav-item" onclick="showView('import-teachers')"><span class="nav-icon">📥</span> استيراد معلمين (Excel)</div>
   </div>
 
-  <!-- ٤. الإعدادات -->
   <div class="nav-section">
     <div class="nav-section-title">الإعدادات</div>
-    <div class="nav-item" onclick="showView('course-days')">
-      <span class="nav-icon">📅</span> أيام الدورة
-    </div>
-    <div class="nav-item" onclick="showView('graduation')">
-      <span class="nav-icon">🎓</span> لوحة ختام الدورة
-    </div>
-    <div class="nav-item" onclick="showView('settings')">
-      <span class="nav-icon">⚙️</span> الإعدادات العامة
-    </div>
+    <div class="nav-item" onclick="showView('course-days')"><span class="nav-icon">📅</span> أيام الدورة</div>
+    <div class="nav-item" onclick="showView('graduation')"><span class="nav-icon">🎓</span> لوحة ختام الدورة</div>
+    <div class="nav-item" onclick="showView('settings')"><span class="nav-icon">⚙️</span> الإعدادات العامة</div>
   </div>
 
   <div class="sidebar-footer">
@@ -654,7 +243,6 @@
   </div>
 </nav>
 
-<!-- Main -->
 <div id="main">
   <div class="topbar">
     <div>
@@ -665,7 +253,6 @@
 
   <div class="content-area">
 
-    <!-- HOME -->
     <div class="view active" id="view-home">
       <div class="welcome-card">
         <div class="welcome-text">
@@ -674,112 +261,24 @@
         </div>
         <div class="welcome-emoji">🕌</div>
       </div>
-
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon green">👨‍🎓</div>
-          <div>
-            <div class="stat-value" id="statStudents">—</div>
-            <div class="stat-label">إجمالي الطلاب</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon blue">👨‍🏫</div>
-          <div>
-            <div class="stat-value" id="statTeachers">—</div>
-            <div class="stat-label">إجمالي المعلمين</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon amber">🎙️</div>
-          <div>
-            <div class="stat-value" id="statSessions">—</div>
-            <div class="stat-label">جلسات اليوم</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon purple">📅</div>
-          <div>
-            <div class="stat-value" id="statDate">—</div>
-            <div class="stat-label">تاريخ اليوم</div>
-          </div>
-        </div>
+        <div class="stat-card"><div class="stat-icon green">👨‍🎓</div><div><div class="stat-value" id="statStudents">—</div><div class="stat-label">إجمالي الطلاب</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue">👨‍🏫</div><div><div class="stat-value" id="statTeachers">—</div><div class="stat-label">إجمالي المعلمين</div></div></div>
+        <div class="stat-card"><div class="stat-icon amber">🎙️</div><div><div class="stat-value" id="statSessions">—</div><div class="stat-label">جلسات اليوم</div></div></div>
+        <div class="stat-card"><div class="stat-icon purple">📅</div><div><div class="stat-value" id="statDate">—</div><div class="stat-label">تاريخ اليوم</div></div></div>
       </div>
     </div>
 
-    <!-- ATTENDANCE -->
-    <div class="view" id="view-attendance">
-      <div class="section-placeholder">
-        <div class="ph-icon">📊</div>
-        <h3>متابعة الحضور</h3>
-        <p>سيتم عرض نسبة حضور الطلاب والمعلمين هنا</p>
-      </div>
-    </div>
+    <div class="view" id="view-attendance"><div class="section-placeholder"><div class="ph-icon">📊</div><h3>متابعة الحضور</h3><p>سيتم عرض نسبة حضور الطلاب والمعلمين هنا</p></div></div>
+    <div class="view" id="view-recitation"><div class="section-placeholder"><div class="ph-icon">🎙️</div><h3>رصد جلسة تسميع</h3><p>سيتم عرض جلسات التسميع النشطة وتفاصيلها هنا</p></div></div>
+    <div class="view" id="view-add-student"><div class="section-placeholder"><div class="ph-icon">➕</div><h3>إضافة طالب</h3><p>نموذج إضافة طالب جديد سيكون هنا</p></div></div>
+    <div class="view" id="view-student-files"><div class="section-placeholder"><div class="ph-icon">📁</div><h3>ملفات الطلاب</h3><p>قائمة الطلاب المسجلين وملفاتهم ستظهر هنا</p></div></div>
+    <div class="view" id="view-top-students"><div class="section-placeholder"><div class="ph-icon">🏆</div><h3>قائمة المتميزين</h3><p>أفضل الطلاب أداءً وحفظاً سيظهرون هنا</p></div></div>
+    <div class="view" id="view-exams"><div class="section-placeholder"><div class="ph-icon">📝</div><h3>الاختبارات المرحلية</h3><p>جدول الاختبارات ونتائجها ستظهر هنا</p></div></div>
+    <div class="view" id="view-import-students"><div class="section-placeholder"><div class="ph-icon">📥</div><h3>استيراد طلاب (Excel)</h3><p>رفع ملف Excel لاستيراد بيانات الطلاب دفعة واحدة</p></div></div>
+    <div class="view" id="view-import-plans"><div class="section-placeholder"><div class="ph-icon">📋</div><h3>استيراد خطط</h3><p>رفع خطط الحفظ وتوزيعها على الطلاب</p></div></div>
 
-    <!-- RECITATION -->
-    <div class="view" id="view-recitation">
-      <div class="section-placeholder">
-        <div class="ph-icon">🎙️</div>
-        <h3>رصد جلسة تسميع</h3>
-        <p>سيتم عرض جلسات التسميع النشطة وتفاصيلها هنا</p>
-      </div>
-    </div>
-
-    <!-- ADD STUDENT -->
-    <div class="view" id="view-add-student">
-      <div class="section-placeholder">
-        <div class="ph-icon">➕</div>
-        <h3>إضافة طالب</h3>
-        <p>نموذج إضافة طالب جديد سيكون هنا</p>
-      </div>
-    </div>
-
-    <!-- STUDENT FILES -->
-    <div class="view" id="view-student-files">
-      <div class="section-placeholder">
-        <div class="ph-icon">📁</div>
-        <h3>ملفات الطلاب</h3>
-        <p>قائمة الطلاب المسجلين وملفاتهم الكاملة ستظهر هنا</p>
-      </div>
-    </div>
-
-    <!-- TOP STUDENTS -->
-    <div class="view" id="view-top-students">
-      <div class="section-placeholder">
-        <div class="ph-icon">🏆</div>
-        <h3>قائمة المتميزين</h3>
-        <p>أفضل الطلاب أداءً وحفظاً سيظهرون هنا</p>
-      </div>
-    </div>
-
-    <!-- EXAMS -->
-    <div class="view" id="view-exams">
-      <div class="section-placeholder">
-        <div class="ph-icon">📝</div>
-        <h3>الاختبارات المرحلية</h3>
-        <p>جدول الاختبارات ونتائجها ستظهر هنا</p>
-      </div>
-    </div>
-
-    <!-- IMPORT STUDENTS -->
-    <div class="view" id="view-import-students">
-      <div class="section-placeholder">
-        <div class="ph-icon">📥</div>
-        <h3>استيراد طلاب (Excel)</h3>
-        <p>رفع ملف Excel لاستيراد بيانات الطلاب دفعة واحدة</p>
-      </div>
-    </div>
-
-    <!-- IMPORT PLANS -->
-    <div class="view" id="view-import-plans">
-      <div class="section-placeholder">
-        <div class="ph-icon">📋</div>
-        <h3>استيراد خطط</h3>
-        <p>رفع خطط الحفظ وتوزيعها على الطلاب</p>
-      </div>
-    </div>
-
-    <!-- ADD TEACHER -->
+    <!-- ADD TEACHER FORM -->
     <div class="view" id="view-add-teacher">
       <div class="form-card">
         <div class="form-card-header">
@@ -789,10 +288,8 @@
             <p>سيُنشأ حساب تلقائياً بصيغة اسم_المستخدم@huffaz.com</p>
           </div>
         </div>
-
         <form id="teacherForm" onsubmit="submitTeacher(event)">
           <div class="form-body">
-
             <div class="form-row">
               <div class="form-group">
                 <label>الاسم الكامل *</label>
@@ -800,22 +297,20 @@
               </div>
               <div class="form-group">
                 <label>اسم المستخدم *</label>
-                <span class="hint">سيُستخدم للدخول — يُفضَّل بالحروف العربية أو الإنجليزية بلا مسافات</span>
+                <span class="hint">سيُستخدم للدخول — بلا مسافات</span>
                 <input type="text" id="tf-username" class="form-control" placeholder="مثال: أحمد_عتيبي" required />
               </div>
             </div>
-
             <div class="form-row">
               <div class="form-group">
                 <label>كلمة المرور *</label>
-                <input type="password" id="tf-password" class="form-control" placeholder="8 أحرف على الأقل" minlength="6" required />
+                <input type="password" id="tf-password" class="form-control" placeholder="6 أحرف على الأقل" minlength="6" required />
               </div>
               <div class="form-group">
                 <label>رقم الجوال</label>
                 <input type="tel" id="tf-phone" class="form-control" placeholder="05xxxxxxxx" />
               </div>
             </div>
-
             <div class="form-group">
               <label>أيام التسميع</label>
               <div class="days-grid">
@@ -828,35 +323,19 @@
                 <label class="day-chip"><input type="checkbox" name="days" value="السبت" /> السبت</label>
               </div>
             </div>
-
             <div class="form-group">
               <label>الفترة</label>
               <div class="period-group">
-                <label class="period-option">
-                  <input type="radio" name="period" value="صباحي" />
-                  <span class="period-dot"></span>
-                  صباحي (8 – 12)
-                </label>
-                <label class="period-option">
-                  <input type="radio" name="period" value="مسائي" />
-                  <span class="period-dot"></span>
-                  مسائي (5 – 9)
-                </label>
-                <label class="period-option">
-                  <input type="radio" name="period" value="الفترتان" />
-                  <span class="period-dot"></span>
-                  الفترتان
-                </label>
+                <label class="period-option"><input type="radio" name="period" value="صباحي" /><span class="period-dot"></span>صباحي (8 12)</label>
+                <label class="period-option"><input type="radio" name="period" value="مسائي" /><span class="period-dot"></span>مسائي (5 9)</label>
+                <label class="period-option"><input type="radio" name="period" value="الفترتان" /><span class="period-dot"></span>الفترتان</label>
               </div>
             </div>
-
-            <div class="form-group" style="max-width: 200px">
+            <div class="form-group" style="max-width:200px">
               <label>الحد الأقصى للطلاب</label>
               <input type="number" id="tf-maxstudents" class="form-control" value="10" min="1" max="100" />
             </div>
-
           </div>
-
           <div class="form-footer">
             <button type="submit" class="btn-submit" id="submitBtn">حفظ المعلم</button>
             <button type="button" class="btn-reset" onclick="resetForm()">مسح الحقول</button>
@@ -865,50 +344,11 @@
       </div>
     </div>
 
-    <!-- TEACHER FILES -->
-    <div class="view" id="view-teacher-files">
-      <div class="section-placeholder">
-        <div class="ph-icon">📁</div>
-        <h3>ملفات المعلمين</h3>
-        <p>قائمة المعلمين المسجلين وملفاتهم ستظهر هنا</p>
-      </div>
-    </div>
-
-    <!-- IMPORT TEACHERS -->
-    <div class="view" id="view-import-teachers">
-      <div class="section-placeholder">
-        <div class="ph-icon">📥</div>
-        <h3>استيراد معلمين (Excel)</h3>
-        <p>رفع ملف Excel لاستيراد بيانات المعلمين دفعة واحدة</p>
-      </div>
-    </div>
-
-    <!-- COURSE DAYS -->
-    <div class="view" id="view-course-days">
-      <div class="section-placeholder">
-        <div class="ph-icon">📅</div>
-        <h3>أيام الدورة</h3>
-        <p>ضبط أيام الدورة وجدولها الزمني</p>
-      </div>
-    </div>
-
-    <!-- GRADUATION -->
-    <div class="view" id="view-graduation">
-      <div class="section-placeholder">
-        <div class="ph-icon">🎓</div>
-        <h3>لوحة ختام الدورة</h3>
-        <p>إحصائيات ونتائج ختام الدورة ستظهر هنا</p>
-      </div>
-    </div>
-
-    <!-- SETTINGS -->
-    <div class="view" id="view-settings">
-      <div class="section-placeholder">
-        <div class="ph-icon">⚙️</div>
-        <h3>الإعدادات العامة</h3>
-        <p>إعدادات المنصة العامة ستكون هنا</p>
-      </div>
-    </div>
+    <div class="view" id="view-teacher-files"><div class="section-placeholder"><div class="ph-icon">📁</div><h3>ملفات المعلمين</h3><p>قائمة المعلمين المسجلين وملفاتهم ستظهر هنا</p></div></div>
+    <div class="view" id="view-import-teachers"><div class="section-placeholder"><div class="ph-icon">📥</div><h3>استيراد معلمين (Excel)</h3><p>رفع ملف Excel لاستيراد بيانات المعلمين دفعة واحدة</p></div></div>
+    <div class="view" id="view-course-days"><div class="section-placeholder"><div class="ph-icon">📅</div><h3>أيام الدورة</h3><p>ضبط أيام الدورة وجدولها الزمني</p></div></div>
+    <div class="view" id="view-graduation"><div class="section-placeholder"><div class="ph-icon">🎓</div><h3>لوحة ختام الدورة</h3><p>إحصائيات ونتائج ختام الدورة ستظهر هنا</p></div></div>
+    <div class="view" id="view-settings"><div class="section-placeholder"><div class="ph-icon">⚙️</div><h3>الإعدادات العامة</h3><p>إعدادات المنصة العامة ستكون هنا</p></div></div>
 
   </div>
 </div>
@@ -921,21 +361,21 @@
   });
 
   const viewMeta = {
-    'home':             { title: 'الرئيسية',               breadcrumb: 'منصة حفّاظ › لوحة المشرف' },
-    'attendance':       { title: 'متابعة الحضور',           breadcrumb: 'التشغيل اليومي › متابعة الحضور' },
-    'recitation':       { title: 'رصد جلسة تسميع',          breadcrumb: 'التشغيل اليومي › رصد جلسة تسميع' },
-    'add-student':      { title: 'إضافة طالب',              breadcrumb: 'الطلاب › إضافة طالب' },
-    'student-files':    { title: 'ملفات الطلاب',            breadcrumb: 'الطلاب › ملفات الطلاب' },
-    'top-students':     { title: 'قائمة المتميزين',          breadcrumb: 'الطلاب › قائمة المتميزين' },
-    'exams':            { title: 'الاختبارات المرحلية',      breadcrumb: 'الطلاب › الاختبارات المرحلية' },
-    'import-students':  { title: 'استيراد طلاب',            breadcrumb: 'الطلاب › استيراد طلاب (Excel)' },
-    'import-plans':     { title: 'استيراد خطط',             breadcrumb: 'الطلاب › استيراد خطط' },
-    'add-teacher':      { title: 'إضافة معلم',              breadcrumb: 'المعلمون › إضافة معلم' },
-    'teacher-files':    { title: 'ملفات المعلمين',           breadcrumb: 'المعلمون › ملفات المعلمين' },
-    'import-teachers':  { title: 'استيراد معلمين',          breadcrumb: 'المعلمون › استيراد معلمين (Excel)' },
-    'course-days':      { title: 'أيام الدورة',              breadcrumb: 'الإعدادات › أيام الدورة' },
-    'graduation':       { title: 'لوحة ختام الدورة',        breadcrumb: 'الإعدادات › لوحة ختام الدورة' },
-    'settings':         { title: 'الإعدادات العامة',         breadcrumb: 'الإعدادات › الإعدادات العامة' },
+    'home':            { title: 'الرئيسية',              breadcrumb: 'منصة حفّاظ › لوحة المشرف' },
+    'attendance':      { title: 'متابعة الحضور',          breadcrumb: 'التشغيل اليومي › متابعة الحضور' },
+    'recitation':      { title: 'رصد جلسة تسميع',         breadcrumb: 'التشغيل اليومي › رصد جلسة تسميع' },
+    'add-student':     { title: 'إضافة طالب',             breadcrumb: 'الطلاب › إضافة طالب' },
+    'student-files':   { title: 'ملفات الطلاب',           breadcrumb: 'الطلاب › ملفات الطلاب' },
+    'top-students':    { title: 'قائمة المتميزين',         breadcrumb: 'الطلاب › قائمة المتميزين' },
+    'exams':           { title: 'الاختبارات المرحلية',     breadcrumb: 'الطلاب › الاختبارات المرحلية' },
+    'import-students': { title: 'استيراد طلاب',           breadcrumb: 'الطلاب › استيراد طلاب (Excel)' },
+    'import-plans':    { title: 'استيراد خطط',            breadcrumb: 'الطلاب › استيراد خطط' },
+    'add-teacher':     { title: 'إضافة معلم',             breadcrumb: 'المعلمون › إضافة معلم' },
+    'teacher-files':   { title: 'ملفات المعلمين',          breadcrumb: 'المعلمون › ملفات المعلمين' },
+    'import-teachers': { title: 'استيراد معلمين',         breadcrumb: 'المعلمون › استيراد معلمين (Excel)' },
+    'course-days':     { title: 'أيام الدورة',             breadcrumb: 'الإعدادات › أيام الدورة' },
+    'graduation':      { title: 'لوحة ختام الدورة',       breadcrumb: 'الإعدادات › لوحة ختام الدورة' },
+    'settings':        { title: 'الإعدادات العامة',        breadcrumb: 'الإعدادات › الإعدادات العامة' },
   };
 
   function showView(id) {
@@ -957,24 +397,22 @@
 
   function setDate() {
     const d = new Date();
-    const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById('statDate').textContent = d.toLocaleDateString('ar-SA', opts);
+    document.getElementById('statDate').textContent = d.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   }
 
   async function loadStats() {
-    const [studentsRes, teachersRes, sessionsRes] = await Promise.all([
+    const [s, t, r] = await Promise.all([
       client.from('students').select('id', { count: 'exact', head: true }),
       client.from('teachers').select('id', { count: 'exact', head: true }),
       client.from('recitation_sessions').select('id', { count: 'exact', head: true })
         .gte('session_date', new Date().toISOString().split('T')[0])
         .lt('session_date', new Date(Date.now() + 86400000).toISOString().split('T')[0])
     ]);
-    document.getElementById('statStudents').textContent = studentsRes.count ?? '—';
-    document.getElementById('statTeachers').textContent = teachersRes.count ?? '—';
-    document.getElementById('statSessions').textContent = sessionsRes.count ?? '—';
+    document.getElementById('statStudents').textContent = s.count ?? '—';
+    document.getElementById('statTeachers').textContent = t.count ?? '—';
+    document.getElementById('statSessions').textContent = r.count ?? '—';
   }
 
-  // Toast helper
   function showToast(msg, type = 'success') {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -982,27 +420,24 @@
     setTimeout(() => { t.className = ''; }, 3500);
   }
 
-  // Reset teacher form
   function resetForm() {
     document.getElementById('teacherForm').reset();
   }
 
-  // Submit teacher
   async function submitTeacher(e) {
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
     btn.textContent = 'جارٍ الحفظ…';
 
-    const name       = document.getElementById('tf-name').value.trim();
-    const username   = document.getElementById('tf-username').value.trim();
-    const password   = document.getElementById('tf-password').value;
-    const phone      = document.getElementById('tf-phone').value.trim();
+    const name        = document.getElementById('tf-name').value.trim();
+    const username    = document.getElementById('tf-username').value.trim();
+    const password    = document.getElementById('tf-password').value;
+    const phone       = document.getElementById('tf-phone').value.trim();
     const maxStudents = parseInt(document.getElementById('tf-maxstudents').value) || 10;
-
-    const days = [...document.querySelectorAll('input[name="days"]:checked')].map(c => c.value);
-    const periodEl = document.querySelector('input[name="period"]:checked');
-    const period = periodEl ? periodEl.value : null;
+    const days        = [...document.querySelectorAll('input[name="days"]:checked')].map(c => c.value);
+    const periodEl    = document.querySelector('input[name="period"]:checked');
+    const period      = periodEl ? periodEl.value : null;
 
     try {
       const { data: { session } } = await client.auth.getSession();
@@ -1011,13 +446,11 @@
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
-          'apikey': '${SUPABASE_ANON_KEY}',
+          'apikey': SUPABASE_ANON_KEY,
         },
         body: JSON.stringify({ name, username, password, phone, days, period, max_students: maxStudents }),
       });
-
       const result = await resp.json();
-
       if (!resp.ok || result.error) {
         showToast('خطأ: ' + (result.error || resp.statusText), 'error');
       } else {
