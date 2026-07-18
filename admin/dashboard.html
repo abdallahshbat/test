@@ -7,39 +7,681 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { min-height: 100vh; background: linear-gradient(135deg, #1a3c2e 0%, #0f2318 100%); font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .card { background: #fff; border-radius: 20px; padding: 48px 40px; width: 100%; max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.35); text-align: center; }
-    .badge { display: inline-block; background: #1a3c2e; color: #fff; font-size: 0.8rem; font-weight: 700; padding: 4px 14px; border-radius: 20px; margin-bottom: 20px; letter-spacing: 1px; }
-    h1 { font-size: 1.8rem; color: #1a3c2e; margin-bottom: 8px; }
-    .username { color: #6b7280; font-size: 1rem; margin-bottom: 36px; }
-    .username span { font-weight: 700; color: #1a3c2e; }
-    .btn-logout { padding: 12px 32px; background: #dc2626; color: #fff; font-size: 0.95rem; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; transition: background 0.2s; font-family: inherit; }
-    .btn-logout:hover { background: #b91c1c; }
+
+    :root {
+      --sidebar-w: 260px;
+      --sidebar-bg: #1a3c2e;
+      --sidebar-hover: #245c44;
+      --sidebar-active: #2d7a57;
+      --accent: #2d7a57;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --border: #e5e7eb;
+      --danger: #dc2626;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ===== SIDEBAR ===== */
+    #sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .sidebar-logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+
+    .sidebar-role {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.5);
+      margin-top: 2px;
+    }
+
+    .sidebar-user {
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .user-name {
+      font-size: 0.88rem;
+      color: #fff;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nav-section {
+      padding: 12px 0 4px;
+    }
+
+    .nav-section-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 1px;
+      padding: 0 20px 6px;
+      text-transform: uppercase;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      color: rgba(255,255,255,0.75);
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      border-right: 3px solid transparent;
+      user-select: none;
+    }
+
+    .nav-item:hover {
+      background: var(--sidebar-hover);
+      color: #fff;
+    }
+
+    .nav-item.active {
+      background: var(--sidebar-active);
+      color: #fff;
+      border-right-color: #7eddb0;
+    }
+
+    .nav-icon {
+      font-size: 1rem;
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .btn-logout {
+      width: 100%;
+      padding: 10px;
+      background: rgba(220,38,38,0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(220,38,38,0.3);
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-logout:hover {
+      background: rgba(220,38,38,0.3);
+      color: #fff;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    #main {
+      margin-right: var(--sidebar-w);
+      flex: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .topbar-breadcrumb {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .content-area {
+      padding: 28px;
+      flex: 1;
+    }
+
+    /* ===== HOME STATS ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 22px 24px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .stat-icon.green  { background: #d1fae5; }
+    .stat-icon.blue   { background: #dbeafe; }
+    .stat-icon.amber  { background: #fef3c7; }
+    .stat-icon.purple { background: #ede9fe; }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .welcome-card {
+      background: linear-gradient(135deg, #1a3c2e 0%, #2d7a57 100%);
+      border-radius: 16px;
+      padding: 28px 32px;
+      color: #fff;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .welcome-text h2 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .welcome-text p {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .welcome-emoji {
+      font-size: 3rem;
+    }
+
+    /* ===== PLACEHOLDER SECTIONS ===== */
+    .section-placeholder {
+      background: var(--card-bg);
+      border-radius: 14px;
+      border: 2px dashed var(--border);
+      padding: 60px 40px;
+      text-align: center;
+    }
+
+    .section-placeholder .ph-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+    }
+
+    .section-placeholder h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .section-placeholder p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    /* ===== VIEWS ===== */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ===== LOADING ===== */
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .loader {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e5e7eb;
+      border-top-color: #1a3c2e;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
   </style>
 </head>
 <body>
-<div class="card">
-  <div class="badge">مشرف</div>
-  <h1>أهلاً بك يا مشرف</h1>
-  <p class="username">مرحباً، <span id="displayName">...</span></p>
-  <button class="btn-logout" onclick="logout()">تسجيل الخروج</button>
+
+<!-- Loading Screen -->
+<div id="loading-screen">
+  <div class="loader"></div>
+  <div class="loading-text">جارٍ التحقق من الجلسة…</div>
 </div>
+
+<!-- Sidebar -->
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">منصة حفّاظ</div>
+    <div class="sidebar-role">لوحة المشرف</div>
+  </div>
+
+  <div class="sidebar-user">
+    <div class="user-avatar" id="avatarLetter">م</div>
+    <div class="user-name" id="sidebarName">…</div>
+  </div>
+
+  <!-- ١. التشغيل اليومي -->
+  <div class="nav-section">
+    <div class="nav-section-title">التشغيل اليومي</div>
+    <div class="nav-item active" onclick="showView('home')">
+      <span class="nav-icon">🏠</span> الرئيسية
+    </div>
+    <div class="nav-item" onclick="showView('attendance')">
+      <span class="nav-icon">📊</span> متابعة الحضور
+    </div>
+    <div class="nav-item" onclick="showView('recitation')">
+      <span class="nav-icon">🎙️</span> رصد جلسة تسميع
+    </div>
+  </div>
+
+  <!-- ٢. الطلاب -->
+  <div class="nav-section">
+    <div class="nav-section-title">الطلاب</div>
+    <div class="nav-item" onclick="showView('add-student')">
+      <span class="nav-icon">➕</span> إضافة طالب
+    </div>
+    <div class="nav-item" onclick="showView('student-files')">
+      <span class="nav-icon">📁</span> ملفات الطلاب
+    </div>
+    <div class="nav-item" onclick="showView('top-students')">
+      <span class="nav-icon">🏆</span> قائمة المتميزين
+    </div>
+    <div class="nav-item" onclick="showView('exams')">
+      <span class="nav-icon">📝</span> الاختبارات المرحلية
+    </div>
+    <div class="nav-item" onclick="showView('import-students')">
+      <span class="nav-icon">📥</span> استيراد طلاب (Excel)
+    </div>
+    <div class="nav-item" onclick="showView('import-plans')">
+      <span class="nav-icon">📋</span> استيراد خطط
+    </div>
+  </div>
+
+  <!-- ٣. المعلمون -->
+  <div class="nav-section">
+    <div class="nav-section-title">المعلمون</div>
+    <div class="nav-item" onclick="showView('add-teacher')">
+      <span class="nav-icon">➕</span> إضافة معلم
+    </div>
+    <div class="nav-item" onclick="showView('teacher-files')">
+      <span class="nav-icon">📁</span> ملفات المعلمين
+    </div>
+    <div class="nav-item" onclick="showView('import-teachers')">
+      <span class="nav-icon">📥</span> استيراد معلمين (Excel)
+    </div>
+  </div>
+
+  <!-- ٤. الإعدادات -->
+  <div class="nav-section">
+    <div class="nav-section-title">الإعدادات</div>
+    <div class="nav-item" onclick="showView('course-days')">
+      <span class="nav-icon">📅</span> أيام الدورة
+    </div>
+    <div class="nav-item" onclick="showView('graduation')">
+      <span class="nav-icon">🎓</span> لوحة ختام الدورة
+    </div>
+    <div class="nav-item" onclick="showView('settings')">
+      <span class="nav-icon">⚙️</span> الإعدادات العامة
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <button class="btn-logout" onclick="logout()">تسجيل الخروج</button>
+  </div>
+</nav>
+
+<!-- Main -->
+<div id="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="topbarTitle">الرئيسية</div>
+      <div class="topbar-breadcrumb" id="topbarBreadcrumb">منصة حفّاظ › لوحة المشرف</div>
+    </div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- HOME -->
+    <div class="view active" id="view-home">
+      <div class="welcome-card">
+        <div class="welcome-text">
+          <h2>أهلاً بك، <span id="welcomeName">…</span></h2>
+          <p>لوحة تحكم منصة حفّاظ — نظرة عامة على اليوم</p>
+        </div>
+        <div class="welcome-emoji">🕌</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon green">👨‍🎓</div>
+          <div>
+            <div class="stat-value" id="statStudents">—</div>
+            <div class="stat-label">إجمالي الطلاب</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue">👨‍🏫</div>
+          <div>
+            <div class="stat-value" id="statTeachers">—</div>
+            <div class="stat-label">إجمالي المعلمين</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon amber">🎙️</div>
+          <div>
+            <div class="stat-value" id="statSessions">—</div>
+            <div class="stat-label">جلسات اليوم</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">📅</div>
+          <div>
+            <div class="stat-value" id="statDate">—</div>
+            <div class="stat-label">تاريخ اليوم</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div class="view" id="view-attendance">
+      <div class="section-placeholder">
+        <div class="ph-icon">📊</div>
+        <h3>متابعة الحضور</h3>
+        <p>سيتم عرض نسبة حضور الطلاب والمعلمين هنا</p>
+      </div>
+    </div>
+
+    <!-- RECITATION -->
+    <div class="view" id="view-recitation">
+      <div class="section-placeholder">
+        <div class="ph-icon">🎙️</div>
+        <h3>رصد جلسة تسميع</h3>
+        <p>سيتم عرض جلسات التسميع النشطة وتفاصيلها هنا</p>
+      </div>
+    </div>
+
+    <!-- ADD STUDENT -->
+    <div class="view" id="view-add-student">
+      <div class="section-placeholder">
+        <div class="ph-icon">➕</div>
+        <h3>إضافة طالب</h3>
+        <p>نموذج إضافة طالب جديد سيكون هنا</p>
+      </div>
+    </div>
+
+    <!-- STUDENT FILES -->
+    <div class="view" id="view-student-files">
+      <div class="section-placeholder">
+        <div class="ph-icon">📁</div>
+        <h3>ملفات الطلاب</h3>
+        <p>قائمة الطلاب المسجلين وملفاتهم الكاملة ستظهر هنا</p>
+      </div>
+    </div>
+
+    <!-- TOP STUDENTS -->
+    <div class="view" id="view-top-students">
+      <div class="section-placeholder">
+        <div class="ph-icon">🏆</div>
+        <h3>قائمة المتميزين</h3>
+        <p>أفضل الطلاب أداءً وحفظاً سيظهرون هنا</p>
+      </div>
+    </div>
+
+    <!-- EXAMS -->
+    <div class="view" id="view-exams">
+      <div class="section-placeholder">
+        <div class="ph-icon">📝</div>
+        <h3>الاختبارات المرحلية</h3>
+        <p>جدول الاختبارات ونتائجها ستظهر هنا</p>
+      </div>
+    </div>
+
+    <!-- IMPORT STUDENTS -->
+    <div class="view" id="view-import-students">
+      <div class="section-placeholder">
+        <div class="ph-icon">📥</div>
+        <h3>استيراد طلاب (Excel)</h3>
+        <p>رفع ملف Excel لاستيراد بيانات الطلاب دفعة واحدة</p>
+      </div>
+    </div>
+
+    <!-- IMPORT PLANS -->
+    <div class="view" id="view-import-plans">
+      <div class="section-placeholder">
+        <div class="ph-icon">📋</div>
+        <h3>استيراد خطط</h3>
+        <p>رفع خطط الحفظ وتوزيعها على الطلاب</p>
+      </div>
+    </div>
+
+    <!-- ADD TEACHER -->
+    <div class="view" id="view-add-teacher">
+      <div class="section-placeholder">
+        <div class="ph-icon">➕</div>
+        <h3>إضافة معلم</h3>
+        <p>نموذج إضافة معلم جديد سيكون هنا</p>
+      </div>
+    </div>
+
+    <!-- TEACHER FILES -->
+    <div class="view" id="view-teacher-files">
+      <div class="section-placeholder">
+        <div class="ph-icon">📁</div>
+        <h3>ملفات المعلمين</h3>
+        <p>قائمة المعلمين المسجلين وملفاتهم ستظهر هنا</p>
+      </div>
+    </div>
+
+    <!-- IMPORT TEACHERS -->
+    <div class="view" id="view-import-teachers">
+      <div class="section-placeholder">
+        <div class="ph-icon">📥</div>
+        <h3>استيراد معلمين (Excel)</h3>
+        <p>رفع ملف Excel لاستيراد بيانات المعلمين دفعة واحدة</p>
+      </div>
+    </div>
+
+    <!-- COURSE DAYS -->
+    <div class="view" id="view-course-days">
+      <div class="section-placeholder">
+        <div class="ph-icon">📅</div>
+        <h3>أيام الدورة</h3>
+        <p>ضبط أيام الدورة وجدولها الزمني</p>
+      </div>
+    </div>
+
+    <!-- GRADUATION -->
+    <div class="view" id="view-graduation">
+      <div class="section-placeholder">
+        <div class="ph-icon">🎓</div>
+        <h3>لوحة ختام الدورة</h3>
+        <p>إحصائيات ونتائج ختام الدورة ستظهر هنا</p>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="view" id="view-settings">
+      <div class="section-placeholder">
+        <div class="ph-icon">⚙️</div>
+        <h3>الإعدادات العامة</h3>
+        <p>إعدادات المنصة العامة ستكون هنا</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <script>
   const SUPABASE_URL = 'https://aeonokdakdvqgiisfhwv.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlb25va2Rha2R2cWdpaXNmaHd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzMDQ1MDUsImV4cCI6MjA5OTg4MDUwNX0.g1mtt9GZRod2V_Fbe1qXQhv7Hf_LVfx-IvItth9PCgI';
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { persistSession: true, storageKey: 'huffaz-auth', storage: window.sessionStorage, autoRefreshToken: true, detectSessionInUrl: false }
   });
-  (async () => {
-    const { data: { session } } = await client.auth.getSession();
-    if (!session) { window.location.href = '../login.html'; return; }
-    if (session.user.user_metadata?.role !== 'admin') { window.location.href = '../login.html'; return; }
-    document.getElementById('displayName').textContent = session.user.user_metadata?.name || session.user.email;
-  })();
+
+  const viewMeta = {
+    'home':             { title: 'الرئيسية',               breadcrumb: 'منصة حفّاظ › لوحة المشرف' },
+    'attendance':       { title: 'متابعة الحضور',           breadcrumb: 'التشغيل اليومي › متابعة الحضور' },
+    'recitation':       { title: 'رصد جلسة تسميع',          breadcrumb: 'التشغيل اليومي › رصد جلسة تسميع' },
+    'add-student':      { title: 'إضافة طالب',              breadcrumb: 'الطلاب › إضافة طالب' },
+    'student-files':    { title: 'ملفات الطلاب',            breadcrumb: 'الطلاب › ملفات الطلاب' },
+    'top-students':     { title: 'قائمة المتميزين',          breadcrumb: 'الطلاب › قائمة المتميزين' },
+    'exams':            { title: 'الاختبارات المرحلية',      breadcrumb: 'الطلاب › الاختبارات المرحلية' },
+    'import-students':  { title: 'استيراد طلاب',            breadcrumb: 'الطلاب › استيراد طلاب (Excel)' },
+    'import-plans':     { title: 'استيراد خطط',             breadcrumb: 'الطلاب › استيراد خطط' },
+    'add-teacher':      { title: 'إضافة معلم',              breadcrumb: 'المعلمون › إضافة معلم' },
+    'teacher-files':    { title: 'ملفات المعلمين',           breadcrumb: 'المعلمون › ملفات المعلمين' },
+    'import-teachers':  { title: 'استيراد معلمين',          breadcrumb: 'المعلمون › استيراد معلمين (Excel)' },
+    'course-days':      { title: 'أيام الدورة',              breadcrumb: 'الإعدادات › أيام الدورة' },
+    'graduation':       { title: 'لوحة ختام الدورة',        breadcrumb: 'الإعدادات › لوحة ختام الدورة' },
+    'settings':         { title: 'الإعدادات العامة',         breadcrumb: 'الإعدادات › الإعدادات العامة' },
+  };
+
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const view = document.getElementById('view-' + id);
+    if (view) view.classList.add('active');
+    const clicked = [...document.querySelectorAll('.nav-item')].find(n => n.getAttribute('onclick')?.includes(`'${id}'`));
+    if (clicked) clicked.classList.add('active');
+    const meta = viewMeta[id] || { title: id, breadcrumb: '' };
+    document.getElementById('topbarTitle').textContent = meta.title;
+    document.getElementById('topbarBreadcrumb').textContent = meta.breadcrumb;
+  }
+
   async function logout() {
     await client.auth.signOut();
     window.location.href = '../login.html';
   }
+
+  function setDate() {
+    const d = new Date();
+    const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('statDate').textContent = d.toLocaleDateString('ar-SA', opts);
+  }
+
+  async function loadStats() {
+    const [studentsRes, teachersRes, sessionsRes] = await Promise.all([
+      client.from('students').select('id', { count: 'exact', head: true }),
+      client.from('teachers').select('id', { count: 'exact', head: true }),
+      client.from('recitation_sessions').select('id', { count: 'exact', head: true })
+        .gte('session_date', new Date().toISOString().split('T')[0])
+        .lt('session_date', new Date(Date.now() + 86400000).toISOString().split('T')[0])
+    ]);
+    document.getElementById('statStudents').textContent = studentsRes.count ?? '—';
+    document.getElementById('statTeachers').textContent = teachersRes.count ?? '—';
+    document.getElementById('statSessions').textContent = sessionsRes.count ?? '—';
+  }
+
+  (async () => {
+    const { data: { session } } = await client.auth.getSession();
+    if (!session || session.user.user_metadata?.role !== 'admin') {
+      window.location.href = '../login.html';
+      return;
+    }
+    const name = session.user.user_metadata?.name || session.user.email;
+    document.getElementById('sidebarName').textContent = name;
+    document.getElementById('welcomeName').textContent = name;
+    document.getElementById('avatarLetter').textContent = name.charAt(0);
+    setDate();
+    await loadStats();
+    document.getElementById('loading-screen').style.display = 'none';
+  })();
 </script>
 </body>
 </html>
