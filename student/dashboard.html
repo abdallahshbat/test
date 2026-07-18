@@ -12,6 +12,8 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f5f0eb;color:#1a202c;m
 .topbar{position:fixed;top:0;right:0;left:0;height:56px;background:var(--primary);color:#fff;display:flex;align-items:center;padding:0 16px;z-index:100;gap:10px}
 .topbar .logo{font-size:1.1rem;font-weight:800;flex:1}
 .topbar .student-name{font-size:.8rem;opacity:.8;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topbar .profile-btn{color:#fff;text-decoration:none;font-size:1.25rem;line-height:1;padding:4px 6px;border-radius:8px;background:rgba(255,255,255,.12);transition:background .2s}
+.topbar .profile-btn:hover{background:rgba(255,255,255,.25)}
 .bottom-nav{position:fixed;bottom:0;right:0;left:0;height:62px;background:#fff;border-top:1px solid var(--border);display:flex;z-index:100}
 .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;cursor:pointer;color:var(--muted);font-family:inherit;font-size:.65rem;padding:6px 4px}
 .nav-btn.active{color:var(--primary)}
@@ -100,6 +102,7 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f5f0eb;color:#1a202c;m
 <div class="topbar">
   <span class="logo">حفّاظ</span>
   <span class="student-name" id="studentNameTop">…</span>
+  <a href="../profile.html" class="profile-btn" title="الملف الشخصي">👤</a>
 </div>
 
 <nav class="bottom-nav">
