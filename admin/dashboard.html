@@ -333,6 +333,232 @@
       font-size: 0.9rem;
       color: var(--text-muted);
     }
+
+    /* ===== FORM CARD ===== */
+    .form-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      max-width: 680px;
+    }
+
+    .form-card-header {
+      padding: 22px 28px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .form-card-header .icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: #d1fae5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .form-card-header h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .form-card-header p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .form-body {
+      padding: 26px 28px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .form-group .hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--text-main);
+      background: #fff;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(45,122,87,0.1);
+    }
+
+    /* Days checkboxes */
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .day-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      user-select: none;
+      transition: all 0.15s;
+    }
+
+    .day-chip input { display: none; }
+
+    .day-chip:has(input:checked) {
+      border-color: var(--accent);
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    /* Period radios */
+    .period-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .period-option {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      user-select: none;
+      transition: all 0.15s;
+    }
+
+    .period-option input { display: none; }
+
+    .period-option:has(input:checked) {
+      border-color: var(--accent);
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .period-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      flex-shrink: 0;
+    }
+
+    .period-option:has(input:checked) .period-dot {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* Submit */
+    .form-footer {
+      padding: 18px 28px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-submit {
+      padding: 10px 28px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s, opacity 0.2s;
+    }
+
+    .btn-submit:hover:not(:disabled) { background: #245c44; }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-reset {
+      padding: 10px 20px;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-reset:hover { border-color: #9ca3af; color: var(--text-main); }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1f2937;
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 999;
+      white-space: nowrap;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    #toast.success { background: #065f46; }
+    #toast.error   { background: #991b1b; }
   </style>
 </head>
 <body>
@@ -342,6 +568,9 @@
   <div class="loader"></div>
   <div class="loading-text">جارٍ التحقق من الجلسة…</div>
 </div>
+
+<!-- Toast -->
+<div id="toast"></div>
 
 <!-- Sidebar -->
 <nav id="sidebar">
@@ -552,10 +781,87 @@
 
     <!-- ADD TEACHER -->
     <div class="view" id="view-add-teacher">
-      <div class="section-placeholder">
-        <div class="ph-icon">➕</div>
-        <h3>إضافة معلم</h3>
-        <p>نموذج إضافة معلم جديد سيكون هنا</p>
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="icon">👨‍🏫</div>
+          <div>
+            <h2>إضافة معلم جديد</h2>
+            <p>سيُنشأ حساب تلقائياً بصيغة اسم_المستخدم@huffaz.com</p>
+          </div>
+        </div>
+
+        <form id="teacherForm" onsubmit="submitTeacher(event)">
+          <div class="form-body">
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>الاسم الكامل *</label>
+                <input type="text" id="tf-name" class="form-control" placeholder="مثال: أحمد محمد العتيبي" required />
+              </div>
+              <div class="form-group">
+                <label>اسم المستخدم *</label>
+                <span class="hint">سيُستخدم للدخول — يُفضَّل بالحروف العربية أو الإنجليزية بلا مسافات</span>
+                <input type="text" id="tf-username" class="form-control" placeholder="مثال: أحمد_عتيبي" required />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>كلمة المرور *</label>
+                <input type="password" id="tf-password" class="form-control" placeholder="8 أحرف على الأقل" minlength="6" required />
+              </div>
+              <div class="form-group">
+                <label>رقم الجوال</label>
+                <input type="tel" id="tf-phone" class="form-control" placeholder="05xxxxxxxx" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>أيام التسميع</label>
+              <div class="days-grid">
+                <label class="day-chip"><input type="checkbox" name="days" value="الأحد" /> الأحد</label>
+                <label class="day-chip"><input type="checkbox" name="days" value="الاثنين" /> الاثنين</label>
+                <label class="day-chip"><input type="checkbox" name="days" value="الثلاثاء" /> الثلاثاء</label>
+                <label class="day-chip"><input type="checkbox" name="days" value="الأربعاء" /> الأربعاء</label>
+                <label class="day-chip"><input type="checkbox" name="days" value="الخميس" /> الخميس</label>
+                <label class="day-chip"><input type="checkbox" name="days" value="الجمعة" /> الجمعة</label>
+                <label class="day-chip"><input type="checkbox" name="days" value="السبت" /> السبت</label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>الفترة</label>
+              <div class="period-group">
+                <label class="period-option">
+                  <input type="radio" name="period" value="صباحي" />
+                  <span class="period-dot"></span>
+                  صباحي (8 – 12)
+                </label>
+                <label class="period-option">
+                  <input type="radio" name="period" value="مسائي" />
+                  <span class="period-dot"></span>
+                  مسائي (5 – 9)
+                </label>
+                <label class="period-option">
+                  <input type="radio" name="period" value="الفترتان" />
+                  <span class="period-dot"></span>
+                  الفترتان
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group" style="max-width: 200px">
+              <label>الحد الأقصى للطلاب</label>
+              <input type="number" id="tf-maxstudents" class="form-control" value="10" min="1" max="100" />
+            </div>
+
+          </div>
+
+          <div class="form-footer">
+            <button type="submit" class="btn-submit" id="submitBtn">حفظ المعلم</button>
+            <button type="button" class="btn-reset" onclick="resetForm()">مسح الحقول</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -666,6 +972,65 @@
     document.getElementById('statStudents').textContent = studentsRes.count ?? '—';
     document.getElementById('statTeachers').textContent = teachersRes.count ?? '—';
     document.getElementById('statSessions').textContent = sessionsRes.count ?? '—';
+  }
+
+  // Toast helper
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `show ${type}`;
+    setTimeout(() => { t.className = ''; }, 3500);
+  }
+
+  // Reset teacher form
+  function resetForm() {
+    document.getElementById('teacherForm').reset();
+  }
+
+  // Submit teacher
+  async function submitTeacher(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'جارٍ الحفظ…';
+
+    const name       = document.getElementById('tf-name').value.trim();
+    const username   = document.getElementById('tf-username').value.trim();
+    const password   = document.getElementById('tf-password').value;
+    const phone      = document.getElementById('tf-phone').value.trim();
+    const maxStudents = parseInt(document.getElementById('tf-maxstudents').value) || 10;
+
+    const days = [...document.querySelectorAll('input[name="days"]:checked')].map(c => c.value);
+    const periodEl = document.querySelector('input[name="period"]:checked');
+    const period = periodEl ? periodEl.value : null;
+
+    try {
+      const { data: { session } } = await client.auth.getSession();
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/create-teacher`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': '${SUPABASE_ANON_KEY}',
+        },
+        body: JSON.stringify({ name, username, password, phone, days, period, max_students: maxStudents }),
+      });
+
+      const result = await resp.json();
+
+      if (!resp.ok || result.error) {
+        showToast('خطأ: ' + (result.error || resp.statusText), 'error');
+      } else {
+        showToast('تم إضافة المعلم بنجاح ✓', 'success');
+        resetForm();
+        loadStats();
+      }
+    } catch (err) {
+      showToast('خطأ في الاتصال: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'حفظ المعلم';
+    }
   }
 
   (async () => {
