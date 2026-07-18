@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة الطالب — منصة حفّاظ</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { min-height: 100vh; background: linear-gradient(135deg, #5f1e1e 0%, #3a0f0f 100%); font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .card { background: #fff; border-radius: 20px; padding: 48px 40px; width: 100%; max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.35); text-align: center; }
+    .badge { display: inline-block; background: #5f1e1e; color: #fff; font-size: 0.8rem; font-weight: 700; padding: 4px 14px; border-radius: 20px; margin-bottom: 20px; letter-spacing: 1px; }
+    h1 { font-size: 1.8rem; color: #5f1e1e; margin-bottom: 8px; }
+    .username { color: #6b7280; font-size: 1rem; margin-bottom: 36px; }
+    .username span { font-weight: 700; color: #5f1e1e; }
+    .btn-logout { padding: 12px 32px; background: #dc2626; color: #fff; font-size: 0.95rem; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; transition: background 0.2s; font-family: inherit; }
+    .btn-logout:hover { background: #b91c1c; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="badge">طالب</div>
+  <h1>أهلاً بك يا طالب</h1>
+  <p class="username">مرحباً، <span id="displayName">...</span></p>
+  <button class="btn-logout" onclick="logout()">تسجيل الخروج</button>
+</div>
+<script>
+  const SUPABASE_URL = 'https://aeonokdakdvqgiisfhwv.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlb25va2Rha2R2cWdpaXNmaHd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzMDQ1MDUsImV4cCI6MjA5OTg4MDUwNX0.g1mtt9GZRod2V_Fbe1qXQhv7Hf_LVfx-IvItth9PCgI';
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: true, storageKey: 'huffaz-auth', storage: window.sessionStorage, autoRefreshToken: true, detectSessionInUrl: false }
+  });
+  (async () => {
+    const { data: { session } } = await client.auth.getSession();
+    if (!session) { window.location.href = '../login.html'; return; }
+    if (session.user.user_metadata?.role !== 'student') { window.location.href = '../login.html'; return; }
+    document.getElementById('displayName').textContent = session.user.user_metadata?.name || session.user.email;
+  })();
+  async function logout() {
+    await client.auth.signOut();
+    window.location.href = '../login.html';
+  }
+</script>
+</body>
+</html>
