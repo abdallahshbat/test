@@ -447,6 +447,123 @@ body,
 .toast.success{background:linear-gradient(135deg,var(--green),var(--green-dark))}
 .toast.error{background:linear-gradient(135deg,var(--red),#C03030)}
 
+/* ── MICRO-ANIMATIONS ─────────────────────────────── */
+
+/* View fade+slide transition */
+@keyframes viewIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.view.active{animation:viewIn .3s cubic-bezier(.22,.68,0,1.2) both}
+
+/* Card entrance stagger */
+@keyframes cardIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.view.active .card:nth-child(1){animation:cardIn .35s .05s cubic-bezier(.22,.68,0,1.1) both}
+.view.active .card:nth-child(2){animation:cardIn .35s .12s cubic-bezier(.22,.68,0,1.1) both}
+.view.active .card:nth-child(3){animation:cardIn .35s .18s cubic-bezier(.22,.68,0,1.1) both}
+.view.active .card:nth-child(4){animation:cardIn .35s .24s cubic-bezier(.22,.68,0,1.1) both}
+.view.active .grad-banner{animation:cardIn .35s .02s cubic-bezier(.22,.68,0,1.1) both}
+.view.active #studyPlanContent{animation:cardIn .3s .05s ease both}
+
+/* Nav button press bounce */
+.nav-btn{transition:color .2s,transform .15s}
+.nav-btn:active{transform:scale(.88)}
+.nav-btn.active svg{animation:navIconPop .3s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes navIconPop{0%{transform:scale(.8)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.nav-btn.active::before{animation:indicatorIn .25s cubic-bezier(.22,.68,0,1.3) both}
+@keyframes indicatorIn{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
+
+/* Checkbox toggle */
+@keyframes checkBounce{0%{transform:scale(1)}30%{transform:scale(.75)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+.sp-checkbox.done,.task-icon-btn.done{animation:checkBounce .35s cubic-bezier(.34,1.56,.64,1)}
+
+/* Stats count-up handled in JS; number pop on load */
+@keyframes numPop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.stat-num{animation:numPop .4s cubic-bezier(.34,1.56,.64,1) both}
+
+/* Honor rows stagger */
+@keyframes rowSlide{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+#honorList .honor-row{opacity:0;animation:rowSlide .3s ease forwards}
+#honorList .honor-row:nth-child(1){animation-delay:.05s}
+#honorList .honor-row:nth-child(2){animation-delay:.1s}
+#honorList .honor-row:nth-child(3){animation-delay:.14s}
+#honorList .honor-row:nth-child(4){animation-delay:.18s}
+#honorList .honor-row:nth-child(5){animation-delay:.21s}
+#honorList .honor-row:nth-child(6){animation-delay:.24s}
+#honorList .honor-row:nth-child(7){animation-delay:.27s}
+#honorList .honor-row:nth-child(8){animation-delay:.3s}
+#honorList .honor-row:nth-child(9){animation-delay:.33s}
+#honorList .honor-row:nth-child(10){animation-delay:.36s}
+
+/* Session rows stagger */
+#sessionsList .session-row{opacity:0;animation:rowSlide .3s ease forwards}
+#sessionsList .session-row:nth-child(1){animation-delay:.05s}
+#sessionsList .session-row:nth-child(2){animation-delay:.1s}
+#sessionsList .session-row:nth-child(3){animation-delay:.15s}
+#sessionsList .session-row:nth-child(4){animation-delay:.2s}
+#sessionsList .session-row:nth-child(5){animation-delay:.25s}
+#sessionsList .session-row:nth-child(n+6){animation-delay:.3s}
+
+/* Exam rows stagger */
+#examsList .exam-row{opacity:0;animation:rowSlide .3s ease forwards}
+#examsList .exam-row:nth-child(1){animation-delay:.05s}
+#examsList .exam-row:nth-child(2){animation-delay:.1s}
+#examsList .exam-row:nth-child(n+3){animation-delay:.15s}
+
+/* Plan day card entrance */
+@keyframes dayCardIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.sp-day-card{animation:dayCardIn .28s ease both}
+.sp-day-card:nth-child(2){animation-delay:.04s}
+.sp-day-card:nth-child(3){animation-delay:.08s}
+.sp-day-card:nth-child(4){animation-delay:.11s}
+.sp-day-card:nth-child(5){animation-delay:.14s}
+.sp-day-card:nth-child(n+6){animation-delay:.16s}
+
+/* Plan day body expand */
+.sp-day-card.sp-open .sp-day-body,.sp-day-card.sp-today .sp-day-body{
+  animation:expandDown .25s cubic-bezier(.22,.68,0,1.1) both;
+}
+@keyframes expandDown{from{opacity:0;transform:scaleY(.9);transform-origin:top}to{opacity:1;transform:scaleY(1)}}
+
+/* SP task rows stagger inside open day */
+.sp-day-body .sp-task-row{opacity:0;animation:rowSlide .22s ease forwards}
+.sp-day-body .sp-task-row:nth-child(1){animation-delay:.04s}
+.sp-day-body .sp-task-row:nth-child(2){animation-delay:.09s}
+.sp-day-body .sp-task-row:nth-child(3){animation-delay:.13s}
+
+/* Button ripple */
+.btn-primary,.btn-green,.btn-whatsapp,.btn-sp-copy{position:relative;overflow:hidden}
+.btn-primary::after,.btn-green::after,.btn-whatsapp::after,.btn-sp-copy::after{
+  content:'';position:absolute;inset:0;background:rgba(255,255,255,.15);
+  border-radius:inherit;opacity:0;transform:scale(0);transition:transform .4s ease,opacity .4s ease;
+}
+.btn-primary:active::after,.btn-green:active::after,.btn-whatsapp:active::after,.btn-sp-copy:active::after{
+  transform:scale(1);opacity:1;transition:0s;
+}
+
+/* Progress bar entrance */
+@keyframes barGrow{from{width:0!important}to{width:var(--target-w)}}
+
+/* Topbar logo entrance */
+@keyframes logoIn{from{opacity:0;letter-spacing:.1em}to{opacity:1;letter-spacing:-.02em}}
+.topbar-logo{animation:logoIn .5s .1s ease both}
+
+/* Theme toggle spin */
+@keyframes spinPop{from{transform:scale(.7) rotate(-90deg)}to{transform:scale(1) rotate(0deg)}}
+.topbar-theme{transition:.2s}
+.topbar-theme.spinning{animation:spinPop .3s cubic-bezier(.34,1.56,.64,1)}
+
+/* Grad banner entrance */
+@keyframes bannerIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.grad-banner{animation:bannerIn .4s .1s cubic-bezier(.22,.68,0,1.1) both}
+
+/* Plan progress bar fill */
+#planProgressBar,#progressBar{transition:width .8s cubic-bezier(.22,.68,0,1.1)}
+
+/* Stat box hover lift */
+.stat-box{transition:background .25s,border-color .25s,transform .15s,box-shadow .15s}
+.stat-box:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+
+/* Toast exit */
+@keyframes toastOut{to{opacity:0;transform:translateY(-6px) scale(.95)}}
+
 /* ── DARK: specific overrides ─────────────────────── */
 [data-theme="dark"] .review-textarea,
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .review-textarea}{
@@ -649,6 +766,8 @@ function toggleTheme() {
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('huffaz-theme', next);
   updateThemeIcon(next);
+  const btn = document.getElementById('themeToggle');
+  if (btn) { btn.classList.remove('spinning'); void btn.offsetWidth; btn.classList.add('spinning'); }
 }
 
 function updateThemeIcon(theme) {
@@ -1011,6 +1130,14 @@ async function loadStats() {
     document.getElementById('progressPct').textContent = pct + '%';
     setTimeout(() => { document.getElementById('progressBar').style.width = pct + '%'; }, 100);
   }
+  // count-up on stat numbers
+  setTimeout(() => {
+    grid.querySelectorAll('.stat-num').forEach(el => {
+      const raw = el.textContent.trim();
+      const num = parseFloat(raw);
+      if (!isNaN(num) && raw !== '—') animateCountUp(el, num, 700);
+    });
+  }, 80);
 }
 
 /* ========== DAILY REVIEW ========== */
@@ -1148,9 +1275,28 @@ function copyToWhatsApp() {
 function showView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('view-' + name).classList.add('active');
+  const view = document.getElementById('view-' + name);
+  view.classList.add('active');
+  // re-trigger entrance animation
+  view.style.animation = 'none';
+  void view.offsetWidth;
+  view.style.animation = '';
   const nb = document.getElementById('nb-' + name);
   if (nb) nb.classList.add('active');
+}
+
+/* ========== COUNT-UP ========== */
+function animateCountUp(el, target, duration) {
+  if (isNaN(target)) return;
+  const start = performance.now();
+  const from = 0;
+  function step(now) {
+    const p = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = target % 1 === 0 ? Math.round(from + (target - from) * ease) : (from + (target - from) * ease).toFixed(2);
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
 }
 
 /* ========== LOGOUT ========== */
@@ -1167,7 +1313,10 @@ function showToast(msg, type) {
   t.className = 'toast ' + (type || 'success');
   t.textContent = msg;
   w.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
+  setTimeout(() => {
+    t.style.animation = 'toastOut .25s ease forwards';
+    setTimeout(() => t.remove(), 250);
+  }, 2800);
 }
 
 init();
