@@ -593,7 +593,7 @@ async function checkStudentDailyReview(studentId) {
     .from('daily_reviews')
     .select('student_submitted, link_from, link_to, review_range_from, review_range_to')
     .eq('student_id', studentId)
-    .eq('review_date', today)
+    .eq('date', today)
     .single();
   if (data?.student_submitted) {
     setReviewLocked(true, data);
@@ -757,23 +757,23 @@ async function submitSession() {
   btn.disabled = false;
   btn.textContent = 'رصد الجلسة';
 
-  // Upsert daily_reviews with teacher_logged=true (only if student hasn't submitted yet)
+  // Upsert daily_reviews (only if student hasn't submitted yet)
   if (!result.error && (linkingFrom || linkingTo || reviewFrom || reviewTo)) {
     const { data: existingDr } = await supabaseClient
       .from('daily_reviews')
       .select('id, student_submitted')
       .eq('student_id', selectedStudent.id)
-      .eq('review_date', today)
+      .eq('date', today)
       .single();
     if (!existingDr?.student_submitted) {
       await supabaseClient.from('daily_reviews').upsert(
-        { student_id: selectedStudent.id, review_date: today,
+        { student_id: selectedStudent.id, date: today,
           link_from: linkingFrom ? String(linkingFrom) : null,
           link_to: linkingTo ? String(linkingTo) : null,
           review_range_from: reviewFrom ? String(reviewFrom) : null,
           review_range_to: reviewTo ? String(reviewTo) : null,
-          teacher_logged: true, student_submitted: false },
-        { onConflict: 'student_id,review_date' }
+          student_submitted: false },
+        { onConflict: 'student_id,date' }
       );
     }
   }

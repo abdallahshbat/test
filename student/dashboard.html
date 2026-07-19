@@ -1271,12 +1271,12 @@ async function loadStats() {
       .eq('student_id', studentData.id)
       .order('date', { ascending: false }),
     client.from('daily_reviews')
-      .select('link_from, link_to, review_range_from, review_range_to, student_submitted, teacher_logged')
+      .select('link_from, link_to, review_range_from, review_range_to, student_submitted')
       .eq('student_id', studentData.id)
   ]);
 
   const arr = sessRes.data || [];
-  const drArr = (drRes.data || []).filter(r => r.student_submitted && !r.teacher_logged);
+  const drArr = (drRes.data || []).filter(r => r.student_submitted);
 
   const cnt       = arr.length;
   const lastH     = arr[0]?.hadith_to || 0;
@@ -1332,16 +1332,15 @@ async function loadStats() {
 async function checkDailyReview() {
   if (!studentData) return;
   const { data } = await client.from('daily_reviews')
-    .select('id, teacher_logged, student_submitted, link_from, link_to, review_range_from, review_range_to')
+    .select('id, student_submitted, link_from, link_to, review_range_from, review_range_to')
     .eq('student_id', studentData.id)
-    .eq('review_date', todayStr)
+    .eq('date', todayStr)
     .single();
 
   const section = document.getElementById('reviewSection');
 
-  if (data && (data.teacher_logged || data.student_submitted)) {
-    /* مقفول — سواء سجّله المعلم أو الطالب */
-    const by = data.teacher_logged ? 'المعلم' : 'أنت';
+  if (data && (data.student_submitted || (data.link_from || data.link_to || data.review_range_from || data.review_range_to))) {
+    const by = data.student_submitted ? 'أنت' : 'المعلم';
     const lf = data.link_from || '—', lt = data.link_to || '—';
     const rf = data.review_range_from || '—', rt = data.review_range_to || '—';
     section.innerHTML = `
@@ -1378,15 +1377,14 @@ async function submitReview() {
   const { error } = await client.from('daily_reviews').upsert(
     {
       student_id: studentData.id,
-      review_date: todayStr,
+      date: todayStr,
       link_from: linkFrom,
       link_to: linkTo,
       review_range_from: reviewFrom,
       review_range_to: reviewTo,
-      student_submitted: true,
-      teacher_logged: false
+      student_submitted: true
     },
-    { onConflict: 'student_id,review_date' }
+    { onConflict: 'student_id,date' }
   );
   btn.disabled = false; btn.textContent = 'اعتماد ورصد اليوم';
   if (error) { showToast('خطأ: ' + error.message, 'error'); return; }
