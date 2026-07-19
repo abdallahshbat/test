@@ -365,11 +365,11 @@ body,
 .daily-fields{display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
 .daily-field-group{background:var(--surface2);border-radius:var(--radius-sm);padding:12px 14px;border:1px solid var(--border)}
 .daily-field-label{font-size:.8rem;font-weight:700;color:var(--text-secondary);margin-bottom:8px}
-.daily-range-row{display:flex;align-items:center;gap:8px}
-.daily-input{flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;font-family:inherit;background:var(--surface);color:var(--text-primary);outline:none;transition:border .2s;text-align:center}
+.daily-range-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px}
+.daily-input{width:100%;padding:9px 8px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;font-family:inherit;background:var(--surface);color:var(--text-primary);outline:none;transition:border .2s;text-align:center;min-width:0}
 .daily-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.1)}
 .daily-input:disabled{background:var(--surface2);color:var(--text-muted);cursor:not-allowed}
-.daily-sep{font-size:.9rem;color:var(--text-muted);font-weight:700;flex-shrink:0}
+.daily-sep{font-size:.9rem;color:var(--text-muted);font-weight:700;text-align:center}
 .daily-locked-msg{background:var(--surface2);border-radius:var(--radius-sm);padding:12px 14px;border:1px solid var(--border);font-size:.82rem;color:var(--text-muted);text-align:center}
 
 /* ── REVIEW ───────────────────────────────────────── */
@@ -696,7 +696,7 @@ body,
 <!-- TOAST -->
 <div class="toast-wrap" id="toastWrap"></div>
 
-<!-- PWA INSTALL BANNER (shown by JS when prompt available) -->
+<!-- PWA INSTALL BANNER (Android/Chrome) -->
 <div class="pwa-banner" id="pwaBanner" style="display:none">
   <span class="pwa-banner-icon">📲</span>
   <div class="pwa-banner-text">
@@ -706,6 +706,18 @@ body,
   <div class="pwa-banner-actions">
     <button class="pwa-install-btn" onclick="pwaInstall()">تثبيت</button>
     <button class="pwa-dismiss-btn" onclick="pwaDismiss()">✕</button>
+  </div>
+</div>
+
+<!-- PWA iOS BANNER (Safari — no beforeinstallprompt) -->
+<div class="pwa-banner" id="pwaBannerIos" style="display:none">
+  <span class="pwa-banner-icon">📲</span>
+  <div class="pwa-banner-text">
+    <div class="pwa-banner-title">أضف التطبيق للشاشة الرئيسية</div>
+    <div class="pwa-banner-sub">اضغط <strong style="color:#C9A84C">□↑</strong> ثم «إضافة إلى الشاشة الرئيسية»</div>
+  </div>
+  <div class="pwa-banner-actions">
+    <button class="pwa-dismiss-btn" onclick="pwaDismissIos()">✕</button>
   </div>
 </div>
 
@@ -1335,7 +1347,7 @@ async function checkDailyReview() {
     .select('id, student_submitted, link_from, link_to, review_range_from, review_range_to')
     .eq('student_id', studentData.id)
     .eq('date', todayStr)
-    .single();
+    .maybeSingle();
 
   const section = document.getElementById('reviewSection');
 
@@ -1422,15 +1434,15 @@ async function loadExams() {
   const { data, error } = await client.from('periodic_exams')
     .select('*')
     .eq('student_id', studentData.id)
-    .order('exam_date', { ascending: false });
+    .order('date', { ascending: false });
   if (error || !data || !data.length) { list.innerHTML = '<div class="empty-state"><span class="empty-icon">📋</span><div class="empty-text">لا توجد اختبارات بعد</div></div>'; return; }
   list.innerHTML = data.map(e => {
     const score = parseFloat(e.score);
     const color = score >= 8.5 ? 'var(--green-dark)' : score >= 7 ? '#92640A' : 'var(--red)';
     return `<div class="exam-row">
       <div>
-        <div class="exam-label">${e.title || e.exam_type || 'اختبار'}</div>
-        <div class="exam-date">${e.exam_date || ''}</div>
+        <div class="exam-label">${e.exam_name || 'اختبار'}</div>
+        <div class="exam-date">${e.date || ''}</div>
       </div>
       <div class="exam-score" style="color:${color}">${isNaN(score) ? '—' : score.toFixed(2)}/10</div>
     </div>`;
@@ -1440,8 +1452,11 @@ async function loadExams() {
 /* ========== HONOR BOARD ========== */
 async function loadHonor() {
   const list = document.getElementById('honorList');
+  /* نجلب متوسط درجات كل طالب عبر SQL مباشرة لنضمن أفضل 10 فقط */
   const { data, error } = await client.from('recitation_sessions')
-    .select('student_id, score, students(users(name))');
+    .select('student_id, score, students(users(name))')
+    .not('score', 'is', null)
+    .limit(2000);
   if (error || !data || !data.length) { list.innerHTML = '<div class="empty-state"><span class="empty-icon">🌟</span><div class="empty-text">لا توجد بيانات بعد</div></div>'; return; }
   const map = {};
   data.forEach(r => {
@@ -1455,6 +1470,7 @@ async function loadHonor() {
     .map(([id, v]) => ({ id, name: v.name, avg: v.scores.reduce((a, b) => a + b, 0) / v.scores.length }))
     .sort((a, b) => b.avg - a.avg)
     .slice(0, 10);
+  if (!ranked.length) { list.innerHTML = '<div class="empty-state"><span class="empty-icon">🌟</span><div class="empty-text">لا توجد بيانات بعد</div></div>'; return; }
   const medals = ['🥇','🥈','🥉'];
   const myStudentId = studentData?.id;
   list.innerHTML = ranked.map((s, i) => {
@@ -1608,6 +1624,24 @@ function pwaDismiss() {
   const b = document.getElementById('pwaBanner');
   if (b) { b.style.animation = 'toastOut .25s ease forwards'; setTimeout(() => b.style.display = 'none', 250); }
 }
+
+function pwaDismissIos() {
+  localStorage.setItem('huffaz-pwa-dismissed', '1');
+  const b = document.getElementById('pwaBannerIos');
+  if (b) { b.style.animation = 'toastOut .25s ease forwards'; setTimeout(() => b.style.display = 'none', 250); }
+}
+
+/* iOS PWA: show manual instructions if not installed and not dismissed */
+(function() {
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isInStandaloneMode = navigator.standalone === true;
+  if (isIos && !isInStandaloneMode && !localStorage.getItem('huffaz-pwa-dismissed')) {
+    setTimeout(() => {
+      const b = document.getElementById('pwaBannerIos');
+      if (b) b.style.display = 'flex';
+    }, 3500);
+  }
+})();
 
 function pwaReload() {
   if (_swReg?.waiting) {
