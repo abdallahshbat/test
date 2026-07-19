@@ -69,11 +69,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--primary)}
 textarea{resize:vertical;min-height:70px}
 
 /* TABS */
-.tab-bar{display:flex;border-bottom:2px solid var(--border);margin-bottom:14px}
-.tab-btn{flex:1;padding:8px;background:none;border:none;font-family:inherit;font-size:.9rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s}
-.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+.tab-bar{display:flex;gap:8px;margin-bottom:12px}
+.tab-btn{padding:8px 16px;border-radius:8px;border:1px solid #e2e8f0;background:#f7fafc;cursor:pointer;font-size:14px;font-family:inherit}
+.tab-btn.active{background:#276749;color:white;border-color:#276749}
 .tab-pane{display:none}
 .tab-pane.active{display:block}
+#studentSelect{width:100%;padding:10px;border-radius:8px;border:1px solid #e2e8f0;font-size:14px;direction:rtl}
 
 /* SEARCH */
 .search-wrap{position:relative}
