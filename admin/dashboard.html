@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>لوحة المشرف — منصة حفّاظ</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -154,18 +155,6 @@
     .form-control { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: inherit; color: var(--text-main); background: #fff; transition: border-color 0.2s; outline: none; }
     .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(45,122,87,0.1); }
 
-    .days-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-    .day-chip { display: flex; align-items: center; gap: 6px; padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); user-select: none; transition: all 0.15s; }
-    .day-chip input { display: none; }
-    .day-chip:has(input:checked) { border-color: var(--accent); background: #d1fae5; color: #065f46; }
-
-    .period-group { display: flex; gap: 10px; }
-    .period-option { flex: 1; display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); user-select: none; transition: all 0.15s; }
-    .period-option input { display: none; }
-    .period-option:has(input:checked) { border-color: var(--accent); background: #d1fae5; color: #065f46; }
-    .period-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; flex-shrink: 0; }
-    .period-option:has(input:checked) .period-dot { background: var(--accent); border-color: var(--accent); }
-
     .form-footer { padding: 18px 28px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
     .btn-submit { padding: 10px 28px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.2s, opacity 0.2s; }
     .btn-submit:hover:not(:disabled) { background: #245c44; }
@@ -199,6 +188,8 @@
     tr:hover td { background: #f9fafb; }
     .btn-view { padding: 5px 14px; background: #d1fae5; color: #065f46; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; }
     .btn-view:hover { background: #a7f3d0; }
+    .btn-danger { padding: 5px 12px; background: #fee2e2; color: #991b1b; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .btn-danger:hover { background: #fca5a5; }
     .empty-row { text-align: center; color: var(--text-muted); padding: 40px; font-size: 0.9rem; }
 
     /* STUDENT DETAIL */
@@ -223,6 +214,52 @@
     .chip-green { background: #d1fae5; color: #065f46; }
     .chip-yellow { background: #fef9c3; color: #92400e; }
     .chip-red { background: #fee2e2; color: #991b1b; }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200; padding: 20px;
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal {
+      background: #fff; border-radius: 16px; width: 100%; max-width: 560px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .modal-header {
+      padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-header h2 { font-size: 1rem; font-weight: 700; }
+    .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-muted); line-height: 1; padding: 2px 6px; border-radius: 6px; }
+    .modal-close:hover { background: #f3f4f6; }
+    .modal-body { padding: 22px 24px; }
+    .modal-footer { padding: 16px 24px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+
+    /* STUDY PLANS */
+    .plans-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .plans-header h2 { font-size: 1.05rem; font-weight: 700; }
+    .btn-add { padding: 9px 20px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .btn-add:hover { background: #245c44; }
+    .plans-table-wrap { background: var(--card-bg); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; }
+
+    .plan-days-wrap { background: var(--card-bg); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; margin-top: 20px; }
+    .plan-days-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .plan-days-header h3 { font-size: 0.95rem; font-weight: 700; }
+
+    .file-upload-area {
+      border: 2px dashed var(--border); border-radius: 10px; padding: 24px;
+      text-align: center; cursor: pointer; transition: border-color 0.2s;
+      margin-top: 8px;
+    }
+    .file-upload-area:hover { border-color: var(--accent); }
+    .file-upload-area input { display: none; }
+    .file-upload-icon { font-size: 2rem; margin-bottom: 8px; }
+    .file-upload-text { font-size: 0.85rem; color: var(--text-muted); }
+    .file-name-display { font-size: 0.82rem; color: var(--accent); font-weight: 600; margin-top: 6px; }
+
+    select.form-control { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%236b7280'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 10px center; }
   </style>
 </head>
 <body>
@@ -233,6 +270,62 @@
 </div>
 
 <div id="toast"></div>
+
+<!-- MODAL: إضافة خطة -->
+<div class="modal-overlay hidden" id="planModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>إضافة خطة علمية جديدة</h2>
+      <button class="modal-close" onclick="closePlanModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>اسم الخطة *</label>
+        <input type="text" id="pm-name" class="form-control" placeholder="مثال: خطة الأربعين النووية" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>اسم الكتاب *</label>
+          <input type="text" id="pm-book" class="form-control" placeholder="اسم الكتاب" />
+        </div>
+        <div class="form-group">
+          <label>اسم المجلد <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+          <input type="text" id="pm-folder" class="form-control" placeholder="المجلد الأول..." />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>ملف Excel</label>
+        <div class="file-upload-area" onclick="document.getElementById('pm-file').click()">
+          <input type="file" id="pm-file" accept=".xlsx,.xls" onchange="handlePlanFile(this)" />
+          <div class="file-upload-icon">📊</div>
+          <div class="file-upload-text">اضغط لرفع ملف Excel (.xlsx / .xls)</div>
+          <div class="file-name-display" id="pm-filename">لم يُختر ملف</div>
+        </div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">
+          الأعمدة: (1) حفظ من &bull; (2) حفظ إلى &bull; (3) ربط من &bull; (4) ربط إلى &bull; (5) مراجعة من &bull; (6) مراجعة إلى — الصف الأول عناوين تُتجاهل
+        </div>
+      </div>
+      <div id="pm-preview" style="font-size:0.82rem;color:var(--accent);font-weight:600;margin-top:4px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-reset" onclick="closePlanModal()">إلغاء</button>
+      <button class="btn-submit" id="pm-save" onclick="savePlan()">حفظ الخطة</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: استعراض أيام الخطة -->
+<div class="modal-overlay hidden" id="daysModal">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header">
+      <h2 id="daysModalTitle">أيام الخطة</h2>
+      <button class="modal-close" onclick="document.getElementById('daysModal').classList.add('hidden')">×</button>
+    </div>
+    <div class="modal-body" id="daysModalBody">
+      <p style="color:var(--text-muted)">جارٍ التحميل…</p>
+    </div>
+  </div>
+</div>
 
 <nav id="sidebar">
   <div class="sidebar-header">
@@ -258,7 +351,7 @@
     <div class="nav-item" onclick="showView('top-students')"><span class="nav-icon">🏆</span> قائمة المتميزين</div>
     <div class="nav-item" onclick="showView('exams')"><span class="nav-icon">📝</span> الاختبارات المرحلية</div>
     <div class="nav-item" onclick="showView('import-students')"><span class="nav-icon">📥</span> استيراد طلاب (Excel)</div>
-    <div class="nav-item" onclick="showView('import-plans')"><span class="nav-icon">📋</span> استيراد خطط</div>
+    <div class="nav-item" onclick="showView('import-plans');loadStudyPlans()"><span class="nav-icon">📋</span> الخطط العلمية</div>
   </div>
 
   <div class="nav-section">
@@ -334,7 +427,24 @@
     <div class="view" id="view-top-students"><div class="section-placeholder"><div class="ph-icon">🏆</div><h3>قائمة المتميزين</h3><p>أفضل الطلاب أداءً وحفظاً سيظهرون هنا</p></div></div>
     <div class="view" id="view-exams"><div class="section-placeholder"><div class="ph-icon">📝</div><h3>الاختبارات المرحلية</h3><p>جدول الاختبارات ونتائجها ستظهر هنا</p></div></div>
     <div class="view" id="view-import-students"><div class="section-placeholder"><div class="ph-icon">📥</div><h3>استيراد طلاب (Excel)</h3><p>رفع ملف Excel لاستيراد بيانات الطلاب دفعة واحدة</p></div></div>
-    <div class="view" id="view-import-plans"><div class="section-placeholder"><div class="ph-icon">📋</div><h3>استيراد خطط</h3><p>رفع خطط الحفظ وتوزيعها على الطلاب</p></div></div>
+
+    <!-- STUDY PLANS -->
+    <div class="view" id="view-import-plans">
+      <div class="plans-header">
+        <h2>📋 الخطط العلمية</h2>
+        <button class="btn-add" onclick="openPlanModal()">➕ إضافة خطة</button>
+      </div>
+      <div class="plans-table-wrap">
+        <div id="plansTableBody"><p class="empty-row">جارٍ التحميل…</p></div>
+      </div>
+      <div class="plan-days-wrap" id="planDaysSection" style="display:none">
+        <div class="plan-days-header">
+          <h3 id="planDaysTitle">أيام الخطة</h3>
+          <button class="btn-reset" onclick="document.getElementById('planDaysSection').style.display='none'">إغلاق</button>
+        </div>
+        <div id="planDaysBody" style="padding:16px"></div>
+      </div>
+    </div>
 
     <!-- ADD TEACHER FORM -->
     <div class="view" id="view-add-teacher">
@@ -365,13 +475,13 @@
                 <input type="password" id="tf-password" class="form-control" placeholder="6 أحرف على الأقل" minlength="6" required />
               </div>
               <div class="form-group">
-                <label>الإيميل <span style="color:var(--muted);font-weight:400">(اختياري)</span></label>
+                <label>الإيميل <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
                 <input type="email" id="tf-email" class="form-control" placeholder="teacher@example.com" />
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label>رقم الجوال <span style="color:var(--muted);font-weight:400">(اختياري)</span></label>
+                <label>رقم الجوال <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
                 <input type="tel" id="tf-phone" class="form-control" placeholder="05xxxxxxxx" />
               </div>
             </div>
@@ -410,7 +520,7 @@
     'top-students':     { title: 'قائمة المتميزين',         breadcrumb: 'الطلاب › قائمة المتميزين' },
     'exams':            { title: 'الاختبارات المرحلية',     breadcrumb: 'الطلاب › الاختبارات المرحلية' },
     'import-students':  { title: 'استيراد طلاب',           breadcrumb: 'الطلاب › استيراد طلاب (Excel)' },
-    'import-plans':     { title: 'استيراد خطط',            breadcrumb: 'الطلاب › استيراد خطط' },
+    'import-plans':     { title: 'الخطط العلمية',           breadcrumb: 'الطلاب › الخطط العلمية' },
     'add-teacher':      { title: 'إضافة معلم',             breadcrumb: 'المعلمون › إضافة معلم' },
     'teacher-files':    { title: 'ملفات المعلمين',          breadcrumb: 'المعلمون › ملفات المعلمين' },
     'import-teachers':  { title: 'استيراد معلمين',         breadcrumb: 'المعلمون › استيراد معلمين (Excel)' },
@@ -420,6 +530,8 @@
   };
 
   let allStudentsData = [];
+  let allPlans = [];
+  let pendingPlanRows = [];
 
   function showView(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -433,27 +545,34 @@
     document.getElementById('topbarBreadcrumb').textContent = meta.breadcrumb;
   }
 
+  /* ========== STUDENT FILES ========== */
   async function loadStudentFiles() {
     const body = document.getElementById('studentFilesBody');
     body.innerHTML = '<p class="empty-row">جارٍ التحميل…</p>';
 
-    const { data, error } = await client
-      .from('students')
-      .select('id, memorized_hadiths, status, user_id, users(id, name, username, created_at), teachers(users(name))')
-      .order('id', { ascending: false });
+    const [studentsRes, plansRes] = await Promise.all([
+      client.from('students')
+        .select('id, memorized_hadiths, status, current_plan_id, user_id, users(id, name, username, created_at), teachers(users(name))')
+        .order('id', { ascending: false }),
+      client.from('study_plans').select('id, plan_name').order('plan_name')
+    ]);
 
-    if (error || !data || !data.length) {
+    if (studentsRes.error || !studentsRes.data || !studentsRes.data.length) {
       body.innerHTML = '<p class="empty-row">لا يوجد طلاب مسجلون بعد</p>';
       return;
     }
 
-    allStudentsData = data;
-    renderStudentsTable(data);
+    allStudentsData = studentsRes.data;
+    allPlans = plansRes.data || [];
+    renderStudentsTable(studentsRes.data);
   }
 
   function renderStudentsTable(data) {
     const body = document.getElementById('studentFilesBody');
     if (!data.length) { body.innerHTML = '<p class="empty-row">لا توجد نتائج</p>'; return; }
+
+    const planOptions = allPlans.map(p => `<option value="${p.id}">${p.plan_name}</option>`).join('');
+
     body.innerHTML = `
       <table>
         <thead>
@@ -463,6 +582,7 @@
             <th>اسم المستخدم</th>
             <th>المعلم</th>
             <th>الأحاديث المحفوظة</th>
+            <th>الخطة المعيّنة</th>
             <th>الحالة</th>
             <th></th>
           </tr>
@@ -475,6 +595,13 @@
               <td style="color:var(--text-muted)">${s.users?.username || '—'}</td>
               <td>${s.teachers?.users?.name || '—'}</td>
               <td>${s.memorized_hadiths ?? '—'}</td>
+              <td>
+                <select class="form-control" style="min-width:160px;padding:5px 8px;font-size:0.8rem"
+                  onchange="assignPlan('${s.id}', this.value)">
+                  <option value="">— بدون خطة —</option>
+                  ${allPlans.map(p => `<option value="${p.id}" ${s.current_plan_id === p.id ? 'selected' : ''}>${p.plan_name}</option>`).join('')}
+                </select>
+              </td>
               <td><span style="padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;background:${s.status === 'active' ? '#d1fae5' : '#f3f4f6'};color:${s.status === 'active' ? '#065f46' : '#6b7280'}">${s.status === 'active' ? 'نشط' : (s.status || '—')}</span></td>
               <td><button class="btn-view" onclick="openStudentDetail('${s.id}','${(s.users?.id || '')}')">عرض الملف</button></td>
             </tr>
@@ -482,6 +609,14 @@
         </tbody>
       </table>
     `;
+  }
+
+  async function assignPlan(studentId, planId) {
+    const { error } = await client.from('students')
+      .update({ current_plan_id: planId || null })
+      .eq('id', studentId);
+    if (error) { showToast('خطأ في تعيين الخطة', 'error'); return; }
+    showToast('تم تعيين الخطة بنجاح ✓', 'success');
   }
 
   function filterStudentsTable() {
@@ -562,6 +697,163 @@
     `;
   }
 
+  /* ========== STUDY PLANS ========== */
+  async function loadStudyPlans() {
+    const body = document.getElementById('plansTableBody');
+    body.innerHTML = '<p class="empty-row">جارٍ التحميل…</p>';
+
+    const { data, error } = await client.from('study_plans').select('*').order('created_at', { ascending: false });
+    if (error) { body.innerHTML = '<p class="empty-row">خطأ في التحميل</p>'; return; }
+    allPlans = data || [];
+    if (!allPlans.length) { body.innerHTML = '<p class="empty-row">لا توجد خطط بعد — أضف خطة جديدة</p>'; return; }
+
+    const counts = await Promise.all(allPlans.map(p =>
+      client.from('study_plan_days').select('id', { count: 'exact', head: true }).eq('plan_id', p.id)
+    ));
+
+    body.innerHTML = `
+      <table>
+        <thead>
+          <tr><th>اسم الخطة</th><th>الكتاب</th><th>المجلد</th><th>عدد الأيام</th><th>تاريخ الرفع</th><th></th></tr>
+        </thead>
+        <tbody>
+          ${allPlans.map((p, i) => `
+            <tr>
+              <td style="font-weight:600">${p.plan_name}</td>
+              <td>${p.book_name}</td>
+              <td>${p.folder_name || '—'}</td>
+              <td>${counts[i]?.count ?? 0}</td>
+              <td style="color:var(--text-muted)">${new Date(p.created_at).toLocaleDateString('ar-SA')}</td>
+              <td style="display:flex;gap:8px">
+                <button class="btn-view" onclick="viewPlanDays('${p.id}','${p.plan_name}')">استعراض</button>
+                <button class="btn-danger" onclick="deletePlan('${p.id}')">حذف</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  async function viewPlanDays(planId, planName) {
+    const modal = document.getElementById('daysModal');
+    document.getElementById('daysModalTitle').textContent = 'أيام خطة: ' + planName;
+    document.getElementById('daysModalBody').innerHTML = '<p style="color:var(--text-muted)">جارٍ التحميل…</p>';
+    modal.classList.remove('hidden');
+
+    const { data, error } = await client.from('study_plan_days')
+      .select('*').eq('plan_id', planId).order('day_number');
+
+    if (error || !data || !data.length) {
+      document.getElementById('daysModalBody').innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:20px">لا توجد أيام</p>';
+      return;
+    }
+
+    document.getElementById('daysModalBody').innerHTML = `
+      <table>
+        <thead>
+          <tr><th>اليوم</th><th>حفظ من</th><th>حفظ إلى</th><th>ربط من</th><th>ربط إلى</th><th>مراجعة من</th><th>مراجعة إلى</th></tr>
+        </thead>
+        <tbody>
+          ${data.map(d => `
+            <tr>
+              <td style="font-weight:700;color:var(--accent)">${d.day_number}</td>
+              <td>${d.memo_from || '—'}</td>
+              <td>${d.memo_to || '—'}</td>
+              <td>${d.link_from || '—'}</td>
+              <td>${d.link_to || '—'}</td>
+              <td>${d.review_from || '—'}</td>
+              <td>${d.review_to || '—'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  async function deletePlan(planId) {
+    if (!confirm('هل أنت متأكد من حذف هذه الخطة؟ سيتم حذف جميع أيامها أيضاً.')) return;
+    const { error } = await client.from('study_plans').delete().eq('id', planId);
+    if (error) { showToast('خطأ في الحذف: ' + error.message, 'error'); return; }
+    showToast('تم حذف الخطة ✓', 'success');
+    loadStudyPlans();
+  }
+
+  /* ========== PLAN MODAL ========== */
+  function openPlanModal() {
+    document.getElementById('pm-name').value = '';
+    document.getElementById('pm-book').value = '';
+    document.getElementById('pm-folder').value = '';
+    document.getElementById('pm-filename').textContent = 'لم يُختر ملف';
+    document.getElementById('pm-preview').textContent = '';
+    document.getElementById('pm-file').value = '';
+    pendingPlanRows = [];
+    document.getElementById('planModal').classList.remove('hidden');
+  }
+
+  function closePlanModal() {
+    document.getElementById('planModal').classList.add('hidden');
+  }
+
+  function handlePlanFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    document.getElementById('pm-filename').textContent = file.name;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+      pendingPlanRows = [];
+      for (let i = 1; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r || r.length === 0) continue;
+        pendingPlanRows.push({
+          day_number: i,
+          memo_from:   String(r[0] ?? '').trim() || null,
+          memo_to:     String(r[1] ?? '').trim() || null,
+          link_from:   String(r[2] ?? '').trim() || null,
+          link_to:     String(r[3] ?? '').trim() || null,
+          review_from: String(r[4] ?? '').trim() || null,
+          review_to:   String(r[5] ?? '').trim() || null,
+        });
+      }
+      document.getElementById('pm-preview').textContent = `✓ تم قراءة ${pendingPlanRows.length} يوم من الملف`;
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  async function savePlan() {
+    const name   = document.getElementById('pm-name').value.trim();
+    const book   = document.getElementById('pm-book').value.trim();
+    const folder = document.getElementById('pm-folder').value.trim();
+
+    if (!name || !book) { showToast('يرجى إدخال اسم الخطة والكتاب', 'error'); return; }
+
+    const btn = document.getElementById('pm-save');
+    btn.disabled = true; btn.textContent = 'جارٍ الحفظ…';
+
+    const { data: plan, error: planErr } = await client.from('study_plans')
+      .insert({ plan_name: name, book_name: book, folder_name: folder || null })
+      .select().single();
+
+    if (planErr) { showToast('خطأ: ' + planErr.message, 'error'); btn.disabled = false; btn.textContent = 'حفظ الخطة'; return; }
+
+    if (pendingPlanRows.length > 0) {
+      const rows = pendingPlanRows.map(r => ({ ...r, plan_id: plan.id }));
+      const { error: daysErr } = await client.from('study_plan_days').insert(rows);
+      if (daysErr) { showToast('خطأ في حفظ الأيام: ' + daysErr.message, 'error'); btn.disabled = false; btn.textContent = 'حفظ الخطة'; return; }
+    }
+
+    showToast(`تم حفظ الخطة بـ ${pendingPlanRows.length} يوم ✓`, 'success');
+    btn.disabled = false; btn.textContent = 'حفظ الخطة';
+    closePlanModal();
+    loadStudyPlans();
+  }
+
+  /* ========== LOGOUT ========== */
   async function logout() {
     await client.auth.signOut();
     window.location.href = '../login.html';
