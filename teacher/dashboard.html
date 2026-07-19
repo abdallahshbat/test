@@ -392,7 +392,7 @@ async function checkAuth() {
   if (!session) { location.href = '../login.html'; return; }
 
   // جلب بيانات المستخدم من جدول users
-  const { data: userData } = await supabase
+  const { data: userData } = await supabaseClient
     .from('users')
     .select('name, role')
     .eq('id', session.user.id)
