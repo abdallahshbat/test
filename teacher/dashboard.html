@@ -262,6 +262,11 @@ tr:hover td{background:#f7fafc}
 
 <script>
 const SUPABASE_URL = 'https://aeonokdakdvqgiisfhwv.supabase.co';
+
+function getTodayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlb25va2Rha2R2cWdpaXNmaHd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzMDQ1MDUsImV4cCI6MjA5OTg4MDUwNX0.g1mtt9GZRod2V_Fbe1qXQhv7Hf_LVfx-IvItth9PCgI';
 
 let supabaseClient;
@@ -457,7 +462,7 @@ async function submitHafiz() {
   const repetitions = repVal === 'yes' ? 15 : (repVal === 'no' ? 0 : null);
   const notes = document.getElementById('hafizNotes').value.trim() || null;
   const score = Math.max(0, 10 - errors.full - errors.half * 0.5 - errors.quarter * 0.25);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayStr();
   // When editing preserve the original date; for new sessions use today
   const sessionDate = (editingSessionId && editingSessionDate) ? editingSessionDate : today;
 
@@ -508,7 +513,7 @@ async function loadReviewForm(studentId) {
   const inner = document.getElementById('reviewFormInner');
   inner.innerHTML = '<div class="empty">جاري التحميل...</div>';
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayStr();
   const { data: dr } = await supabaseClient
     .from('daily_reviews')
     .select('id, student_submitted, link_from, link_to, review_range_from, review_range_to')
@@ -551,7 +556,7 @@ async function loadReviewForm(studentId) {
 
 async function submitReview() {
   if (!selectedStudent) return;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayStr();
   const linkFrom = document.getElementById('linkFrom')?.value.trim() || null;
   const linkTo = document.getElementById('linkTo')?.value.trim() || null;
   const reviewFrom = document.getElementById('reviewFrom')?.value.trim() || null;

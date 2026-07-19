@@ -933,7 +933,10 @@ let studyPlanInfo = null;
 let spChecked = {};
 const WEEK_DAYS = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 
-function getTodayStr() { return new Date().toISOString().slice(0, 10); }
+function getTodayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
 /* ثابت يُستخدم في التصيير فقط — يُحدَّث منتصف الليل */
 let todayStr = getTodayStr();
 
