@@ -14,6 +14,8 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f5f0eb;color:#1a202c;m
 .topbar .student-name{font-size:.8rem;opacity:.8;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .topbar .profile-btn{color:#fff;text-decoration:none;font-size:1.25rem;line-height:1;padding:4px 6px;border-radius:8px;background:rgba(255,255,255,.12);transition:background .2s}
 .topbar .profile-btn:hover{background:rgba(255,255,255,.25)}
+.topbar .logout-btn{color:#fff;font-size:.78rem;font-weight:600;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.15);border:none;cursor:pointer;font-family:inherit;transition:background .2s}
+.topbar .logout-btn:hover{background:rgba(231,76,60,.7)}
 .bottom-nav{position:fixed;bottom:0;right:0;left:0;height:62px;background:#fff;border-top:1px solid var(--border);display:flex;z-index:100}
 .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;cursor:pointer;color:var(--muted);font-family:inherit;font-size:.65rem;padding:6px 4px}
 .nav-btn.active{color:var(--primary)}
@@ -133,14 +135,11 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f5f0eb;color:#1a202c;m
   <span class="logo">حفّاظ</span>
   <span class="student-name" id="studentNameTop">…</span>
   <a href="../profile.html" class="profile-btn" title="الملف الشخصي">👤</a>
+  <button class="logout-btn" onclick="logout()">خروج</button>
 </div>
 
 <nav class="bottom-nav">
-  <button class="nav-btn active" id="nb-plan" onclick="showView('plan')">
-    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-    الخطة
-  </button>
-  <button class="nav-btn" id="nb-study" onclick="showView('study')">
+  <button class="nav-btn active" id="nb-study" onclick="showView('study')">
     <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
     خطتي
   </button>
@@ -162,30 +161,18 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f5f0eb;color:#1a202c;m
 
 <div class="main">
 
-  <!-- PLAN VIEW -->
-  <div class="view active" id="view-plan">
-    <div class="grad-banner" id="gradBanner">
-      <div class="glabel">موعد التخرج المتوقع</div>
-      <div class="gdate" id="gradDate">—</div>
-      <div class="gday" id="gradDay"></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="icon">📅</span> الخطة اليومية</div>
-      <div id="planList"><div class="loading">جاري التحميل…</div></div>
-    </div>
-    <div style="margin-bottom:14px">
-      <button class="btn-whatsapp" onclick="copyToWhatsApp()">📱 نسخ إنجازات اليوم للواتساب</button>
-      <button class="btn-logout" onclick="logout()">تسجيل الخروج</button>
-    </div>
-  </div>
-
   <!-- STUDY PLAN VIEW -->
-  <div class="view" id="view-study">
+  <div class="view active" id="view-study">
     <div id="studyPlanContent"><div class="loading">جاري التحميل…</div></div>
   </div>
 
   <!-- ACHIEVE VIEW -->
   <div class="view" id="view-achieve">
+    <div class="grad-banner" id="gradBanner">
+      <div class="glabel">موعد التخرج المتوقع</div>
+      <div class="gdate" id="gradDate">—</div>
+      <div class="gday" id="gradDay"></div>
+    </div>
     <div class="card">
       <div class="card-title"><span class="icon">🏆</span> منجزاتي</div>
       <div class="stats-grid" id="statsGrid"><div class="loading" style="grid-column:span 2">جاري التحميل…</div></div>
@@ -250,7 +237,8 @@ async function init() {
   currentUser = session.user;
   document.getElementById('studentNameTop').textContent = userData.name || session.user.email;
   await loadStudentData();
-  await Promise.all([loadPlan(), loadStats(), loadSessions(), loadHonor(), loadExams(), checkDailyReview(), loadStudyPlan()]);
+  await loadSpProgress();
+  await Promise.all([loadStudyPlan(), loadStats(), loadSessions(), loadHonor(), loadExams(), checkDailyReview()]);
 }
 
 async function loadStudentData() {
@@ -259,6 +247,26 @@ async function loadStudentData() {
     .eq('user_id', currentUser.id)
     .single();
   if (data) studentData = data;
+}
+
+/* ========== SP PROGRESS (persist checkboxes) ========== */
+async function loadSpProgress() {
+  if (!studentData) return;
+  const { data } = await client.from('student_plan_progress')
+    .select('plan_day_id, task_key, completed')
+    .eq('student_id', studentData.id);
+  spChecked = {};
+  (data || []).forEach(r => {
+    if (r.completed) spChecked[r.plan_day_id + '_' + r.task_key] = true;
+  });
+}
+
+async function saveSpProgress(dayId, taskKey, completed) {
+  if (!studentData) return;
+  await client.from('student_plan_progress').upsert(
+    { student_id: studentData.id, plan_day_id: dayId, task_key: taskKey, completed, completed_at: new Date().toISOString() },
+    { onConflict: 'student_id,plan_day_id,task_key' }
+  );
 }
 
 /* ========== STUDY PLAN ========== */
@@ -287,6 +295,19 @@ async function loadStudyPlan() {
   studyPlanDays = daysRes.data || [];
 
   renderStudyPlan();
+  updateGradDateFromStudyPlan();
+}
+
+function updateGradDateFromStudyPlan() {
+  const remaining = studyPlanDays.filter(d => !isSpDayDone(d)).length;
+  const grad = new Date();
+  grad.setDate(grad.getDate() + remaining);
+  const gradDateStr = grad.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
+  const gradDayStr = WEEK_DAYS[grad.getDay()];
+  const el = document.getElementById('gradDate');
+  const el2 = document.getElementById('gradDay');
+  if (el) el.textContent = gradDateStr;
+  if (el2) el2.textContent = gradDayStr + (remaining > 0 ? ' — بعد ' + remaining + ' يوم' : ' — اليوم!');
 }
 
 function renderStudyPlan() {
@@ -346,7 +367,7 @@ function renderSpDay(day) {
   </div>`;
 }
 
-function toggleSpTask(dayId, taskKey, btn) {
+async function toggleSpTask(dayId, taskKey, btn) {
   const k = dayId + '_' + taskKey;
   spChecked[k] = !spChecked[k];
   const done = spChecked[k];
@@ -364,6 +385,9 @@ function toggleSpTask(dayId, taskKey, btn) {
       if (si) si.textContent = allDone ? '✅' : '⭕';
     }
   }
+
+  await saveSpProgress(dayId, taskKey, done);
+  updateGradDateFromStudyPlan();
 }
 
 function copySpDay(dayNum, dayId) {

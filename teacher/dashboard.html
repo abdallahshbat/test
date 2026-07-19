@@ -89,6 +89,11 @@ textarea{resize:vertical;min-height:70px}
 /* STUDENT INFO */
 .student-info-card{background:#e8f5e9;border-radius:var(--radius);padding:14px;margin-bottom:8px;display:none}
 .student-info-card.show{display:block}
+.progress-task{display:flex;align-items:center;gap:6px;padding:3px 0}
+.progress-task .pt-icon{font-size:.9rem}
+.progress-task .pt-label{flex:1}
+.progress-task .pt-done{color:#27ae60;font-weight:700}
+.progress-task .pt-pending{color:#e67e22;font-weight:700}
 .info-row{display:flex;justify-content:space-between;font-size:.85rem;padding:3px 0}
 .info-row .key{color:var(--muted);font-weight:600}
 .info-row .val{color:var(--text);font-weight:700}
@@ -243,6 +248,10 @@ tr:hover td{background:#f7fafc}
         <div class="info-row"><span class="key">آخر محفوظ</span><span class="val" id="infoLastMem">—</span></div>
         <div class="info-row"><span class="key">آخر مسموع</span><span class="val" id="infoLastRec">—</span></div>
         <div class="info-row"><span class="key">الفوات</span><span class="val" id="infoGap">—</span></div>
+        <div id="todayPlanProgress" style="margin-top:10px;display:none">
+          <div style="font-size:.78rem;font-weight:700;color:#2d6a4f;margin-bottom:6px">📋 إنجاز خطة اليوم:</div>
+          <div id="planProgressItems" style="font-size:.82rem;color:#4a5568"></div>
+        </div>
       </div>
     </div>
 
@@ -544,6 +553,55 @@ async function selectStudent(s) {
 
   document.getElementById('studentInfo').classList.add('show');
   loadSessionHistory(s.id);
+  loadTodayPlanProgress(s.id);
+}
+
+async function loadTodayPlanProgress(studentId) {
+  const progressBox = document.getElementById('todayPlanProgress');
+  const progressItems = document.getElementById('planProgressItems');
+  progressBox.style.display = 'none';
+
+  // Get student's current plan
+  const { data: stu } = await supabaseClient
+    .from('students').select('current_plan_id').eq('id', studentId).single();
+  if (!stu?.current_plan_id) return;
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Get today's plan day (approximate by day_number matching days elapsed)
+  const { data: days } = await supabaseClient
+    .from('study_plan_days').select('*').eq('plan_id', stu.current_plan_id).order('day_number');
+  if (!days || !days.length) return;
+
+  // Get completed tasks for this student today
+  const { data: progress } = await supabaseClient
+    .from('student_plan_progress')
+    .select('plan_day_id, task_key, completed, completed_at')
+    .eq('student_id', studentId)
+    .eq('completed', true)
+    .gte('completed_at', today + 'T00:00:00.000Z')
+    .lt('completed_at', today + 'T23:59:59.999Z');
+
+  if (!progress || !progress.length) {
+    progressBox.style.display = 'block';
+    progressItems.innerHTML = '<span style="color:#e67e22">لم ينجز الطالب أي مهمة من خطته اليوم بعد</span>';
+    return;
+  }
+
+  const doneKeys = new Set(progress.map(p => p.plan_day_id + '_' + p.task_key));
+  const taskLabels = { memo: 'حفظ', link: 'ربط', review: 'مراجعة' };
+  const taskIcons = { memo: '📖', link: '🔗', review: '📚' };
+
+  // Show completed tasks
+  const lines = progress.map(p => {
+    const day = days.find(d => d.id === p.plan_day_id);
+    const label = taskLabels[p.task_key] || p.task_key;
+    const icon = taskIcons[p.task_key] || '✅';
+    return `<div class="progress-task"><span class="pt-icon">${icon}</span><span class="pt-label">${label}${day ? ' — اليوم ' + day.day_number : ''}</span><span class="pt-done">✓ منجز</span></div>`;
+  }).join('');
+
+  progressBox.style.display = 'block';
+  progressItems.innerHTML = lines;
 }
 
 // --- HOME STATS ---
