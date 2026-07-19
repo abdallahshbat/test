@@ -341,8 +341,14 @@ async function selectStudent(s) {
   document.getElementById('studentSearch').value = s.name;
   document.getElementById('studentDropdown').style.display = 'none';
   document.getElementById('selStudentName').textContent = s.name;
-  document.getElementById('selStudentMeta').textContent = 'عدد الأحاديث المحفوظة: ' + s.memorized;
+  document.getElementById('selStudentMeta').textContent = 'جاري التحميل...';
   document.getElementById('selectedStudentBar').classList.add('show');
+
+  // Fetch fresh memorized_hadiths from DB
+  const { data: freshStu } = await supabaseClient
+    .from('students').select('memorized_hadiths').eq('id', s.id).maybeSingle();
+  const memorized = freshStu?.memorized_hadiths ?? s.memorized;
+  document.getElementById('selStudentMeta').textContent = 'عدد الأحاديث المحفوظة: ' + memorized;
 
   // Reset track UI
   document.getElementById('trackBtnHafiz').classList.remove('active');
@@ -369,26 +375,28 @@ async function loadLastMemoDay(studentId) {
   const { data: stu } = await supabaseClient.from('students').select('current_plan_id').eq('id', studentId).maybeSingle();
   if (!stu?.current_plan_id) return;
 
-  // Get last completed memo task
+  // Get all completed memo tasks then pick highest day_number
   const { data: prog } = await supabaseClient
     .from('student_plan_progress')
-    .select('plan_day_id, completed_at')
+    .select('plan_day_id')
     .eq('student_id', studentId)
     .eq('task_key', 'memo')
-    .eq('completed', true)
-    .order('completed_at', { ascending: false })
-    .limit(1);
+    .eq('completed', true);
 
   if (!prog || !prog.length) return;
 
-  const planDayId = prog[0].plan_day_id;
-  const { data: day } = await supabaseClient
+  // Fetch all corresponding study_plan_days and pick the highest day_number
+  const planDayIds = prog.map(p => p.plan_day_id);
+  const { data: days } = await supabaseClient
     .from('study_plan_days')
-    .select('day_number, memo_from, memo_to')
-    .eq('id', planDayId)
-    .maybeSingle();
+    .select('id, day_number, memo_from, memo_to')
+    .in('id', planDayIds)
+    .order('day_number', { ascending: false })
+    .limit(1);
 
-  if (!day) return;
+  if (!days || !days.length) return;
+
+  const day = days[0];
 
   let txt = 'آخر يوم حفظ: اليوم ' + day.day_number;
   if (day.memo_from && day.memo_to) txt += ' (حديث ' + day.memo_from + ' – ' + day.memo_to + ')';
