@@ -365,7 +365,7 @@ tr:hover td{background:#f7fafc}
 const SUPABASE_URL = 'https://aeonokdakdvqgiisfhwv.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlb25va2Rha2R2cWdpaXNmaHd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzMDQ1MDUsImV4cCI6MjA5OTg4MDUwNX0.g1mtt9GZRod2V_Fbe1qXQhv7Hf_LVfx-IvItth9PCgI';
 
-let supabase;
+let supabaseClient;
 let currentTeacher = null;
 let allStudents = [];
 let selectedStudent = null;
@@ -374,7 +374,7 @@ let editingSessionId = null;
 
 // --- INIT SUPABASE ---
 function initSupabase() {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
@@ -388,7 +388,7 @@ function initSupabase() {
 // --- AUTH CHECK ---
 async function checkAuth() {
   initSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) { location.href = '../login.html'; return; }
 
   // جلب بيانات المستخدم من جدول users
@@ -409,10 +409,10 @@ async function checkAuth() {
 }
 
 async function loadTeacher(userId) {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   console.log('session:', session);
   console.log('user id:', session?.user?.id);
-  const { data, error } = await supabase.from('teachers').select('id, max_students').eq('user_id', userId).single();
+  const { data, error } = await supabaseClient.from('teachers').select('id, max_students').eq('user_id', userId).single();
   console.log('teacher data:', data);
   console.log('teacher error:', error);
   if (error || !data) {
@@ -643,9 +643,9 @@ async function submitSession() {
 
   let result;
   if (editingSessionId) {
-    result = await supabase.from('recitation_sessions').update(payload).eq('id', editingSessionId);
+    result = await supabaseClient.from('recitation_sessions').update(payload).eq('id', editingSessionId);
   } else {
-    result = await supabase.from('recitation_sessions').insert(payload);
+    result = await supabaseClient.from('recitation_sessions').insert(payload);
   }
 
   btn.disabled = false;
@@ -768,7 +768,7 @@ function showView(name) {
 
 // --- LOGOUT ---
 async function logout() {
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
   sessionStorage.removeItem('huffaz-auth');
   location.href = '../login.html';
 }
