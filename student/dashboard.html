@@ -302,6 +302,16 @@ body,
 .sp-type-memo{background:var(--blue-light);color:#1D5FA6}
 .sp-type-link{background:var(--gold-light);color:var(--gold-dark)}
 .sp-type-review{background:var(--red-light);color:#B03030}
+.sp-type-listen{background:#EDE8FF;color:#5B3EC8}
+.sp-task-link-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:700;
+  text-decoration:none;white-space:nowrap;flex-shrink:0;
+  transition:opacity .15s;
+}
+.sp-task-link-btn:hover{opacity:.8}
+.sp-link-audio{background:#EDE8FF;color:#5B3EC8}
+.sp-link-book{background:var(--blue-light);color:#1D5FA6}
 .sp-task-label{flex:1;font-size:.85rem;color:var(--text-secondary);line-height:1.4}
 .sp-task-label.done{text-decoration:line-through;color:var(--text-muted)}
 .sp-day-actions{margin-top:10px;display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--border)}
@@ -959,7 +969,7 @@ function updatePlanProgressBar(done, total) {
 
   let totalTasks = 0, doneTasks = 0;
   studyPlanDays.forEach(d => {
-    const tasks = getSpTasks(d);
+    const tasks = getSpTasks(d).filter(t => t.key !== 'listen');
     totalTasks += tasks.length;
     tasks.forEach(t => { if (spChecked[d.id + '_' + t.key]) doneTasks++; });
   });
@@ -993,12 +1003,15 @@ function renderStudyPlan() {
 }
 
 function isSpDayDone(day) {
-  const tasks = getSpTasks(day);
+  /* مهمة السماع لا تؤثر على اكتمال اليوم — فقط الحفظ والربط والمراجعة */
+  const tasks = getSpTasks(day).filter(t => t.key !== 'listen');
   return tasks.length > 0 && tasks.every(t => spChecked[day.id + '_' + t.key]);
 }
 
 function getSpTasks(day) {
   const tasks = [];
+  /* سماع — دائماً يظهر إذا وُجد رابط صوتي، بدون نطاق */
+  if (studyPlanInfo?.audio_url) tasks.push({ key: 'listen', type: 'سماع', cls: 'sp-type-listen', label: 'استمع للدرس', noCheckbox: false });
   if (day.memo_from || day.memo_to) tasks.push({ key: 'memo', type: 'حفظ', cls: 'sp-type-memo', label: [day.memo_from, day.memo_to].filter(Boolean).join(' — ') });
   if (day.link_from || day.link_to) tasks.push({ key: 'link', type: 'ربط', cls: 'sp-type-link', label: [day.link_from, day.link_to].filter(Boolean).join(' — ') });
   if (day.review_from || day.review_to) tasks.push({ key: 'review', type: 'مراجعة', cls: 'sp-type-review', label: [day.review_from, day.review_to].filter(Boolean).join(' — ') });
@@ -1009,13 +1022,21 @@ function renderSpDay(day) {
   const tasks = getSpTasks(day);
   const allDone = isSpDayDone(day);
   const statusIcon = allDone ? '✅' : '⭕';
+  const audioUrl = studyPlanInfo?.audio_url || '';
+  const bookUrl  = studyPlanInfo?.book_url  || '';
 
   const tasksHtml = tasks.map(t => {
     const done = !!spChecked[day.id + '_' + t.key];
+    /* رابط الفتح: سماع → audio, باقي المهام → book */
+    const linkUrl = t.key === 'listen' ? audioUrl : bookUrl;
+    const linkBtn = linkUrl
+      ? `<a href="${linkUrl}" target="_blank" rel="noopener" class="sp-task-link-btn ${t.key === 'listen' ? 'sp-link-audio' : 'sp-link-book'}">${t.key === 'listen' ? '🎧 استمع' : '📖 افتح'}</a>`
+      : '';
     return `<div class="sp-task-row">
-      <button class="sp-checkbox${done ? ' done' : ''}" onclick="toggleSpTask('${day.id}','${t.key}',this)">${done ? '✓' : '○'}</button>
+      <button class="sp-checkbox${done ? ' done' : ''}" onclick="toggleSpTask('${day.id}','${t.key}',this,'${day.memo_from||''}','${day.memo_to||''}')">${done ? '✓' : '○'}</button>
       <span class="sp-task-type ${t.cls}">${t.type}</span>
       <span class="sp-task-label${done ? ' done' : ''}">${t.label}</span>
+      ${linkBtn}
     </div>`;
   }).join('');
 
@@ -1031,7 +1052,7 @@ function renderSpDay(day) {
   </div>`;
 }
 
-async function toggleSpTask(dayId, taskKey, btn) {
+async function toggleSpTask(dayId, taskKey, btn, memoFrom, memoTo) {
   const k = dayId + '_' + taskKey;
   spChecked[k] = !spChecked[k];
   const done = spChecked[k];
@@ -1052,6 +1073,24 @@ async function toggleSpTask(dayId, taskKey, btn) {
   }
 
   await saveSpProgress(dayId, taskKey, done);
+
+  /* تحديث أحاديث محفوظة عند إنجاز/إلغاء واجب الحفظ */
+  if (taskKey === 'memo' && studentData && memoFrom && memoTo) {
+    const count = parseInt(memoTo) - parseInt(memoFrom) + 1;
+    if (!isNaN(count) && count > 0) {
+      const delta = done ? count : -count;
+      const newVal = Math.max(0, (studentData.memorized_hadiths || 0) + delta);
+      const { error } = await client.from('students')
+        .update({ memorized_hadiths: newVal })
+        .eq('id', studentData.id);
+      if (!error) {
+        studentData.memorized_hadiths = newVal;
+        /* تحديث الإحصائيات في واجهة منجزاتي */
+        await loadStats();
+      }
+    }
+  }
+
   updateGradDateFromStudyPlan();
 }
 

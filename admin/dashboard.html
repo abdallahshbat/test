@@ -306,10 +306,46 @@
         </div>
       </div>
       <div id="pm-preview" style="font-size:0.82rem;color:var(--accent);font-weight:600;margin-top:4px"></div>
+      <div class="form-row" style="margin-top:8px">
+        <div class="form-group">
+          <label>رابط الملف الصوتي <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+          <input type="url" id="pm-audio" class="form-control" placeholder="https://..." />
+        </div>
+        <div class="form-group">
+          <label>رابط الكتاب <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+          <input type="url" id="pm-book-url" class="form-control" placeholder="https://..." />
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-reset" onclick="closePlanModal()">إلغاء</button>
       <button class="btn-submit" id="pm-save" onclick="savePlan()">حفظ الخطة</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: تعديل روابط الخطة -->
+<div class="modal-overlay hidden" id="editPlanModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h2>تعديل روابط الخطة</h2>
+      <button class="modal-close" onclick="closeEditPlanModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:.85rem;font-weight:700;color:var(--accent);margin-bottom:14px" id="edit-plan-name"></div>
+      <div class="form-group">
+        <label>رابط الملف الصوتي <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+        <input type="url" id="edit-audio" class="form-control" placeholder="https://..." />
+      </div>
+      <div class="form-group">
+        <label>رابط الكتاب <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+        <input type="url" id="edit-book-url" class="form-control" placeholder="https://..." />
+      </div>
+      <input type="hidden" id="edit-plan-id" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn-reset" onclick="closeEditPlanModal()">إلغاء</button>
+      <button class="btn-submit" id="edit-save" onclick="saveEditPlan()">حفظ التعديلات</button>
     </div>
   </div>
 </div>
@@ -772,6 +808,7 @@
               <td style="color:var(--text-muted)">${new Date(p.created_at).toLocaleDateString('ar-SA')}</td>
               <td style="display:flex;gap:8px">
                 <button class="btn-view" onclick="viewPlanDays('${p.id}','${p.plan_name}')">استعراض</button>
+                <button class="btn-view" style="background:var(--accent);color:#fff" onclick="openEditPlanModal('${p.id}','${p.plan_name}','${p.audio_url||''}','${p.book_url||''}')">تعديل</button>
                 <button class="btn-danger" onclick="deletePlan('${p.id}')">حذف</button>
               </td>
             </tr>
@@ -825,11 +862,42 @@
     loadStudyPlans();
   }
 
+  /* ========== EDIT PLAN MODAL ========== */
+  function openEditPlanModal(planId, planName, audioUrl, bookUrl) {
+    document.getElementById('edit-plan-id').value = planId;
+    document.getElementById('edit-plan-name').textContent = '📖 ' + planName;
+    document.getElementById('edit-audio').value = audioUrl || '';
+    document.getElementById('edit-book-url').value = bookUrl || '';
+    document.getElementById('editPlanModal').classList.remove('hidden');
+  }
+
+  function closeEditPlanModal() {
+    document.getElementById('editPlanModal').classList.add('hidden');
+  }
+
+  async function saveEditPlan() {
+    const planId   = document.getElementById('edit-plan-id').value;
+    const audioUrl = document.getElementById('edit-audio').value.trim();
+    const bookUrl  = document.getElementById('edit-book-url').value.trim();
+    const btn = document.getElementById('edit-save');
+    btn.disabled = true; btn.textContent = 'جارٍ الحفظ…';
+    const { error } = await client.from('study_plans')
+      .update({ audio_url: audioUrl || null, book_url: bookUrl || null })
+      .eq('id', planId);
+    btn.disabled = false; btn.textContent = 'حفظ التعديلات';
+    if (error) { showToast('خطأ: ' + error.message, 'error'); return; }
+    showToast('تم حفظ الروابط ✓', 'success');
+    closeEditPlanModal();
+    loadStudyPlans();
+  }
+
   /* ========== PLAN MODAL ========== */
   function openPlanModal() {
     document.getElementById('pm-name').value = '';
     document.getElementById('pm-book').value = '';
     document.getElementById('pm-folder').value = '';
+    document.getElementById('pm-audio').value = '';
+    document.getElementById('pm-book-url').value = '';
     document.getElementById('pm-filename').textContent = 'لم يُختر ملف';
     document.getElementById('pm-preview').textContent = '';
     document.getElementById('pm-file').value = '';
@@ -872,9 +940,11 @@
   }
 
   async function savePlan() {
-    const name   = document.getElementById('pm-name').value.trim();
-    const book   = document.getElementById('pm-book').value.trim();
-    const folder = document.getElementById('pm-folder').value.trim();
+    const name     = document.getElementById('pm-name').value.trim();
+    const book     = document.getElementById('pm-book').value.trim();
+    const folder   = document.getElementById('pm-folder').value.trim();
+    const audioUrl = document.getElementById('pm-audio').value.trim();
+    const bookUrl  = document.getElementById('pm-book-url').value.trim();
 
     if (!name || !book) { showToast('يرجى إدخال اسم الخطة والكتاب', 'error'); return; }
 
@@ -882,7 +952,7 @@
     btn.disabled = true; btn.textContent = 'جارٍ الحفظ…';
 
     const { data: plan, error: planErr } = await client.from('study_plans')
-      .insert({ plan_name: name, book_name: book, folder_name: folder || null })
+      .insert({ plan_name: name, book_name: book, folder_name: folder || null, audio_url: audioUrl || null, book_url: bookUrl || null })
       .select().single();
 
     if (planErr) { showToast('خطأ: ' + planErr.message, 'error'); btn.disabled = false; btn.textContent = 'حفظ الخطة'; return; }
