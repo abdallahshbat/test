@@ -971,6 +971,28 @@ async function loadStudyPlan() {
 
   renderStudyPlan();
   updateGradDateFromStudyPlan();
+  syncMemorizedFromProgress();
+}
+
+/* بعد تحميل الخطة والتقدم: نحسب أعلى memo_to من الأيام المنجزة ونحدّث memorized_hadiths إذا كانت أعلى من القيمة الحالية */
+async function syncMemorizedFromProgress() {
+  if (!studentData || !studyPlanDays.length) return;
+  let maxMemo = studentData.memorized_hadiths || 0;
+  studyPlanDays.forEach(d => {
+    if (spChecked[d.id + '_memo'] && d.memo_to) {
+      const v = parseInt(d.memo_to);
+      if (!isNaN(v) && v > maxMemo) maxMemo = v;
+    }
+  });
+  if (maxMemo > (studentData.memorized_hadiths || 0)) {
+    const { error } = await client.from('students')
+      .update({ memorized_hadiths: maxMemo })
+      .eq('id', studentData.id);
+    if (!error) {
+      studentData.memorized_hadiths = maxMemo;
+      loadStats();
+    }
+  }
 }
 
 function updateGradDateFromStudyPlan() {
