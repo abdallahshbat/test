@@ -1444,18 +1444,27 @@
   }
 
   (async () => {
-    const { data: { session } } = await client.auth.getSession();
-    if (!session || session.user.user_metadata?.role !== 'admin') {
-      window.location.href = '../login.html';
-      return;
+    try {
+      const { data: { session } } = await client.auth.getSession();
+      if (!session) { window.location.href = '../login.html'; return; }
+
+      /* التحقق من الدور عبر جدول users (أو user_metadata كاحتياط) */
+      const { data: userData } = await client.from('users')
+        .select('name, role').eq('id', session.user.id).single();
+      const role = userData?.role || session.user.user_metadata?.role || session.user.app_metadata?.role;
+      if (role !== 'admin') { window.location.href = '../login.html'; return; }
+
+      const name = userData?.name || session.user.user_metadata?.name || session.user.email;
+      document.getElementById('sidebarName').textContent = name;
+      document.getElementById('welcomeName').textContent = name;
+      document.getElementById('avatarLetter').textContent = name.charAt(0);
+      setDate();
+      await loadStats();
+    } catch (e) {
+      console.error('init error', e);
+    } finally {
+      document.getElementById('loading-screen').style.display = 'none';
     }
-    const name = session.user.user_metadata?.name || session.user.email;
-    document.getElementById('sidebarName').textContent = name;
-    document.getElementById('welcomeName').textContent = name;
-    document.getElementById('avatarLetter').textContent = name.charAt(0);
-    setDate();
-    await loadStats();
-    document.getElementById('loading-screen').style.display = 'none';
   })();
 </script>
 </body>
