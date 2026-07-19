@@ -2,142 +2,393 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحة الطالب - حفّاظ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>لوحة الطالب — حفّاظ</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f5f0eb;color:#1a202c;min-height:100vh;direction:rtl}
-:root{--primary:#2c3e50;--green:#27ae60;--gold:#f39c12;--red:#e74c3c;--bg:#f5f0eb;--card:#fff;--border:#e2d9d0;--radius:14px;--shadow:0 2px 10px rgba(0,0,0,.08);--muted:#8a8a8a}
-.topbar{position:fixed;top:0;right:0;left:0;height:56px;background:var(--primary);color:#fff;display:flex;align-items:center;padding:0 16px;z-index:100;gap:10px}
-.topbar .logo{font-size:1.1rem;font-weight:800;flex:1}
-.topbar .student-name{font-size:.8rem;opacity:.8;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.topbar .profile-btn{color:#fff;text-decoration:none;font-size:1.25rem;line-height:1;padding:4px 6px;border-radius:8px;background:rgba(255,255,255,.12);transition:background .2s}
-.topbar .profile-btn:hover{background:rgba(255,255,255,.25)}
-.topbar .logout-btn{color:#fff;font-size:.78rem;font-weight:600;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.15);border:none;cursor:pointer;font-family:inherit;transition:background .2s}
-.topbar .logout-btn:hover{background:rgba(231,76,60,.7)}
-.bottom-nav{position:fixed;bottom:0;right:0;left:0;height:62px;background:#fff;border-top:1px solid var(--border);display:flex;z-index:100}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;cursor:pointer;color:var(--muted);font-family:inherit;font-size:.65rem;padding:6px 4px}
-.nav-btn.active{color:var(--primary)}
-.nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.main{margin-top:56px;margin-bottom:70px;padding:14px}
-.view{display:none}.view.active{display:block}
-.card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
-.card-title{font-size:.95rem;font-weight:700;color:var(--primary);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.card-title .icon{font-size:1.1rem}
-.grad-banner{background:linear-gradient(135deg,#2c3e50,#2980b9);color:#fff;border-radius:var(--radius);padding:18px;margin-bottom:14px;text-align:center}
-.grad-banner .glabel{font-size:.82rem;opacity:.8;margin-bottom:4px}
-.grad-banner .gdate{font-size:1.4rem;font-weight:800}
-.grad-banner .gday{font-size:.85rem;opacity:.85;margin-top:4px}
-.plan-day{border-radius:10px;border:1.5px solid var(--border);margin-bottom:10px;overflow:hidden}
-.plan-day.today{border-color:#2980b9;box-shadow:0 0 0 2px rgba(41,128,185,.18)}
-.plan-day-header{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;background:#f8f5f2;cursor:pointer;user-select:none}
-.plan-day.today .plan-day-header{background:#ebf3fb}
-.plan-day-header .dlabel{font-size:.9rem;font-weight:700;color:var(--primary)}
-.plan-day.today .plan-day-header .dlabel{color:#1a6ca8}
-.plan-day-header .ddate{font-size:.75rem;color:var(--muted);margin-top:2px}
-.today-badge{background:#2980b9;color:#fff;font-size:.63rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-right:6px}
-.plan-day-body{padding:10px 14px;display:none}
-.plan-day.open .plan-day-body,.plan-day.today .plan-day-body{display:block}
-.task-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0ede8}
-.task-row:last-child{border:none}
-.task-icon-btn{width:42px;height:42px;border-radius:50%;border:2px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;cursor:pointer;transition:all .2s;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.task-icon-btn.done{background:var(--green);border-color:var(--green)}
-.task-label{flex:1;font-size:.87rem;color:#2c3e50}
-.task-label.done{color:var(--muted);text-decoration:line-through}
-.task-type-badge{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:12px;white-space:nowrap;flex-shrink:0}
-.badge-memorize{background:#e8f4fd;color:#1a6ca8}
-.badge-repeat{background:#e8fdf4;color:#1a7a45}
-.badge-link{background:#fdf5e8;color:#9b6a10}
-.badge-review{background:#fde8e8;color:#a82020}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.stat-box{background:#f8f5f2;border-radius:10px;padding:14px 10px;text-align:center;border:1px solid var(--border)}
-.stat-box .snum{font-size:1.6rem;font-weight:800;color:var(--primary);line-height:1}
-.stat-box .slbl{font-size:.68rem;color:var(--muted);margin-top:5px}
-.progress-wrap{margin-top:4px}
-.progress-label{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-bottom:5px}
-.progress-track{background:#e8e2db;border-radius:20px;height:8px;overflow:hidden}
-.progress-fill{height:100%;background:var(--green);border-radius:20px;transition:width .5s}
-.session-row{padding:11px 0;border-bottom:1px solid var(--border)}
-.session-row:last-child{border:none}
-.session-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.session-date{font-size:.78rem;color:var(--muted)}
-.score-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.78rem;font-weight:700}
-.score-badge.green{background:#d5f5e3;color:#1e8449}
-.score-badge.yellow{background:#fef9e7;color:#b7950b}
-.score-badge.red{background:#fdecea;color:#c0392b}
-.session-range{font-size:.88rem;font-weight:600;color:var(--primary)}
-.session-note{font-size:.78rem;color:var(--muted);margin-top:3px}
-.review-done-msg{background:#e8fdf4;border-radius:10px;padding:14px;text-align:center;color:#1a7a45;font-weight:600;font-size:.88rem;border:1px solid #b2dfc6}
-.review-textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;font-family:inherit;resize:vertical;min-height:80px;direction:rtl;outline:none}
-.review-textarea:focus{border-color:var(--primary)}
-.btn-primary{width:100%;padding:13px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:10px;transition:background .2s}
-.btn-primary:hover{background:#1a252f}
-.btn-primary:disabled{background:#9ca3af;cursor:not-allowed}
-.btn-green{background:var(--green) !important}
-.btn-green:hover{background:#1e8449 !important}
-.btn-whatsapp{background:#25D366;color:#fff;border:none;border-radius:10px;padding:13px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit;width:100%;margin-bottom:10px;transition:background .2s;display:block}
-.btn-whatsapp:hover{background:#1ebe57}
-.btn-logout{background:transparent;color:var(--red);border:1.5px solid var(--red);border-radius:10px;padding:11px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit;width:100%;transition:all .2s;display:block}
-.btn-logout:hover{background:var(--red);color:#fff}
-.honor-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
-.honor-row:last-child{border:none}
-.honor-rank{font-size:1.1rem;min-width:30px;text-align:center}
-.honor-name{flex:1;font-size:.9rem;font-weight:600;color:var(--primary)}
-.honor-name.me{color:#1a6ca8;font-weight:800}
-.honor-score{font-size:.9rem;font-weight:700;color:var(--green)}
-.exam-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
-.exam-row:last-child{border:none}
-.exam-label{font-size:.87rem;color:var(--primary);font-weight:600}
-.exam-date{font-size:.73rem;color:var(--muted);margin-top:2px}
-.exam-score{font-size:.95rem;font-weight:800}
-.toast-wrap{position:fixed;top:66px;left:50%;transform:translateX(-50%);z-index:9999;pointer-events:none;display:flex;flex-direction:column;gap:8px;align-items:center}
-.toast{padding:10px 22px;border-radius:10px;font-size:.88rem;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.15);animation:fadeUp .3s ease;white-space:nowrap}
-.toast.success{background:#27ae60}.toast.error{background:#e74c3c}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.empty{text-align:center;color:var(--muted);padding:24px;font-size:.88rem}
-.loading{text-align:center;color:var(--muted);padding:20px;font-size:.88rem}
+/* ── RESET & BASE ─────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,Tahoma,sans-serif;background:#F7F8FA;color:#1C2B3A;min-height:100vh;direction:rtl;-webkit-font-smoothing:antialiased}
 
-/* STUDY PLAN CARDS */
-.study-plan-banner{background:linear-gradient(135deg,#1a3c2e,#2d7a57);color:#fff;border-radius:var(--radius);padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
-.study-plan-banner .sp-title{font-size:.95rem;font-weight:700}
-.study-plan-banner .sp-sub{font-size:.75rem;opacity:.8;margin-top:2px}
-.sp-day-card{border-radius:12px;border:1.5px solid var(--border);margin-bottom:12px;overflow:hidden;background:var(--card);box-shadow:var(--shadow)}
-.sp-day-card.sp-today{border-color:#2980b9;box-shadow:0 0 0 2px rgba(41,128,185,.2)}
-.sp-day-header{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:#f8f5f2;user-select:none}
-.sp-day-card.sp-today .sp-day-header{background:#ebf3fb}
-.sp-day-num{font-size:.95rem;font-weight:800;color:var(--primary)}
-.sp-day-card.sp-today .sp-day-num{color:#1a6ca8}
-.sp-day-status{font-size:1rem}
+/* ── DESIGN TOKENS ────────────────────────────────── */
+:root{
+  --gold:#C9A84C;
+  --gold-light:#F5EDD6;
+  --gold-dark:#A8872E;
+  --green:#4CAF7D;
+  --green-light:#E8F7EF;
+  --green-dark:#2E8A57;
+  --red:#E05555;
+  --red-light:#FDEAEA;
+  --blue:#3B82F6;
+  --blue-light:#EFF6FF;
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --surface2:#F2F4F7;
+  --border:#E8ECF0;
+  --text-primary:#1C2B3A;
+  --text-secondary:#4B5E6D;
+  --text-muted:#8FA0AE;
+  --radius-sm:8px;
+  --radius:14px;
+  --radius-lg:20px;
+  --shadow-sm:0 1px 4px rgba(28,43,58,.06);
+  --shadow:0 4px 16px rgba(28,43,58,.08);
+  --shadow-lg:0 8px 32px rgba(28,43,58,.12);
+  --topbar-h:60px;
+  --nav-h:68px;
+}
+
+/* ── TOPBAR ───────────────────────────────────────── */
+.topbar{
+  position:fixed;top:0;right:0;left:0;height:var(--topbar-h);
+  background:linear-gradient(135deg,#1C2B3A 0%,#263647 100%);
+  display:flex;align-items:center;padding:0 16px;z-index:200;
+  gap:10px;box-shadow:0 2px 12px rgba(0,0,0,.2);
+}
+.topbar-logo{
+  font-size:1.15rem;font-weight:900;letter-spacing:-.02em;
+  background:linear-gradient(135deg,var(--gold) 0%,#F0D080 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.topbar-name{
+  flex:1;font-size:.78rem;color:rgba(255,255,255,.7);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.topbar-profile{
+  display:flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(201,168,76,.2);border:1.5px solid rgba(201,168,76,.4);
+  color:#fff;text-decoration:none;font-size:1rem;transition:.2s;
+}
+.topbar-profile:hover{background:rgba(201,168,76,.35)}
+.topbar-logout{
+  display:flex;align-items:center;gap:5px;
+  padding:6px 12px;border-radius:var(--radius-sm);
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+  color:rgba(255,255,255,.85);font-size:.75rem;font-weight:600;
+  cursor:pointer;font-family:inherit;transition:.2s;
+}
+.topbar-logout:hover{background:rgba(224,85,85,.4);border-color:rgba(224,85,85,.5)}
+
+/* ── BOTTOM NAV ───────────────────────────────────── */
+.bottom-nav{
+  position:fixed;bottom:0;right:0;left:0;height:var(--nav-h);
+  background:var(--surface);border-top:1px solid var(--border);
+  display:flex;z-index:200;
+  padding-bottom:env(safe-area-inset-bottom,0);
+  box-shadow:0 -4px 20px rgba(28,43,58,.06);
+}
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;border:none;background:none;cursor:pointer;
+  color:var(--text-muted);font-family:inherit;font-size:.6rem;font-weight:600;
+  padding:6px 2px;transition:color .2s;position:relative;letter-spacing:.01em;
+}
+.nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:.2s}
+.nav-btn.active{color:var(--gold-dark)}
+.nav-btn.active svg{stroke:var(--gold)}
+.nav-btn.active::before{
+  content:'';position:absolute;top:0;right:20%;left:20%;height:3px;
+  background:linear-gradient(90deg,var(--gold),var(--gold-dark));
+  border-radius:0 0 4px 4px;
+}
+
+/* ── MAIN LAYOUT ──────────────────────────────────── */
+.main{
+  margin-top:var(--topbar-h);margin-bottom:calc(var(--nav-h) + 12px);
+  padding:16px;max-width:680px;margin-left:auto;margin-right:auto;
+}
+.view{display:none}.view.active{display:block}
+
+/* ── CARDS ────────────────────────────────────────── */
+.card{
+  background:var(--surface);border-radius:var(--radius);
+  padding:18px;box-shadow:var(--shadow);margin-bottom:14px;
+  border:1px solid var(--border);
+}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.card-icon{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;
+}
+.card-icon.gold{background:var(--gold-light)}
+.card-icon.green{background:var(--green-light)}
+.card-icon.blue{background:var(--blue-light)}
+.card-title{font-size:.95rem;font-weight:800;color:var(--text-primary)}
+.card-sub{font-size:.75rem;color:var(--text-muted);margin-top:1px}
+
+/* ── GRAD BANNER ──────────────────────────────────── */
+.grad-banner{
+  background:linear-gradient(135deg,#1C2B3A 0%,#2C4A5E 60%,#1a3c55 100%);
+  border-radius:var(--radius-lg);padding:22px 20px;margin-bottom:14px;
+  position:relative;overflow:hidden;
+}
+.grad-banner::before{
+  content:'';position:absolute;top:-30px;left:-30px;
+  width:120px;height:120px;border-radius:50%;
+  background:radial-gradient(circle,rgba(201,168,76,.25) 0%,transparent 70%);
+}
+.grad-banner::after{
+  content:'🎓';position:absolute;left:16px;top:50%;transform:translateY(-50%);
+  font-size:2.2rem;opacity:.25;
+}
+.grad-label{font-size:.72rem;color:rgba(255,255,255,.6);margin-bottom:4px;letter-spacing:.04em;text-transform:uppercase}
+.grad-date{font-size:1.5rem;font-weight:900;color:#fff;line-height:1.1}
+.grad-day{
+  font-size:.82rem;color:rgba(255,255,255,.75);margin-top:6px;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.grad-day::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--gold);display:inline-block}
+
+/* ── PLAN PROGRESS CARD ───────────────────────────── */
+.plan-progress-header{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;
+}
+.plan-progress-label{font-size:.8rem;color:var(--text-secondary)}
+.plan-progress-pct{
+  font-size:1.4rem;font-weight:900;
+  background:linear-gradient(135deg,var(--green),var(--green-dark));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.progress-track{background:var(--surface2);border-radius:20px;height:10px;overflow:hidden;border:1px solid var(--border)}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--green) 0%,var(--green-dark) 100%);border-radius:20px;transition:width .6s ease}
+.progress-footnote{display:flex;justify-content:space-between;font-size:.68rem;color:var(--text-muted);margin-top:6px}
+
+/* ── STATS GRID ───────────────────────────────────── */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat-box{
+  background:var(--surface2);border-radius:var(--radius);
+  padding:14px 12px;text-align:center;border:1px solid var(--border);
+  transition:transform .15s;
+}
+.stat-box:active{transform:scale(.97)}
+.stat-num{font-size:1.7rem;font-weight:900;color:var(--text-primary);line-height:1}
+.stat-lbl{font-size:.65rem;color:var(--text-muted);margin-top:5px;font-weight:600;letter-spacing:.02em}
+
+/* ── ACHIEVEMENT PROGRESS BAR ─────────────────────── */
+#progressSection{margin-top:4px}
+.prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.prog-lbl{font-size:.78rem;color:var(--text-secondary);font-weight:600}
+.prog-pct{font-size:.9rem;font-weight:800;color:var(--green-dark)}
+
+/* ── STUDY PLAN BANNER ────────────────────────────── */
+.sp-banner{
+  background:linear-gradient(135deg,#1a3c2e 0%,#2d7a57 100%);
+  border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;
+  display:flex;align-items:center;gap:12px;
+}
+.sp-banner-icon{font-size:1.6rem;flex-shrink:0}
+.sp-banner-title{font-size:.95rem;font-weight:800;color:#fff}
+.sp-banner-sub{font-size:.72rem;color:rgba(255,255,255,.7);margin-top:3px}
+
+/* ── STUDY PLAN DAYS ──────────────────────────────── */
+.sp-day-card{
+  border-radius:var(--radius);border:1.5px solid var(--border);
+  margin-bottom:10px;overflow:hidden;background:var(--surface);
+  box-shadow:var(--shadow-sm);transition:box-shadow .2s;
+}
+.sp-day-card:hover{box-shadow:var(--shadow)}
+.sp-day-card.sp-today{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.15)}
+.sp-day-card.sp-done{border-color:var(--green);opacity:.8}
+.sp-day-header{
+  padding:13px 16px;display:flex;justify-content:space-between;align-items:center;
+  cursor:pointer;background:var(--surface2);user-select:none;
+  border-bottom:1px solid transparent;transition:background .15s;
+}
+.sp-day-card.sp-today .sp-day-header{background:var(--gold-light)}
+.sp-day-card.sp-open .sp-day-header,.sp-day-card.sp-today .sp-day-header{border-bottom-color:var(--border)}
+.sp-day-header:active{background:#E8ECF0}
+.sp-day-num{font-size:.88rem;font-weight:800;color:var(--text-primary)}
+.sp-day-card.sp-today .sp-day-num{color:var(--gold-dark)}
+.sp-today-chip{
+  font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:20px;
+  background:var(--gold);color:#fff;margin-right:6px;
+}
+.sp-day-status{font-size:1.05rem}
 .sp-day-body{display:none;padding:12px 16px}
 .sp-day-card.sp-open .sp-day-body,.sp-day-card.sp-today .sp-day-body{display:block}
-.sp-task-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f0ede8}
-.sp-task-row:last-child{border:none}
-.sp-checkbox{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;flex-shrink:0;transition:all .2s}
-.sp-checkbox.done{background:var(--green);border-color:var(--green);color:#fff}
-.sp-task-label{flex:1;font-size:.86rem;color:#2c3e50}
-.sp-task-label.done{text-decoration:line-through;color:var(--muted)}
-.sp-task-type{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:12px;white-space:nowrap;flex-shrink:0}
-.sp-type-memo{background:#e8f4fd;color:#1a6ca8}
-.sp-type-link{background:#fdf5e8;color:#9b6a10}
-.sp-type-review{background:#fde8e8;color:#a82020}
-.sp-day-actions{margin-top:10px;display:flex;gap:8px}
-.btn-sp-copy{padding:7px 14px;background:#f3f4f6;color:#2c3e50;border:1px solid var(--border);border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit}
-.btn-sp-copy:hover{background:#e5e7eb}
-.no-plan-msg{background:#f9fafb;border-radius:var(--radius);padding:32px;text-align:center;border:2px dashed var(--border)}
-.no-plan-msg .np-icon{font-size:2.5rem;margin-bottom:10px}
-.no-plan-msg p{font-size:.88rem;color:var(--muted)}
+.sp-task-row{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 0;border-bottom:1px solid var(--border);
+}
+.sp-task-row:last-of-type{border:none}
+.sp-checkbox{
+  width:38px;height:38px;border-radius:50%;
+  border:2px solid var(--border);background:var(--surface);
+  display:flex;align-items:center;justify-content:center;font-size:1rem;
+  cursor:pointer;flex-shrink:0;transition:all .2s;box-shadow:var(--shadow-sm);
+}
+.sp-checkbox.done{background:var(--green);border-color:var(--green-dark);color:#fff;box-shadow:0 2px 8px rgba(76,175,125,.3)}
+.sp-task-type{font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;letter-spacing:.02em}
+.sp-type-memo{background:var(--blue-light);color:#1D5FA6}
+.sp-type-link{background:var(--gold-light);color:var(--gold-dark)}
+.sp-type-review{background:var(--red-light);color:#B03030}
+.sp-task-label{flex:1;font-size:.85rem;color:var(--text-secondary);line-height:1.4}
+.sp-task-label.done{text-decoration:line-through;color:var(--text-muted)}
+.sp-day-actions{margin-top:10px;display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--border)}
+.btn-sp-copy{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 14px;background:var(--surface2);color:var(--text-secondary);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;
+  transition:.15s;
+}
+.btn-sp-copy:hover{background:var(--border);color:var(--text-primary)}
+
+/* ── NO PLAN MESSAGE ──────────────────────────────── */
+.no-plan-msg{
+  background:var(--surface);border-radius:var(--radius-lg);
+  padding:40px 24px;text-align:center;border:2px dashed var(--border);
+}
+.no-plan-icon{font-size:3rem;margin-bottom:12px;display:block}
+.no-plan-title{font-size:.95rem;font-weight:700;color:var(--text-primary);margin-bottom:6px}
+.no-plan-sub{font-size:.82rem;color:var(--text-muted);line-height:1.6}
+
+/* ── SESSION ROWS ─────────────────────────────────── */
+.session-row{padding:12px 0;border-bottom:1px solid var(--border)}
+.session-row:last-child{border:none}
+.session-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.session-date{font-size:.75rem;color:var(--text-muted);font-weight:600}
+.score-badge{display:inline-flex;align-items:center;padding:3px 11px;border-radius:20px;font-size:.75rem;font-weight:800;gap:3px}
+.score-badge.green{background:var(--green-light);color:var(--green-dark)}
+.score-badge.yellow{background:#FFF8E6;color:#92640A}
+.score-badge.red{background:var(--red-light);color:#B03030}
+.session-range{font-size:.88rem;font-weight:700;color:var(--text-primary)}
+.session-note{font-size:.78rem;color:var(--text-muted);margin-top:4px;line-height:1.5}
+
+/* ── EXAM ROWS ────────────────────────────────────── */
+.exam-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border)}
+.exam-row:last-child{border:none}
+.exam-label{font-size:.87rem;color:var(--text-primary);font-weight:700}
+.exam-date{font-size:.7rem;color:var(--text-muted);margin-top:3px}
+.exam-score{font-size:1rem;font-weight:900}
+
+/* ── HONOR BOARD ──────────────────────────────────── */
+.honor-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.honor-row:last-child{border:none}
+.honor-row.me{background:var(--gold-light);border-radius:10px;padding:11px 10px;margin:0 -4px}
+.honor-rank{font-size:1.1rem;min-width:30px;text-align:center}
+.honor-name{flex:1;font-size:.88rem;font-weight:600;color:var(--text-secondary)}
+.honor-name.me{color:var(--gold-dark);font-weight:800}
+.honor-score{font-size:.9rem;font-weight:800;color:var(--green-dark)}
+
+/* ── REVIEW ───────────────────────────────────────── */
+.review-done-msg{
+  background:var(--green-light);border-radius:var(--radius);
+  padding:16px;text-align:center;color:var(--green-dark);
+  font-weight:700;font-size:.88rem;border:1px solid rgba(76,175,125,.2);
+}
+.review-textarea{
+  width:100%;padding:12px 14px;border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);font-size:.88rem;font-family:inherit;
+  resize:vertical;min-height:90px;direction:rtl;outline:none;
+  background:var(--surface2);color:var(--text-primary);transition:border .2s;
+}
+.review-textarea:focus{border-color:var(--gold);background:var(--surface);box-shadow:0 0 0 3px rgba(201,168,76,.1)}
+
+/* ── BUTTONS ──────────────────────────────────────── */
+.btn-primary{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,var(--text-primary) 0%,#263647 100%);
+  color:#fff;border:none;border-radius:var(--radius-sm);
+  font-size:.92rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:10px;
+  transition:.2s;letter-spacing:.02em;
+}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 4px 12px rgba(28,43,58,.3)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{background:#9ca3af;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-green{background:linear-gradient(135deg,var(--green) 0%,var(--green-dark) 100%) !important}
+.btn-whatsapp{
+  background:#25D366;color:#fff;border:none;border-radius:var(--radius-sm);
+  padding:13px;font-size:.92rem;font-weight:700;cursor:pointer;
+  font-family:inherit;width:100%;margin-bottom:10px;transition:.2s;display:block;
+}
+.btn-whatsapp:hover{background:#1ebe57;transform:translateY(-1px)}
+
+/* ── SKELETON LOADERS ─────────────────────────────── */
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel{
+  border-radius:8px;
+  background:linear-gradient(90deg,#E8ECF0 25%,#F2F4F7 50%,#E8ECF0 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.4s ease infinite;
+}
+.skel-line{height:14px;margin-bottom:8px}.skel-line:last-child{margin:0;width:60%}
+.skel-box{height:80px;border-radius:var(--radius)}
+.skel-stat{height:70px;border-radius:var(--radius)}
+
+/* ── EMPTY STATES ─────────────────────────────────── */
+.empty-state{text-align:center;padding:32px 20px}
+.empty-icon{font-size:2.5rem;margin-bottom:10px;display:block;opacity:.5}
+.empty-text{font-size:.85rem;color:var(--text-muted);line-height:1.6}
+
+/* ── LEGACY COMPAT (old class names used in JS) ────── */
+.loading{text-align:center;color:var(--text-muted);padding:20px;font-size:.85rem}
+.empty{text-align:center;color:var(--text-muted);padding:20px;font-size:.82rem}
+.plan-day{border-radius:var(--radius);border:1.5px solid var(--border);margin-bottom:10px;overflow:hidden;background:var(--surface)}
+.plan-day.today{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.12)}
+.plan-day-header{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;background:var(--surface2);cursor:pointer;user-select:none}
+.plan-day.today .plan-day-header{background:var(--gold-light)}
+.plan-day-header .dlabel{font-size:.88rem;font-weight:800;color:var(--text-primary)}
+.plan-day.today .plan-day-header .dlabel{color:var(--gold-dark)}
+.plan-day-header .ddate{font-size:.72rem;color:var(--text-muted);margin-top:2px}
+.today-badge{background:var(--gold);color:#fff;font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-right:6px}
+.plan-day-body{padding:12px 16px;display:none}
+.plan-day.open .plan-day-body,.plan-day.today .plan-day-body{display:block}
+.task-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.task-row:last-child{border:none}
+.task-icon-btn{width:38px;height:38px;border-radius:50%;border:2px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;transition:all .2s;flex-shrink:0}
+.task-icon-btn.done{background:var(--green);border-color:var(--green-dark);color:#fff}
+.task-label{flex:1;font-size:.85rem;color:var(--text-secondary)}
+.task-label.done{color:var(--text-muted);text-decoration:line-through}
+.task-type-badge{font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:12px;white-space:nowrap;flex-shrink:0}
+.badge-memorize{background:var(--blue-light);color:#1D5FA6}
+.badge-repeat{background:var(--green-light);color:var(--green-dark)}
+.badge-link{background:var(--gold-light);color:var(--gold-dark)}
+.badge-review{background:var(--red-light);color:#B03030}
+
+/* ── TOAST ────────────────────────────────────────── */
+.toast-wrap{
+  position:fixed;top:70px;left:50%;transform:translateX(-50%);
+  z-index:9999;pointer-events:none;display:flex;flex-direction:column;
+  gap:8px;align-items:center;
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(-8px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+.toast{
+  padding:11px 24px;border-radius:var(--radius);
+  font-size:.85rem;font-weight:700;color:#fff;
+  box-shadow:var(--shadow-lg);animation:toastIn .25s ease;
+  white-space:nowrap;backdrop-filter:blur(4px);
+}
+.toast.success{background:linear-gradient(135deg,var(--green),var(--green-dark))}
+.toast.error{background:linear-gradient(135deg,var(--red),#C03030)}
+
+/* ── RESPONSIVE ───────────────────────────────────── */
+@media(min-width:480px){
+  .stats-grid{grid-template-columns:1fr 1fr 1fr}
+}
+@media(min-width:680px){
+  .main{padding:20px 24px}
+  .grad-banner{padding:28px 24px}
+}
 </style>
 </head>
 <body>
 
+<!-- TOPBAR -->
 <div class="topbar">
-  <span class="logo">حفّاظ</span>
-  <span class="student-name" id="studentNameTop">…</span>
-  <a href="../profile.html" class="profile-btn" title="الملف الشخصي">👤</a>
-  <button class="logout-btn" onclick="logout()">خروج</button>
+  <span class="topbar-logo">حفّاظ</span>
+  <span class="topbar-name" id="studentNameTop">…</span>
+  <a href="../profile.html" class="topbar-profile" title="الملف الشخصي">👤</a>
+  <button class="topbar-logout" onclick="logout()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    خروج
+  </button>
 </div>
 
+<!-- BOTTOM NAV -->
 <nav class="bottom-nav">
   <button class="nav-btn active" id="nb-study" onclick="showView('study')">
     <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
@@ -157,70 +408,133 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f5f0eb;color:#1a202c;m
   </button>
 </nav>
 
+<!-- TOAST -->
 <div class="toast-wrap" id="toastWrap"></div>
 
+<!-- MAIN -->
 <div class="main">
 
   <!-- STUDY PLAN VIEW -->
   <div class="view active" id="view-study">
-    <div id="studyPlanContent"><div class="loading">جاري التحميل…</div></div>
+    <div id="studyPlanContent">
+      <div class="card">
+        <div class="skel skel-line" style="width:40%;margin-bottom:16px"></div>
+        <div class="skel skel-box" style="margin-bottom:10px"></div>
+        <div class="skel skel-box" style="margin-bottom:10px"></div>
+        <div class="skel skel-box"></div>
+      </div>
+    </div>
   </div>
 
   <!-- ACHIEVE VIEW -->
   <div class="view" id="view-achieve">
+
+    <!-- Grad Banner -->
     <div class="grad-banner" id="gradBanner">
-      <div class="glabel">موعد التخرج المتوقع</div>
-      <div class="gdate" id="gradDate">—</div>
-      <div class="gday" id="gradDay"></div>
+      <div class="grad-label">موعد التخرج المتوقع</div>
+      <div class="grad-date" id="gradDate">—</div>
+      <div class="grad-day" id="gradDay"></div>
     </div>
+
+    <!-- Plan Progress -->
     <div class="card" id="planProgressCard" style="display:none">
-      <div class="card-title"><span class="icon">📖</span> تقدم الخطة العلمية</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:.85rem;color:var(--muted)" id="planProgressLabel">0 / 0 يوم مكتمل</span>
-        <span style="font-size:1.1rem;font-weight:800;color:var(--primary)" id="planProgressPct">0%</span>
+      <div class="card-header">
+        <div class="card-icon green">📖</div>
+        <div>
+          <div class="card-title">تقدم الخطة العلمية</div>
+          <div class="card-sub">نسبة إنجاز المهام</div>
+        </div>
       </div>
-      <div class="progress-track" style="height:12px;border-radius:8px">
-        <div class="progress-fill" id="planProgressBar" style="width:0%;height:100%;border-radius:8px;transition:width .6s ease"></div>
+      <div class="plan-progress-header">
+        <span class="plan-progress-label" id="planProgressLabel">0 / 0 يوم مكتمل</span>
+        <span class="plan-progress-pct" id="planProgressPct">0%</span>
       </div>
-      <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-top:6px">
-        <span>بداية الخطة</span>
-        <span>نهاية الخطة</span>
+      <div class="progress-track">
+        <div class="progress-fill" id="planProgressBar" style="width:0%"></div>
       </div>
+      <div class="progress-footnote"><span>بداية الخطة</span><span>نهاية الخطة</span></div>
     </div>
+
+    <!-- Stats -->
     <div class="card">
-      <div class="card-title"><span class="icon">🏆</span> منجزاتي</div>
-      <div class="stats-grid" id="statsGrid"><div class="loading" style="grid-column:span 2">جاري التحميل…</div></div>
+      <div class="card-header">
+        <div class="card-icon gold">🏆</div>
+        <div><div class="card-title">منجزاتي</div></div>
+      </div>
+      <div class="stats-grid" id="statsGrid">
+        <div class="skel skel-stat"></div>
+        <div class="skel skel-stat"></div>
+        <div class="skel skel-stat"></div>
+        <div class="skel skel-stat"></div>
+      </div>
       <div id="progressSection" style="display:none">
-        <div class="progress-label"><span>نسبة الإنجاز</span><span id="progressPct">0%</span></div>
-        <div class="progress-track"><div class="progress-fill" id="progressBar" style="width:0%"></div></div>
+        <div class="prog-row">
+          <span class="prog-lbl">نسبة الإنجاز الكلية</span>
+          <span class="prog-pct" id="progressPct">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressBar" style="width:0%"></div>
+        </div>
       </div>
     </div>
+
+    <!-- Daily Review -->
     <div class="card">
-      <div class="card-title"><span class="icon">📝</span> مراجعتي اليومية</div>
+      <div class="card-header">
+        <div class="card-icon blue">📝</div>
+        <div><div class="card-title">مراجعتي اليومية</div></div>
+      </div>
       <div id="reviewSection">
         <textarea class="review-textarea" id="reviewText" placeholder="سجّل مراجعتك اليومية هنا…"></textarea>
         <button class="btn-primary btn-green" id="reviewBtn" onclick="submitReview()">تسجيل المراجعة</button>
       </div>
     </div>
+
+    <!-- Exams -->
     <div class="card">
-      <div class="card-title"><span class="icon">📋</span> الاختبارات المرحلية</div>
-      <div id="examsList"><div class="loading">جاري التحميل…</div></div>
+      <div class="card-header">
+        <div class="card-icon gold">📋</div>
+        <div><div class="card-title">الاختبارات المرحلية</div></div>
+      </div>
+      <div id="examsList">
+        <div class="skel skel-line"></div>
+        <div class="skel skel-line"></div>
+        <div class="skel skel-line" style="width:70%"></div>
+      </div>
     </div>
+
   </div>
 
   <!-- SESSIONS VIEW -->
   <div class="view" id="view-sessions">
     <div class="card">
-      <div class="card-title"><span class="icon">🎙️</span> سجل جلساتي مع المعلم</div>
-      <div id="sessionsList"><div class="loading">جاري التحميل…</div></div>
+      <div class="card-header">
+        <div class="card-icon blue">🎙️</div>
+        <div><div class="card-title">سجل جلساتي مع المعلم</div></div>
+      </div>
+      <div id="sessionsList">
+        <div class="skel skel-line"></div>
+        <div class="skel skel-line"></div>
+        <div class="skel skel-line" style="width:80%"></div>
+      </div>
     </div>
   </div>
 
   <!-- HONOR VIEW -->
   <div class="view" id="view-honor">
     <div class="card">
-      <div class="card-title"><span class="icon">🌟</span> لوحة الشرف — أفضل 10 طلاب</div>
-      <div id="honorList"><div class="loading">جاري التحميل…</div></div>
+      <div class="card-header">
+        <div class="card-icon gold">🌟</div>
+        <div>
+          <div class="card-title">لوحة الشرف</div>
+          <div class="card-sub">أفضل 10 طلاب</div>
+        </div>
+      </div>
+      <div id="honorList">
+        <div class="skel skel-line"></div>
+        <div class="skel skel-line"></div>
+        <div class="skel skel-line" style="width:75%"></div>
+      </div>
     </div>
   </div>
 
@@ -289,8 +603,9 @@ async function loadStudyPlan() {
   if (!studentData?.current_plan_id) {
     container.innerHTML = `
       <div class="no-plan-msg">
-        <div class="np-icon">📚</div>
-        <p>لم يتم تعيين خطة علمية لك بعد<br>تواصل مع المشرف لتعيين خطتك</p>
+        <span class="no-plan-icon">📚</span>
+        <div class="no-plan-title">لم يتم تعيين خطة علمية بعد</div>
+        <div class="no-plan-sub">تواصل مع المشرف لتعيين خطتك الدراسية</div>
       </div>`;
     return;
   }
@@ -317,7 +632,6 @@ function updateGradDateFromStudyPlan() {
   const doneDays = studyPlanDays.filter(d => isSpDayDone(d)).length;
   const remaining = total - doneDays;
 
-  // Graduation date
   const grad = new Date();
   grad.setDate(grad.getDate() + remaining);
   const gradDateStr = grad.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -327,7 +641,6 @@ function updateGradDateFromStudyPlan() {
   if (el) el.textContent = gradDateStr;
   if (el2) el2.textContent = gradDayStr + (remaining > 0 ? ' — بعد ' + remaining + ' يوم' : ' — اليوم!');
 
-  // Progress bar
   updatePlanProgressBar(doneDays, total);
 }
 
@@ -335,9 +648,7 @@ function updatePlanProgressBar(done, total) {
   const card = document.getElementById('planProgressCard');
   if (!total) { if (card) card.style.display = 'none'; return; }
   if (card) card.style.display = 'block';
-  const pct = Math.round((done / total) * 100);
 
-  // Count total tasks done vs total tasks
   let totalTasks = 0, doneTasks = 0;
   studyPlanDays.forEach(d => {
     const tasks = getSpTasks(d);
@@ -362,13 +673,14 @@ function renderStudyPlan() {
   const doneDays = studyPlanDays.filter(d => isSpDayDone(d)).length;
 
   container.innerHTML = `
-    <div class="study-plan-banner">
+    <div class="sp-banner">
+      <span class="sp-banner-icon">📖</span>
       <div>
-        <div class="sp-title">📖 ${studyPlanInfo.plan_name}</div>
-        <div class="sp-sub">${studyPlanInfo.book_name}${studyPlanInfo.folder_name ? ' — ' + studyPlanInfo.folder_name : ''} &bull; ${doneDays}/${totalDays} يوم مكتمل</div>
+        <div class="sp-banner-title">${studyPlanInfo.plan_name}</div>
+        <div class="sp-banner-sub">${studyPlanInfo.book_name}${studyPlanInfo.folder_name ? ' — ' + studyPlanInfo.folder_name : ''} &bull; ${doneDays}/${totalDays} يوم مكتمل</div>
       </div>
     </div>
-    ${studyPlanDays.length ? studyPlanDays.map(d => renderSpDay(d)).join('') : '<div class="empty">لا توجد أيام في هذه الخطة</div>'}
+    ${studyPlanDays.length ? studyPlanDays.map(d => renderSpDay(d)).join('') : '<div class="empty-state"><span class="empty-icon">📋</span><div class="empty-text">لا توجد أيام في هذه الخطة</div></div>'}
   `;
 }
 
@@ -399,7 +711,7 @@ function renderSpDay(day) {
     </div>`;
   }).join('');
 
-  return `<div class="sp-day-card" id="spday-${day.id}">
+  return `<div class="sp-day-card${allDone ? ' sp-done' : ''}" id="spday-${day.id}">
     <div class="sp-day-header" onclick="this.parentElement.classList.toggle('sp-open')">
       <div class="sp-day-num">اليوم ${day.day_number}</div>
       <span class="sp-day-status">${statusIcon}</span>
@@ -427,6 +739,7 @@ async function toggleSpTask(dayId, taskKey, btn) {
       const allDone = isSpDayDone(day);
       const si = card.querySelector('.sp-day-status');
       if (si) si.textContent = allDone ? '✅' : '⭕';
+      card.classList.toggle('sp-done', allDone);
     }
   }
 
@@ -571,12 +884,12 @@ async function loadStats() {
   const gap = Math.max(0, memorized - lastH);
   const pct = totalH ? Math.min(100, Math.round((lastH / totalH) * 100)) : 0;
   grid.innerHTML = `
-    <div class="stat-box"><div class="snum">${lastH || '—'}</div><div class="slbl">أحاديث مسمّعة</div></div>
-    <div class="stat-box"><div class="snum">${cnt}</div><div class="slbl">عدد الجلسات</div></div>
-    <div class="stat-box"><div class="snum">${avgScore}</div><div class="slbl">متوسط التقييم / 10</div></div>
-    <div class="stat-box"><div class="snum">${memorized}</div><div class="slbl">أحاديث محفوظة</div></div>
-    <div class="stat-box"><div class="snum">${totalLink}</div><div class="slbl">صفحات الربط</div></div>
-    <div class="stat-box"><div class="snum">${gap}</div><div class="slbl">فرق الحفظ والتسميع</div></div>
+    <div class="stat-box"><div class="stat-num">${lastH || '—'}</div><div class="stat-lbl">أحاديث مسمّعة</div></div>
+    <div class="stat-box"><div class="stat-num">${cnt}</div><div class="stat-lbl">عدد الجلسات</div></div>
+    <div class="stat-box"><div class="stat-num">${avgScore}</div><div class="stat-lbl">متوسط التقييم / 10</div></div>
+    <div class="stat-box"><div class="stat-num">${memorized}</div><div class="stat-lbl">أحاديث محفوظة</div></div>
+    <div class="stat-box"><div class="stat-num">${totalLink}</div><div class="stat-lbl">صفحات الربط</div></div>
+    <div class="stat-box"><div class="stat-num">${gap}</div><div class="stat-lbl">فرق الحفظ والتسميع</div></div>
   `;
   if (totalH > 0) {
     document.getElementById('progressSection').style.display = 'block';
@@ -626,7 +939,7 @@ async function loadSessions() {
     .select('id, date, hadith_from, hadith_to, score, notes')
     .eq('student_id', studentData.id)
     .order('date', { ascending: false });
-  if (error || !data || !data.length) { list.innerHTML = '<div class="empty">لا توجد جلسات بعد</div>'; return; }
+  if (error || !data || !data.length) { list.innerHTML = '<div class="empty-state"><span class="empty-icon">🎙️</span><div class="empty-text">لا توجد جلسات بعد</div></div>'; return; }
   list.innerHTML = data.map(s => {
     const score = parseFloat(s.score);
     const cls = score >= 8.5 ? 'green' : score >= 7 ? 'yellow' : 'red';
@@ -649,10 +962,10 @@ async function loadExams() {
     .select('*')
     .eq('student_id', studentData.id)
     .order('exam_date', { ascending: false });
-  if (error || !data || !data.length) { list.innerHTML = '<div class="empty">لا توجد اختبارات بعد</div>'; return; }
+  if (error || !data || !data.length) { list.innerHTML = '<div class="empty-state"><span class="empty-icon">📋</span><div class="empty-text">لا توجد اختبارات بعد</div></div>'; return; }
   list.innerHTML = data.map(e => {
     const score = parseFloat(e.score);
-    const color = score >= 8.5 ? '#27ae60' : score >= 7 ? '#e67e22' : '#e74c3c';
+    const color = score >= 8.5 ? 'var(--green-dark)' : score >= 7 ? '#92640A' : 'var(--red)';
     return `<div class="exam-row">
       <div>
         <div class="exam-label">${e.title || e.exam_type || 'اختبار'}</div>
@@ -668,7 +981,7 @@ async function loadHonor() {
   const list = document.getElementById('honorList');
   const { data, error } = await client.from('recitation_sessions')
     .select('student_id, score, students(users(name))');
-  if (error || !data || !data.length) { list.innerHTML = '<div class="empty">لا توجد بيانات</div>'; return; }
+  if (error || !data || !data.length) { list.innerHTML = '<div class="empty-state"><span class="empty-icon">🌟</span><div class="empty-text">لا توجد بيانات بعد</div></div>'; return; }
   const map = {};
   data.forEach(r => {
     const id = r.student_id;
@@ -685,7 +998,7 @@ async function loadHonor() {
   const myStudentId = studentData?.id;
   list.innerHTML = ranked.map((s, i) => {
     const isMe = String(s.id) === String(myStudentId);
-    return `<div class="honor-row"${isMe ? ' style="background:#ebf3fb;border-radius:8px;padding:11px 8px"' : ''}>
+    return `<div class="honor-row${isMe ? ' me' : ''}">
       <span class="honor-rank">${medals[i] || (i + 1)}</span>
       <span class="honor-name${isMe ? ' me' : ''}">${s.name}${isMe ? ' (أنت)' : ''}</span>
       <span class="honor-score">${s.avg.toFixed(2)}</span>
