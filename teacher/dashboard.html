@@ -390,10 +390,21 @@ async function checkAuth() {
   initSupabase();
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) { location.href = '../login.html'; return; }
-  const meta = session.user.user_metadata;
-  if (meta.role !== 'teacher') { location.href = '../login.html'; return; }
-  document.getElementById('teacherNameTop').textContent = meta.name || '';
-  document.getElementById('welcomeMsg').textContent = 'أهلاً، ' + (meta.name || 'معلم');
+
+  // جلب بيانات المستخدم من جدول users
+  const { data: userData } = await supabase
+    .from('users')
+    .select('name, role')
+    .eq('id', session.user.id)
+    .single();
+
+  if (!userData || userData.role !== 'teacher') {
+    location.href = '../login.html';
+    return;
+  }
+
+  document.getElementById('teacherNameTop').textContent = userData.name || '';
+  document.getElementById('welcomeMsg').textContent = 'أهلاً، ' + (userData.name || 'معلم');
   await loadTeacher(session.user.id);
 }
 
