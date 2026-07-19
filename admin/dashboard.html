@@ -260,6 +260,16 @@
     .file-name-display { font-size: 0.82rem; color: var(--accent); font-weight: 600; margin-top: 6px; }
 
     select.form-control { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%236b7280'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 10px center; }
+    .as-tab-btn { padding:10px 22px; background:var(--card-bg); border:1.5px solid var(--border); border-radius:10px; font-size:.88rem; font-weight:700; cursor:pointer; font-family:inherit; color:var(--text-muted); transition:all .18s; }
+    .as-tab-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .as-tab-btn:not(.active):hover { border-color:var(--accent); color:var(--accent); }
+    .sf-table { width:100%; border-collapse:collapse; font-size:.84rem; }
+    .sf-table th { padding:11px 14px; background:#f9fafb; font-weight:700; color:var(--text-muted); text-align:right; border-bottom:1px solid var(--border); font-size:.78rem; white-space:nowrap; }
+    .sf-table td { padding:11px 14px; border-bottom:1px solid var(--border); vertical-align:middle; }
+    .sf-table tr:last-child td { border:none; }
+    .sf-table tr:hover td { background:#f9fafb; }
+    .btn-pw { padding:5px 14px; background:#fef3c7; color:#92400e; border:1px solid #fcd34d; border-radius:7px; font-size:.78rem; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap; }
+    .btn-pw:hover { background:#fde68a; }
   </style>
 </head>
 <body>
@@ -410,11 +420,10 @@
 
   <div class="nav-section">
     <div class="nav-section-title">الطلاب</div>
-    <div class="nav-item" onclick="showView('add-student')"><span class="nav-icon">➕</span> إضافة طالب</div>
+    <div class="nav-item" onclick="showView('add-student')"><span class="nav-icon">➕</span> إضافة طالب / استيراد</div>
     <div class="nav-item" onclick="showView('student-files');loadStudentFiles()"><span class="nav-icon">📁</span> ملفات الطلاب</div>
     <div class="nav-item" onclick="showView('top-students')"><span class="nav-icon">🏆</span> قائمة المتميزين</div>
     <div class="nav-item" onclick="showView('exams')"><span class="nav-icon">📝</span> الاختبارات المرحلية</div>
-    <div class="nav-item" onclick="showView('import-students')"><span class="nav-icon">📥</span> استيراد طلاب (Excel)</div>
     <div class="nav-item" onclick="showView('import-plans');loadStudyPlans()"><span class="nav-icon">📋</span> الخطط العلمية</div>
   </div>
 
@@ -466,7 +475,136 @@
 
     <div class="view" id="view-attendance"><div class="section-placeholder"><div class="ph-icon">📊</div><h3>متابعة الحضور</h3><p>سيتم عرض نسبة حضور الطلاب والمعلمين هنا</p></div></div>
     <div class="view" id="view-recitation"><div class="section-placeholder"><div class="ph-icon">🎙️</div><h3>رصد جلسة تسميع</h3><p>سيتم عرض جلسات التسميع النشطة وتفاصيلها هنا</p></div></div>
-    <div class="view" id="view-add-student"><div class="section-placeholder"><div class="ph-icon">➕</div><h3>إضافة طالب</h3><p>نموذج إضافة طالب جديد سيكون هنا</p></div></div>
+    <!-- ADD STUDENT VIEW -->
+    <div class="view" id="view-add-student">
+
+      <!-- TABS -->
+      <div style="display:flex;gap:10px;margin-bottom:22px">
+        <button class="as-tab-btn active" id="asTabManual" onclick="switchAsTab('manual')">➕ إضافة يدوية</button>
+        <button class="as-tab-btn" id="asTabExcel" onclick="switchAsTab('excel')">📥 استيراد Excel</button>
+      </div>
+
+      <!-- TAB: MANUAL ADD -->
+      <div id="asManualPane">
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="icon">👨‍🎓</div>
+            <div>
+              <h2>إضافة طالب جديد</h2>
+              <p>يسجّل الدخول باسم المستخدم — الإيميل اختياري</p>
+            </div>
+          </div>
+          <form id="addStudentForm" onsubmit="submitStudent(event)">
+            <div class="form-body">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>الاسم الشخصي *</label>
+                  <input type="text" id="sf-name" class="form-control" placeholder="مثال: محمد أحمد العتيبي" required />
+                </div>
+                <div class="form-group">
+                  <label>اسم المستخدم *</label>
+                  <span class="hint">بلا مسافات — للدخول</span>
+                  <input type="text" id="sf-username" class="form-control" placeholder="مثال: محمد_عتيبي" required />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>رقم الجوال <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+                  <input type="tel" id="sf-phone" class="form-control" placeholder="05xxxxxxxx" />
+                </div>
+                <div class="form-group">
+                  <label>الإيميل <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+                  <input type="email" id="sf-email" class="form-control" placeholder="student@example.com" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>البرنامج <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+                  <select id="sf-program" class="form-control">
+                    <option value="">— اختر البرنامج —</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>المجلد <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+                  <input type="text" id="sf-folder" class="form-control" placeholder="مثال: المجلد الأول" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>الخطة العلمية <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+                <select id="sf-plan" class="form-control">
+                  <option value="">— لا تُعيَّن خطة الآن —</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>كلمة المرور *</label>
+                <input type="password" id="sf-password" class="form-control" placeholder="6 أحرف على الأقل" minlength="6" required />
+              </div>
+            </div>
+            <div class="form-footer">
+              <button type="submit" class="btn-submit" id="sfSubmitBtn">حفظ الطالب</button>
+              <button type="button" class="btn-reset" onclick="document.getElementById('addStudentForm').reset()">مسح الحقول</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- TAB: EXCEL IMPORT -->
+      <div id="asExcelPane" style="display:none">
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="icon">📥</div>
+            <div>
+              <h2>استيراد طلاب من Excel</h2>
+              <p>الأعمدة بالترتيب: الاسم — اسم المستخدم — الجوال — الإيميل — البرنامج — المجلد — كلمة المرور</p>
+            </div>
+          </div>
+          <div class="form-body">
+            <div class="file-upload-area" onclick="document.getElementById('sf-excel').click()">
+              <input type="file" id="sf-excel" accept=".xlsx,.xls" onchange="handleStudentExcel(this)" />
+              <div class="file-upload-icon">📊</div>
+              <div class="file-upload-text">انقر لاختيار ملف Excel أو اسحبه هنا</div>
+              <div class="file-name-display" id="sfExcelName"></div>
+            </div>
+            <div id="sfExcelPreview" style="margin-top:16px;overflow-x:auto"></div>
+          </div>
+          <div class="form-footer">
+            <button class="btn-submit" id="sfImportBtn" onclick="importStudentsExcel()" style="display:none">📥 استيراد الكل</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STUDENT LIST + PASSWORD RESET -->
+      <div style="margin-top:28px">
+        <div class="plans-header">
+          <h2 style="font-size:1rem">👨‍🎓 قائمة الطلاب المسجلين</h2>
+          <input type="text" id="sfSearch" class="form-control" placeholder="🔍 بحث بالاسم أو المستخدم…" style="width:220px;margin:0" oninput="filterStudentsList()" />
+        </div>
+        <div class="plans-table-wrap">
+          <div id="sfStudentsList"><p class="empty-row" style="padding:20px;text-align:center;color:var(--text-muted)">جارٍ التحميل…</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: تغيير كلمة مرور الطالب -->
+    <div class="modal-overlay hidden" id="resetPwModal">
+      <div class="modal" style="max-width:400px">
+        <div class="modal-header">
+          <h2>🔑 تغيير كلمة المرور</h2>
+          <button class="modal-close" onclick="closeResetPwModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <p id="resetPwName" style="font-weight:700;margin-bottom:14px;color:var(--accent)"></p>
+          <div class="form-group">
+            <label>كلمة المرور الجديدة *</label>
+            <input type="password" id="resetPwInput" class="form-control" placeholder="6 أحرف على الأقل" minlength="6" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-reset" onclick="closeResetPwModal()">إلغاء</button>
+          <button class="btn-submit" id="resetPwBtn" onclick="saveResetPassword()">حفظ كلمة المرور</button>
+        </div>
+      </div>
+    </div>
 
     <!-- STUDENT FILES -->
     <div class="view" id="view-student-files">
@@ -597,6 +735,7 @@
   let allPlans = [];
   let pendingPlanRows = [];
 
+  let _addStudentLoaded = false;
   function showView(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -607,6 +746,10 @@
     const meta = viewMeta[id] || { title: id, breadcrumb: '' };
     document.getElementById('topbarTitle').textContent = meta.title;
     document.getElementById('topbarBreadcrumb').textContent = meta.breadcrumb;
+    if (id === 'add-student') {
+      loadStudentsList();
+      if (!_addStudentLoaded) { _addStudentLoaded = true; loadStudentFormDropdowns(); }
+    }
   }
 
   /* ========== STUDENT FILES ========== */
@@ -1087,6 +1230,177 @@
 
   function resetForm() {
     document.getElementById('teacherForm').reset();
+  }
+
+  /* ═══════════════════════════════════════════════
+     ADD STUDENT — tab switch
+  ═══════════════════════════════════════════════ */
+  function switchAsTab(tab) {
+    document.getElementById('asManualPane').style.display = tab === 'manual' ? '' : 'none';
+    document.getElementById('asExcelPane').style.display  = tab === 'excel'  ? '' : 'none';
+    document.getElementById('asTabManual').classList.toggle('active', tab === 'manual');
+    document.getElementById('asTabExcel').classList.toggle('active', tab === 'excel');
+  }
+
+  /* load programs + plans into selects */
+  async function loadStudentFormDropdowns() {
+    const [progRes, planRes] = await Promise.all([
+      client.from('programs').select('id, name'),
+      client.from('study_plans').select('id, plan_name, book_name').order('plan_name')
+    ]);
+    const progSel = document.getElementById('sf-program');
+    (progRes.data || []).forEach(p => {
+      const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; progSel.appendChild(o);
+    });
+    const planSel = document.getElementById('sf-plan');
+    (planRes.data || []).forEach(p => {
+      const o = document.createElement('option'); o.value = p.id; o.textContent = `${p.plan_name} — ${p.book_name}`; planSel.appendChild(o);
+    });
+  }
+
+  /* SUBMIT MANUAL */
+  async function submitStudent(e) {
+    e.preventDefault();
+    const btn = document.getElementById('sfSubmitBtn');
+    btn.disabled = true; btn.textContent = 'جارٍ الحفظ…';
+    const name      = document.getElementById('sf-name').value.trim();
+    const username  = document.getElementById('sf-username').value.trim();
+    const phone     = document.getElementById('sf-phone').value.trim();
+    const email     = document.getElementById('sf-email').value.trim();
+    const program_id= document.getElementById('sf-program').value || null;
+    const plan_id   = document.getElementById('sf-plan').value || null;
+    const password  = document.getElementById('sf-password').value;
+    try {
+      const { data: { session } } = await client.auth.getSession();
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/manage-student`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY },
+        body: JSON.stringify({ action: 'create', name, username, phone, email, password, program_id, plan_id })
+      });
+      const result = await resp.json();
+      if (!resp.ok || result.error) { showToast('خطأ: ' + (result.error || resp.statusText), 'error'); }
+      else { showToast('تم إضافة الطالب بنجاح ✓', 'success'); document.getElementById('addStudentForm').reset(); loadStats(); loadStudentsList(); }
+    } catch (err) { showToast('خطأ: ' + err.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'حفظ الطالب'; }
+  }
+
+  /* EXCEL IMPORT */
+  let pendingStudentRows = [];
+  function handleStudentExcel(input) {
+    const file = input.files[0]; if (!file) return;
+    document.getElementById('sfExcelName').textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      pendingStudentRows = [];
+      const COLS = ['الاسم الشخصي','اسم المستخدم','رقم الجوال','الإيميل','البرنامج','المجلد','كلمة المرور'];
+      let html = `<table class="sf-table"><thead><tr>${COLS.map(c=>`<th>${c}</th>`).join('')}<th>الحالة</th></tr></thead><tbody>`;
+      for (let i = 1; i < rows.length; i++) {
+        const r = rows[i]; if (!r || !r[0]) continue;
+        const s = { name: String(r[0]||'').trim(), username: String(r[1]||'').trim(), phone: String(r[2]||'').trim(), email: String(r[3]||'').trim(), program: String(r[4]||'').trim(), folder: String(r[5]||'').trim(), password: String(r[6]||'').trim() };
+        const err = !s.name ? 'الاسم مطلوب' : !s.username ? 'المستخدم مطلوب' : s.password.length < 6 ? 'كلمة مرور قصيرة' : '';
+        if (!err) pendingStudentRows.push(s);
+        html += `<tr><td>${s.name||'—'}</td><td>${s.username||'—'}</td><td>${s.phone||'—'}</td><td>${s.email||'—'}</td><td>${s.program||'—'}</td><td>${s.folder||'—'}</td><td>${s.password?'••••••':'—'}</td><td style="color:${err?'var(--danger)':'#065f46'};font-weight:700">${err||'✓ جاهز'}</td></tr>`;
+      }
+      html += '</tbody></table>';
+      document.getElementById('sfExcelPreview').innerHTML = html;
+      const btn = document.getElementById('sfImportBtn');
+      btn.style.display = pendingStudentRows.length ? '' : 'none';
+      btn.textContent = `📥 استيراد ${pendingStudentRows.length} طالب`;
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  async function importStudentsExcel() {
+    if (!pendingStudentRows.length) return;
+    const btn = document.getElementById('sfImportBtn');
+    btn.disabled = true; btn.textContent = 'جارٍ الاستيراد…';
+    try {
+      const { data: { session } } = await client.auth.getSession();
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/manage-student`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY },
+        body: JSON.stringify({ action: 'bulk-create', students: pendingStudentRows.map(s => ({ name: s.name, username: s.username, phone: s.phone, email: s.email, password: s.password })) })
+      });
+      const result = await resp.json();
+      const ok = (result.results || []).filter(r => r.success).length;
+      const fail = (result.results || []).filter(r => r.error).length;
+      showToast(`تم استيراد ${ok} طالب${fail ? ' — فشل ' + fail : ''} ✓`, ok ? 'success' : 'error');
+      loadStats(); loadStudentsList();
+      pendingStudentRows = [];
+      document.getElementById('sfExcelPreview').innerHTML = '';
+      document.getElementById('sfExcelName').textContent = '';
+      btn.style.display = 'none';
+    } catch (err) { showToast('خطأ: ' + err.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = '📥 استيراد الكل'; }
+  }
+
+  /* STUDENT LIST */
+  let allStudentsListData = [];
+  async function loadStudentsList() {
+    const { data } = await client.from('students')
+      .select('id, user_id, users(id, name, username, phone), programs(name)')
+      .order('id', { ascending: false });
+    allStudentsListData = data || [];
+    renderStudentsList(allStudentsListData);
+  }
+
+  function renderStudentsList(arr) {
+    const el = document.getElementById('sfStudentsList');
+    if (!arr.length) { el.innerHTML = '<p class="empty-row" style="padding:20px;text-align:center;color:var(--text-muted)">لا يوجد طلاب مسجلون بعد</p>'; return; }
+    el.innerHTML = `<table class="sf-table">
+      <thead><tr><th>#</th><th>الاسم</th><th>اسم المستخدم</th><th>الجوال</th><th>البرنامج</th><th>إجراء</th></tr></thead>
+      <tbody>${arr.map((s,i) => `<tr>
+        <td style="color:var(--text-muted)">${i+1}</td>
+        <td style="font-weight:700">${s.users?.name || '—'}</td>
+        <td style="color:var(--accent);font-weight:600">${s.users?.username || '—'}</td>
+        <td>${s.users?.phone || '—'}</td>
+        <td>${s.programs?.name || '—'}</td>
+        <td><button class="btn-pw" onclick="openResetPwModal('${s.users?.id}','${(s.users?.name||'').replace(/'/g,'\\'')}')">🔑 تغيير كلمة المرور</button></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }
+
+  function filterStudentsList() {
+    const q = document.getElementById('sfSearch').value.trim().toLowerCase();
+    if (!q) { renderStudentsList(allStudentsListData); return; }
+    renderStudentsList(allStudentsListData.filter(s =>
+      (s.users?.name || '').toLowerCase().includes(q) ||
+      (s.users?.username || '').toLowerCase().includes(q)
+    ));
+  }
+
+  /* PASSWORD RESET MODAL */
+  let resetPwUserId = null;
+  function openResetPwModal(userId, name) {
+    resetPwUserId = userId;
+    document.getElementById('resetPwName').textContent = 'الطالب: ' + name;
+    document.getElementById('resetPwInput').value = '';
+    document.getElementById('resetPwModal').classList.remove('hidden');
+  }
+  function closeResetPwModal() {
+    document.getElementById('resetPwModal').classList.add('hidden');
+    resetPwUserId = null;
+  }
+  async function saveResetPassword() {
+    const password = document.getElementById('resetPwInput').value;
+    if (!password || password.length < 6) { showToast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'error'); return; }
+    const btn = document.getElementById('resetPwBtn');
+    btn.disabled = true; btn.textContent = 'جارٍ الحفظ…';
+    try {
+      const { data: { session } } = await client.auth.getSession();
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/manage-student`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY },
+        body: JSON.stringify({ action: 'update-password', user_id: resetPwUserId, password })
+      });
+      const result = await resp.json();
+      if (!resp.ok || result.error) { showToast('خطأ: ' + result.error, 'error'); }
+      else { showToast('تم تغيير كلمة المرور ✓', 'success'); closeResetPwModal(); }
+    } catch (err) { showToast('خطأ: ' + err.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'حفظ كلمة المرور'; }
   }
 
   async function submitTeacher(e) {
