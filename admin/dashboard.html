@@ -564,7 +564,23 @@
 
     allStudentsData = studentsRes.data;
     allPlans = plansRes.data || [];
-    renderStudentsTable(studentsRes.data);
+
+    // Fetch plan progress for all students
+    const studentIds = allStudentsData.map(s => s.id);
+    const [daysRes, progressRes] = await Promise.all([
+      client.from('study_plan_days').select('id, plan_id'),
+      client.from('student_plan_progress').select('student_id, plan_day_id, task_key, completed').eq('completed', true).in('student_id', studentIds)
+    ]);
+    const allDays = daysRes.data || [];
+    const allProgress = progressRes.data || [];
+    allStudentsData = allStudentsData.map(s => {
+      const planDays = s.current_plan_id ? allDays.filter(d => d.plan_id === s.current_plan_id) : [];
+      const dayIds = new Set(planDays.map(d => d.id));
+      const done = allProgress.filter(p => p.student_id === s.id && dayIds.has(p.plan_day_id)).length;
+      return { ...s, _planDaysTotal: planDays.length, _planDaysDone: done };
+    });
+
+    renderStudentsTable(allStudentsData);
   }
 
   function renderStudentsTable(data) {
@@ -583,6 +599,7 @@
             <th>المعلم</th>
             <th>الأحاديث المحفوظة</th>
             <th>الخطة المعيّنة</th>
+            <th>تقدم الخطة</th>
             <th>الحالة</th>
             <th></th>
           </tr>
@@ -602,6 +619,12 @@
                   ${allPlans.map(p => `<option value="${p.id}" ${s.current_plan_id === p.id ? 'selected' : ''}>${p.plan_name}</option>`).join('')}
                 </select>
               </td>
+              <td>${s.current_plan_id && s._planDaysTotal > 0 ? (() => {
+                const pct = Math.round((s._planDaysDone / s._planDaysTotal) * 100);
+                const color = pct >= 80 ? '#065f46' : pct >= 40 ? '#92400e' : '#991b1b';
+                const bg = pct >= 80 ? '#d1fae5' : pct >= 40 ? '#fef3c7' : '#fee2e2';
+                return `<div style="min-width:100px"><div style="font-size:.72rem;color:var(--text-muted);margin-bottom:3px">${s._planDaysDone}/${s._planDaysTotal} مهمة</div><div style="background:#e5e7eb;border-radius:6px;height:6px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${color};border-radius:6px"></div></div><div style="font-size:.7rem;font-weight:700;color:${color};margin-top:2px">${pct}%</div></div>`;
+              })() : '<span style="color:var(--text-muted);font-size:.8rem">—</span>'}</td>
               <td><span style="padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;background:${s.status === 'active' ? '#d1fae5' : '#f3f4f6'};color:${s.status === 'active' ? '#065f46' : '#6b7280'}">${s.status === 'active' ? 'نشط' : (s.status || '—')}</span></td>
               <td><button class="btn-view" onclick="openStudentDetail('${s.id}','${(s.users?.id || '')}')">عرض الملف</button></td>
             </tr>
@@ -634,15 +657,25 @@
     const content = document.getElementById('studentDetailContent');
     content.innerHTML = '<p style="color:var(--text-muted)">جارٍ التحميل…</p>';
 
-    const [userRes, profileRes, sessionsRes] = await Promise.all([
+    const studentMeta = allStudentsData.find(s => s.id === studentId);
+    const [userRes, profileRes, sessionsRes, progressRes] = await Promise.all([
       client.from('users').select('name, username, role, created_at').eq('id', userId).single(),
       client.from('user_profiles').select('*').eq('id', userId).single(),
-      client.from('recitation_sessions').select('date, hadith_from, hadith_to, score').eq('student_id', studentId).order('date', { ascending: false }).limit(5)
+      client.from('recitation_sessions').select('date, hadith_from, hadith_to, score').eq('student_id', studentId).order('date', { ascending: false }).limit(5),
+      studentMeta?.current_plan_id
+        ? client.from('student_plan_progress').select('plan_day_id, task_key, completed, completed_at').eq('student_id', studentId).eq('completed', true).order('completed_at', { ascending: false })
+        : Promise.resolve({ data: [] })
     ]);
 
     const user    = userRes.data    || {};
     const profile = profileRes.data || {};
     const sessions = sessionsRes.data || [];
+    const progress = progressRes.data || [];
+    const totalTasks = studentMeta?._planDaysTotal ?? 0;
+    const doneTasks  = progress.length;
+    const planPct    = totalTasks ? Math.round((doneTasks / totalTasks) * 100) : 0;
+    const today = new Date().toISOString().slice(0, 10);
+    const todayProgress = progress.filter(p => p.completed_at && p.completed_at.startsWith(today));
 
     const genderLabel = { male: 'ذكر', female: 'أنثى' };
     const name = user.name || '—';
@@ -690,6 +723,19 @@
           <div class="detail-field"><span class="key">المهارات</span><span class="val">${profile.skills || '—'}</span></div>
         </div>
       </div>
+      ${totalTasks > 0 ? `
+      <div class="sessions-mini">
+        <h3>📖 تقدم الخطة العلمية</h3>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:.85rem;color:var(--text-muted)">${doneTasks} / ${totalTasks} مهمة مكتملة</span>
+          <span style="font-size:1rem;font-weight:800;color:${planPct>=80?'#065f46':planPct>=40?'#92400e':'#991b1b'}">${planPct}%</span>
+        </div>
+        <div style="background:#e5e7eb;border-radius:8px;height:10px;overflow:hidden;margin-bottom:10px">
+          <div style="width:${planPct}%;height:100%;background:${planPct>=80?'#10b981':planPct>=40?'#f59e0b':'#ef4444'};border-radius:8px"></div>
+        </div>
+        ${todayProgress.length ? `<div style="font-size:.82rem;font-weight:600;color:#065f46;margin-bottom:4px">✅ إنجاز اليوم (${todayProgress.length} مهمة):</div>
+        <div style="font-size:.8rem;color:var(--text-muted)">${todayProgress.map(p => {const l={memo:'حفظ',link:'ربط',review:'مراجعة'};return l[p.task_key]||p.task_key;}).join(' · ')}</div>` : '<div style="font-size:.82rem;color:#e67e22">لم ينجز الطالب أي مهمة اليوم بعد</div>'}
+      </div>` : ''}
       <div class="sessions-mini">
         <h3>آخر الجلسات</h3>
         ${sessionsHTML}

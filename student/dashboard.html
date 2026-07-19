@@ -173,6 +173,20 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f5f0eb;color:#1a202c;m
       <div class="gdate" id="gradDate">—</div>
       <div class="gday" id="gradDay"></div>
     </div>
+    <div class="card" id="planProgressCard" style="display:none">
+      <div class="card-title"><span class="icon">📖</span> تقدم الخطة العلمية</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:.85rem;color:var(--muted)" id="planProgressLabel">0 / 0 يوم مكتمل</span>
+        <span style="font-size:1.1rem;font-weight:800;color:var(--primary)" id="planProgressPct">0%</span>
+      </div>
+      <div class="progress-track" style="height:12px;border-radius:8px">
+        <div class="progress-fill" id="planProgressBar" style="width:0%;height:100%;border-radius:8px;transition:width .6s ease"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-top:6px">
+        <span>بداية الخطة</span>
+        <span>نهاية الخطة</span>
+      </div>
+    </div>
     <div class="card">
       <div class="card-title"><span class="icon">🏆</span> منجزاتي</div>
       <div class="stats-grid" id="statsGrid"><div class="loading" style="grid-column:span 2">جاري التحميل…</div></div>
@@ -299,7 +313,11 @@ async function loadStudyPlan() {
 }
 
 function updateGradDateFromStudyPlan() {
-  const remaining = studyPlanDays.filter(d => !isSpDayDone(d)).length;
+  const total = studyPlanDays.length;
+  const doneDays = studyPlanDays.filter(d => isSpDayDone(d)).length;
+  const remaining = total - doneDays;
+
+  // Graduation date
   const grad = new Date();
   grad.setDate(grad.getDate() + remaining);
   const gradDateStr = grad.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -308,6 +326,32 @@ function updateGradDateFromStudyPlan() {
   const el2 = document.getElementById('gradDay');
   if (el) el.textContent = gradDateStr;
   if (el2) el2.textContent = gradDayStr + (remaining > 0 ? ' — بعد ' + remaining + ' يوم' : ' — اليوم!');
+
+  // Progress bar
+  updatePlanProgressBar(doneDays, total);
+}
+
+function updatePlanProgressBar(done, total) {
+  const card = document.getElementById('planProgressCard');
+  if (!total) { if (card) card.style.display = 'none'; return; }
+  if (card) card.style.display = 'block';
+  const pct = Math.round((done / total) * 100);
+
+  // Count total tasks done vs total tasks
+  let totalTasks = 0, doneTasks = 0;
+  studyPlanDays.forEach(d => {
+    const tasks = getSpTasks(d);
+    totalTasks += tasks.length;
+    tasks.forEach(t => { if (spChecked[d.id + '_' + t.key]) doneTasks++; });
+  });
+  const taskPct = totalTasks ? Math.round((doneTasks / totalTasks) * 100) : 0;
+
+  const lbl = document.getElementById('planProgressLabel');
+  const pctEl = document.getElementById('planProgressPct');
+  const bar = document.getElementById('planProgressBar');
+  if (lbl) lbl.textContent = done + ' / ' + total + ' يوم مكتمل (' + doneTasks + '/' + totalTasks + ' مهمة)';
+  if (pctEl) pctEl.textContent = taskPct + '%';
+  setTimeout(() => { if (bar) bar.style.width = taskPct + '%'; }, 100);
 }
 
 function renderStudyPlan() {
