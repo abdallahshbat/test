@@ -245,9 +245,10 @@ const WEEK_DAYS = ['الأحد','الاثنين','الثلاثاء','الأرب�
 async function init() {
   const { data: { session } } = await client.auth.getSession();
   if (!session) { location.href = '../login.html'; return; }
-  if (session.user.user_metadata?.role !== 'student') { location.href = '../login.html'; return; }
+  const { data: userData } = await client.from('users').select('name, role').eq('id', session.user.id).single();
+  if (!userData || userData.role !== 'student') { location.href = '../login.html'; return; }
   currentUser = session.user;
-  document.getElementById('studentNameTop').textContent = currentUser.user_metadata?.name || currentUser.email;
+  document.getElementById('studentNameTop').textContent = userData.name || session.user.email;
   await loadStudentData();
   await Promise.all([loadPlan(), loadStats(), loadSessions(), loadHonor(), loadExams(), checkDailyReview(), loadStudyPlan()]);
 }
