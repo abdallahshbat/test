@@ -324,24 +324,52 @@
   </div>
 </div>
 
-<!-- MODAL: تعديل روابط الخطة -->
+<!-- MODAL: تعديل خطة كاملة -->
 <div class="modal-overlay hidden" id="editPlanModal">
-  <div class="modal" style="max-width:480px">
+  <div class="modal">
     <div class="modal-header">
-      <h2>تعديل روابط الخطة</h2>
+      <h2>تعديل خطة علمية</h2>
       <button class="modal-close" onclick="closeEditPlanModal()">×</button>
     </div>
     <div class="modal-body">
-      <div style="font-size:.85rem;font-weight:700;color:var(--accent);margin-bottom:14px" id="edit-plan-name"></div>
-      <div class="form-group">
-        <label>رابط الملف الصوتي <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
-        <input type="url" id="edit-audio" class="form-control" placeholder="https://..." />
-      </div>
-      <div class="form-group">
-        <label>رابط الكتاب <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
-        <input type="url" id="edit-book-url" class="form-control" placeholder="https://..." />
-      </div>
       <input type="hidden" id="edit-plan-id" />
+      <div class="form-group">
+        <label>اسم الخطة *</label>
+        <input type="text" id="edit-pm-name" class="form-control" placeholder="مثال: خطة الأربعين النووية" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>اسم الكتاب *</label>
+          <input type="text" id="edit-pm-book" class="form-control" placeholder="اسم الكتاب" />
+        </div>
+        <div class="form-group">
+          <label>اسم المجلد <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+          <input type="text" id="edit-pm-folder" class="form-control" placeholder="المجلد الأول..." />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>رابط الملف الصوتي <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+          <input type="url" id="edit-audio" class="form-control" placeholder="https://..." />
+        </div>
+        <div class="form-group">
+          <label>رابط الكتاب <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+          <input type="url" id="edit-book-url" class="form-control" placeholder="https://..." />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>رفع ملف Excel جديد <span style="color:var(--text-muted);font-weight:400">(اختياري — يستبدل الأيام الحالية)</span></label>
+        <div class="file-upload-area" onclick="document.getElementById('edit-pm-file').click()">
+          <input type="file" id="edit-pm-file" accept=".xlsx,.xls" onchange="handleEditPlanFile(this)" />
+          <div class="file-upload-icon">📊</div>
+          <div class="file-upload-text">اضغط لرفع ملف Excel (.xlsx / .xls)</div>
+          <div class="file-name-display" id="edit-pm-filename">لم يُختر ملف — الأيام الحالية تبقى كما هي</div>
+        </div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">
+          الأعمدة: (1) حفظ من &bull; (2) حفظ إلى &bull; (3) ربط من &bull; (4) ربط إلى &bull; (5) مراجعة من &bull; (6) مراجعة إلى
+        </div>
+      </div>
+      <div id="edit-pm-preview" style="font-size:0.82rem;color:var(--accent);font-weight:600;margin-top:4px"></div>
     </div>
     <div class="modal-footer">
       <button class="btn-reset" onclick="closeEditPlanModal()">إلغاء</button>
@@ -808,7 +836,7 @@
               <td style="color:var(--text-muted)">${new Date(p.created_at).toLocaleDateString('ar-SA')}</td>
               <td style="display:flex;gap:8px">
                 <button class="btn-view" onclick="viewPlanDays('${p.id}','${p.plan_name}')">استعراض</button>
-                <button class="btn-view" style="background:var(--accent);color:#fff" onclick="openEditPlanModal('${p.id}','${p.plan_name}','${p.audio_url||''}','${p.book_url||''}')">تعديل</button>
+                <button class="btn-view" style="background:var(--accent);color:#fff" onclick="openEditPlanModal('${p.id}',${JSON.stringify(p.plan_name)},${JSON.stringify(p.audio_url||'')},${JSON.stringify(p.book_url||'')},${JSON.stringify(p.book_name||'')},${JSON.stringify(p.folder_name||'')})">تعديل</button>
                 <button class="btn-danger" onclick="deletePlan('${p.id}')">حذف</button>
               </td>
             </tr>
@@ -863,11 +891,19 @@
   }
 
   /* ========== EDIT PLAN MODAL ========== */
-  function openEditPlanModal(planId, planName, audioUrl, bookUrl) {
+  let editPendingRows = [];
+
+  function openEditPlanModal(planId, planName, audioUrl, bookUrl, bookName, folderName) {
     document.getElementById('edit-plan-id').value = planId;
-    document.getElementById('edit-plan-name').textContent = '📖 ' + planName;
+    document.getElementById('edit-pm-name').value = planName || '';
+    document.getElementById('edit-pm-book').value = bookName || '';
+    document.getElementById('edit-pm-folder').value = folderName || '';
     document.getElementById('edit-audio').value = audioUrl || '';
     document.getElementById('edit-book-url').value = bookUrl || '';
+    document.getElementById('edit-pm-filename').textContent = 'لم يُختر ملف — الأيام الحالية تبقى كما هي';
+    document.getElementById('edit-pm-preview').textContent = '';
+    document.getElementById('edit-pm-file').value = '';
+    editPendingRows = [];
     document.getElementById('editPlanModal').classList.remove('hidden');
   }
 
@@ -875,18 +911,67 @@
     document.getElementById('editPlanModal').classList.add('hidden');
   }
 
+  function handleEditPlanFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    document.getElementById('edit-pm-filename').textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      editPendingRows = [];
+      for (let i = 1; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r || r.length === 0) continue;
+        editPendingRows.push({
+          day_number: i,
+          memo_from:   String(r[0] ?? '').trim() || null,
+          memo_to:     String(r[1] ?? '').trim() || null,
+          link_from:   String(r[2] ?? '').trim() || null,
+          link_to:     String(r[3] ?? '').trim() || null,
+          review_from: String(r[4] ?? '').trim() || null,
+          review_to:   String(r[5] ?? '').trim() || null,
+        });
+      }
+      document.getElementById('edit-pm-preview').textContent = `✓ تم قراءة ${editPendingRows.length} يوم — سيستبدل الأيام الحالية عند الحفظ`;
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
   async function saveEditPlan() {
     const planId   = document.getElementById('edit-plan-id').value;
+    const name     = document.getElementById('edit-pm-name').value.trim();
+    const book     = document.getElementById('edit-pm-book').value.trim();
+    const folder   = document.getElementById('edit-pm-folder').value.trim();
     const audioUrl = document.getElementById('edit-audio').value.trim();
     const bookUrl  = document.getElementById('edit-book-url').value.trim();
+
+    if (!name || !book) { showToast('يرجى إدخال اسم الخطة والكتاب', 'error'); return; }
+
     const btn = document.getElementById('edit-save');
     btn.disabled = true; btn.textContent = 'جارٍ الحفظ…';
-    const { error } = await client.from('study_plans')
-      .update({ audio_url: audioUrl || null, book_url: bookUrl || null })
-      .eq('id', planId);
+
+    const { error } = await client.from('study_plans').update({
+      plan_name: name,
+      book_name: book,
+      folder_name: folder || null,
+      audio_url: audioUrl || null,
+      book_url: bookUrl || null
+    }).eq('id', planId);
+
+    if (error) { showToast('خطأ: ' + error.message, 'error'); btn.disabled = false; btn.textContent = 'حفظ التعديلات'; return; }
+
+    /* إذا رُفع ملف Excel جديد: احذف الأيام القديمة واحفظ الجديدة */
+    if (editPendingRows.length > 0) {
+      await client.from('study_plan_days').delete().eq('plan_id', planId);
+      const newRows = editPendingRows.map(r => ({ ...r, plan_id: planId }));
+      const { error: daysErr } = await client.from('study_plan_days').insert(newRows);
+      if (daysErr) { showToast('خطأ في تحديث الأيام: ' + daysErr.message, 'error'); btn.disabled = false; btn.textContent = 'حفظ التعديلات'; return; }
+    }
+
     btn.disabled = false; btn.textContent = 'حفظ التعديلات';
-    if (error) { showToast('خطأ: ' + error.message, 'error'); return; }
-    showToast('تم حفظ الروابط ✓', 'success');
+    showToast('تم حفظ التعديلات ✓', 'success');
     closeEditPlanModal();
     loadStudyPlans();
   }

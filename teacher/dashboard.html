@@ -282,8 +282,19 @@ tr:hover td{background:#f7fafc}
           <input type="number" id="linkingTo" min="1" placeholder="إلى صفحة">
         </div>
       </div>
-      <label>توجيهات المراجعة الذاتية</label>
-      <textarea id="selfReviewNotes" placeholder="اكتب توجيهاتك للطالب..."></textarea>
+      <div class="form-row" id="reviewRangeRow">
+        <div>
+          <label>المراجعة من صفحة</label>
+          <input type="number" id="reviewFrom" min="1" placeholder="من صفحة">
+        </div>
+        <div>
+          <label>المراجعة إلى صفحة</label>
+          <input type="number" id="reviewTo" min="1" placeholder="إلى صفحة">
+        </div>
+      </div>
+      <div id="reviewLockedMsg" style="display:none;padding:10px 14px;background:var(--surface2,#f5f5f5);border-radius:8px;color:#888;font-size:.88rem;margin-bottom:8px;border:1px solid #ddd">
+        🔒 الطالب اعتمد الربط والمراجعة — للعرض فقط
+      </div>
     </div>
 
     <!-- Error Counters -->
@@ -554,6 +565,41 @@ async function selectStudent(s) {
   document.getElementById('studentInfo').classList.add('show');
   loadSessionHistory(s.id);
   loadTodayPlanProgress(s.id);
+  checkStudentDailyReview(s.id);
+}
+
+function setReviewLocked(locked, dr) {
+  const rfEl = document.getElementById('reviewFrom');
+  const rtEl = document.getElementById('reviewTo');
+  const lfEl = document.getElementById('linkingFrom');
+  const ltEl = document.getElementById('linkingTo');
+  const msg = document.getElementById('reviewLockedMsg');
+  if (locked && dr) {
+    rfEl.value = dr.review_range_from || '';
+    rtEl.value = dr.review_range_to || '';
+    lfEl.value = dr.link_from || '';
+    ltEl.value = dr.link_to || '';
+    [rfEl, rtEl, lfEl, ltEl].forEach(el => el.disabled = true);
+    msg.style.display = 'block';
+  } else {
+    [rfEl, rtEl, lfEl, ltEl].forEach(el => el.disabled = false);
+    msg.style.display = 'none';
+  }
+}
+
+async function checkStudentDailyReview(studentId) {
+  const today = new Date().toISOString().slice(0, 10);
+  const { data } = await supabaseClient
+    .from('daily_reviews')
+    .select('student_submitted, link_from, link_to, review_range_from, review_range_to')
+    .eq('student_id', studentId)
+    .eq('review_date', today)
+    .single();
+  if (data?.student_submitted) {
+    setReviewLocked(true, data);
+  } else {
+    setReviewLocked(false);
+  }
 }
 
 async function loadTodayPlanProgress(studentId) {
@@ -672,7 +718,8 @@ async function submitSession() {
   const repetitions = parseInt(document.getElementById('repetitions').value) || null;
   const linkingFrom = parseInt(document.getElementById('linkingFrom').value) || null;
   const linkingTo = parseInt(document.getElementById('linkingTo').value) || null;
-  const selfReviewNotes = document.getElementById('selfReviewNotes').value.trim() || null;
+  const reviewFrom = parseInt(document.getElementById('reviewFrom').value) || null;
+  const reviewTo = parseInt(document.getElementById('reviewTo').value) || null;
   const notes = document.getElementById('sessionNotes').value.trim() || null;
   const score = Math.max(0, 10 - errors.full - errors.half * 0.5 - errors.quarter * 0.25);
   const today = new Date().toISOString().slice(0, 10);
@@ -687,7 +734,8 @@ async function submitSession() {
     repetitions,
     linking_from: linkingFrom,
     linking_to: linkingTo,
-    self_review_notes: selfReviewNotes,
+    review_from: reviewFrom,
+    review_to: reviewTo,
     full_mark_errors: errors.full,
     half_mark_errors: errors.half,
     quarter_mark_errors: errors.quarter,
@@ -708,6 +756,27 @@ async function submitSession() {
 
   btn.disabled = false;
   btn.textContent = 'رصد الجلسة';
+
+  // Upsert daily_reviews with teacher_logged=true (only if student hasn't submitted yet)
+  if (!result.error && (linkingFrom || linkingTo || reviewFrom || reviewTo)) {
+    const { data: existingDr } = await supabaseClient
+      .from('daily_reviews')
+      .select('id, student_submitted')
+      .eq('student_id', selectedStudent.id)
+      .eq('review_date', today)
+      .single();
+    if (!existingDr?.student_submitted) {
+      await supabaseClient.from('daily_reviews').upsert(
+        { student_id: selectedStudent.id, review_date: today,
+          link_from: linkingFrom ? String(linkingFrom) : null,
+          link_to: linkingTo ? String(linkingTo) : null,
+          review_range_from: reviewFrom ? String(reviewFrom) : null,
+          review_range_to: reviewTo ? String(reviewTo) : null,
+          teacher_logged: true, student_submitted: false },
+        { onConflict: 'student_id,review_date' }
+      );
+    }
+  }
 
   if (result.error) {
     showToast('خطأ: ' + result.error.message, 'error');
@@ -734,7 +803,9 @@ function resetForm(clearStudent) {
   document.getElementById('repetitions').value = '';
   document.getElementById('linkingFrom').value = '';
   document.getElementById('linkingTo').value = '';
-  document.getElementById('selfReviewNotes').value = '';
+  document.getElementById('reviewFrom').value = '';
+  document.getElementById('reviewTo').value = '';
+  setReviewLocked(false);
   document.getElementById('sessionNotes').value = '';
   errors = {full:0, half:0, quarter:0};
   document.getElementById('fullVal').textContent = '0';
@@ -754,7 +825,7 @@ function cancelEdit() {
 async function loadSessionHistory(studentId) {
   const { data, error } = await supabaseClient
     .from('recitation_sessions')
-    .select('id, date, hadith_from, hadith_to, score, notes, folder, repetitions, linking_from, linking_to, self_review_notes, full_mark_errors, half_mark_errors, quarter_mark_errors')
+    .select('id, date, hadith_from, hadith_to, score, notes, folder, repetitions, linking_from, linking_to, review_from, review_to, full_mark_errors, half_mark_errors, quarter_mark_errors')
     .eq('student_id', studentId)
     .eq('teacher_id', currentTeacher.id)
     .order('date', { ascending: false });
@@ -796,7 +867,8 @@ function editSession(s) {
   document.getElementById('repetitions').value = s.repetitions || '';
   document.getElementById('linkingFrom').value = s.linking_from || '';
   document.getElementById('linkingTo').value = s.linking_to || '';
-  document.getElementById('selfReviewNotes').value = s.self_review_notes || '';
+  document.getElementById('reviewFrom').value = s.review_from || '';
+  document.getElementById('reviewTo').value = s.review_to || '';
   document.getElementById('sessionNotes').value = s.notes || '';
   errors.full = s.full_mark_errors || 0;
   errors.half = s.half_mark_errors || 0;

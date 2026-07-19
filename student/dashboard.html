@@ -361,6 +361,17 @@ body,
 .honor-name.me{color:var(--gold-dark);font-weight:800}
 .honor-score{font-size:.9rem;font-weight:800;color:var(--green-dark)}
 
+/* ── DAILY REVIEW FIELDS ──────────────────────────── */
+.daily-fields{display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
+.daily-field-group{background:var(--surface2);border-radius:var(--radius-sm);padding:12px 14px;border:1px solid var(--border)}
+.daily-field-label{font-size:.8rem;font-weight:700;color:var(--text-secondary);margin-bottom:8px}
+.daily-range-row{display:flex;align-items:center;gap:8px}
+.daily-input{flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;font-family:inherit;background:var(--surface);color:var(--text-primary);outline:none;transition:border .2s;text-align:center}
+.daily-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.1)}
+.daily-input:disabled{background:var(--surface2);color:var(--text-muted);cursor:not-allowed}
+.daily-sep{font-size:.9rem;color:var(--text-muted);font-weight:700;flex-shrink:0}
+.daily-locked-msg{background:var(--surface2);border-radius:var(--radius-sm);padding:12px 14px;border:1px solid var(--border);font-size:.82rem;color:var(--text-muted);text-align:center}
+
 /* ── REVIEW ───────────────────────────────────────── */
 .review-done-msg{
   background:var(--green-light);border-radius:var(--radius);
@@ -776,11 +787,28 @@ body,
     <div class="card">
       <div class="card-header">
         <div class="card-icon blue">📝</div>
-        <div><div class="card-title">مراجعتي اليومية</div></div>
+        <div><div class="card-title">رصد يومي — ربط ومراجعة</div></div>
       </div>
       <div id="reviewSection">
-        <textarea class="review-textarea" id="reviewText" placeholder="سجّل مراجعتك اليومية هنا…"></textarea>
-        <button class="btn-primary btn-green" id="reviewBtn" onclick="submitReview()">تسجيل المراجعة</button>
+        <div class="daily-fields">
+          <div class="daily-field-group">
+            <div class="daily-field-label">🔗 الربط</div>
+            <div class="daily-range-row">
+              <input type="text" class="daily-input" id="drLinkFrom" placeholder="من" />
+              <span class="daily-sep">—</span>
+              <input type="text" class="daily-input" id="drLinkTo" placeholder="إلى" />
+            </div>
+          </div>
+          <div class="daily-field-group">
+            <div class="daily-field-label">📚 المراجعة</div>
+            <div class="daily-range-row">
+              <input type="text" class="daily-input" id="drReviewFrom" placeholder="من" />
+              <span class="daily-sep">—</span>
+              <input type="text" class="daily-input" id="drReviewTo" placeholder="إلى" />
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary btn-green" id="reviewBtn" onclick="submitReview()">اعتماد ورصد اليوم</button>
       </div>
     </div>
 
@@ -1074,18 +1102,15 @@ async function toggleSpTask(dayId, taskKey, btn, memoFrom, memoTo) {
 
   await saveSpProgress(dayId, taskKey, done);
 
-  /* تحديث أحاديث محفوظة عند إنجاز/إلغاء واجب الحفظ */
-  if (taskKey === 'memo' && studentData && memoFrom && memoTo) {
-    const count = parseInt(memoTo) - parseInt(memoFrom) + 1;
-    if (!isNaN(count) && count > 0) {
-      const delta = done ? count : -count;
-      const newVal = Math.max(0, (studentData.memorized_hadiths || 0) + delta);
+  /* تحديث أحاديث محفوظة عند إنجاز واجب الحفظ: SET إلى memo_to إذا أكبر من الحالي */
+  if (taskKey === 'memo' && studentData && memoTo) {
+    const newMemo = parseInt(memoTo);
+    if (!isNaN(newMemo) && done && newMemo > (studentData.memorized_hadiths || 0)) {
       const { error } = await client.from('students')
-        .update({ memorized_hadiths: newVal })
+        .update({ memorized_hadiths: newMemo })
         .eq('id', studentData.id);
       if (!error) {
-        studentData.memorized_hadiths = newVal;
-        /* تحديث الإحصائيات في واجهة منجزاتي */
+        studentData.memorized_hadiths = newMemo;
         await loadStats();
       }
     }
@@ -1217,33 +1242,61 @@ function updateGradDate(data) {
 async function loadStats() {
   const grid = document.getElementById('statsGrid');
   if (!studentData) { grid.innerHTML = '<div class="empty" style="grid-column:span 2">لا توجد بيانات</div>'; return; }
-  const { data: sessions } = await client.from('recitation_sessions')
-    .select('hadith_to, hadith_from, score, linking_to, linking_from, date')
-    .eq('student_id', studentData.id)
-    .order('date', { ascending: false });
-  const arr = sessions || [];
-  const cnt = arr.length;
-  const lastH = arr[0]?.hadith_to || 0;
+
+  const [sessRes, drRes] = await Promise.all([
+    client.from('recitation_sessions')
+      .select('hadith_to, hadith_from, score, linking_to, linking_from, review_from, review_to, date')
+      .eq('student_id', studentData.id)
+      .order('date', { ascending: false }),
+    client.from('daily_reviews')
+      .select('link_from, link_to, review_range_from, review_range_to, student_submitted, teacher_logged')
+      .eq('student_id', studentData.id)
+  ]);
+
+  const arr = sessRes.data || [];
+  const drArr = (drRes.data || []).filter(r => r.student_submitted && !r.teacher_logged);
+
+  const cnt       = arr.length;
+  const lastH     = arr[0]?.hadith_to || 0;
   const memorized = studentData.memorized_hadiths || 0;
-  const totalH = studentData.programs?.total_hadiths || 0;
-  const avgScore = cnt ? (arr.reduce((s, r) => s + (parseFloat(r.score) || 0), 0) / cnt).toFixed(2) : '—';
-  const totalLink = arr.reduce((s, r) => s + Math.max(0, (r.linking_to || 0) - (r.linking_from || 0) + 1), 0);
-  const gap = Math.max(0, memorized - lastH);
-  const pct = totalH ? Math.min(100, Math.round((lastH / totalH) * 100)) : 0;
+  const totalH    = studentData.programs?.total_hadiths || 0;
+  const avgScore  = cnt ? (arr.reduce((s, r) => s + (parseFloat(r.score) || 0), 0) / cnt).toFixed(2) : '—';
+  const gap       = Math.max(0, memorized - lastH);
+  const pct       = totalH ? Math.min(100, Math.round((lastH / totalH) * 100)) : 0;
+
+  /* ربط تراكمي: من جلسات المعلم + من الطالب (student_submitted) */
+  const linkTeacher = arr.reduce((s, r) => s + Math.max(0, (r.linking_to || 0) - (r.linking_from || 0) + 1), 0);
+  const linkStudent = drArr.reduce((s, r) => {
+    const f = parseInt(r.link_from), t = parseInt(r.link_to);
+    return s + (isNaN(f) || isNaN(t) ? 0 : Math.max(0, t - f + 1));
+  }, 0);
+  const totalLink = linkTeacher + linkStudent;
+
+  /* مراجعة تراكمية: من جلسات المعلم + من الطالب */
+  const revTeacher = arr.reduce((s, r) => {
+    const f = parseInt(r.review_from), t = parseInt(r.review_to);
+    return s + (isNaN(f) || isNaN(t) ? 0 : Math.max(0, t - f + 1));
+  }, 0);
+  const revStudent = drArr.reduce((s, r) => {
+    const f = parseInt(r.review_range_from), t = parseInt(r.review_range_to);
+    return s + (isNaN(f) || isNaN(t) ? 0 : Math.max(0, t - f + 1));
+  }, 0);
+  const totalReview = revTeacher + revStudent;
+
   grid.innerHTML = `
     <div class="stat-box"><div class="stat-num">${lastH || '—'}</div><div class="stat-lbl">أحاديث مسمّعة</div></div>
     <div class="stat-box"><div class="stat-num">${cnt}</div><div class="stat-lbl">عدد الجلسات</div></div>
     <div class="stat-box"><div class="stat-num">${avgScore}</div><div class="stat-lbl">متوسط التقييم / 10</div></div>
     <div class="stat-box"><div class="stat-num">${memorized}</div><div class="stat-lbl">أحاديث محفوظة</div></div>
-    <div class="stat-box"><div class="stat-num">${totalLink}</div><div class="stat-lbl">صفحات الربط</div></div>
     <div class="stat-box"><div class="stat-num">${gap}</div><div class="stat-lbl">فرق الحفظ والتسميع</div></div>
+    <div class="stat-box"><div class="stat-num">${totalLink}</div><div class="stat-lbl">صفحات الربط</div></div>
+    <div class="stat-box"><div class="stat-num">${totalReview}</div><div class="stat-lbl">صفحات المراجعة</div></div>
   `;
   if (totalH > 0) {
     document.getElementById('progressSection').style.display = 'block';
     document.getElementById('progressPct').textContent = pct + '%';
     setTimeout(() => { document.getElementById('progressBar').style.width = pct + '%'; }, 100);
   }
-  // count-up on stat numbers
   setTimeout(() => {
     grid.querySelectorAll('.stat-num').forEach(el => {
       const raw = el.textContent.trim();
@@ -1257,33 +1310,66 @@ async function loadStats() {
 async function checkDailyReview() {
   if (!studentData) return;
   const { data } = await client.from('daily_reviews')
-    .select('id, teacher_logged, review_text')
+    .select('id, teacher_logged, student_submitted, link_from, link_to, review_range_from, review_range_to')
     .eq('student_id', studentData.id)
     .eq('review_date', todayStr)
     .single();
+
+  const section = document.getElementById('reviewSection');
+
+  if (data && (data.teacher_logged || data.student_submitted)) {
+    /* مقفول — سواء سجّله المعلم أو الطالب */
+    const by = data.teacher_logged ? 'المعلم' : 'أنت';
+    const lf = data.link_from || '—', lt = data.link_to || '—';
+    const rf = data.review_range_from || '—', rt = data.review_range_to || '—';
+    section.innerHTML = `
+      <div class="review-done-msg" style="text-align:right;line-height:2">
+        ✅ تم الاعتماد بواسطة ${by}<br>
+        🔗 الربط: ${lf} — ${lt}<br>
+        📚 المراجعة: ${rf} — ${rt}
+      </div>`;
+    return;
+  }
+
+  /* قابل للتعديل — أملأ الحقول إن وُجدت */
   if (data) {
-    if (data.teacher_logged) {
-      document.getElementById('reviewSection').innerHTML = '<div class="review-done-msg">✅ تم تسجيل مراجعة اليوم من قِبل المعلم</div>';
-    } else if (data.review_text) {
-      document.getElementById('reviewText').value = data.review_text;
-      document.getElementById('reviewBtn').textContent = 'تحديث المراجعة';
-    }
+    if (data.link_from)          document.getElementById('drLinkFrom').value   = data.link_from;
+    if (data.link_to)            document.getElementById('drLinkTo').value     = data.link_to;
+    if (data.review_range_from)  document.getElementById('drReviewFrom').value = data.review_range_from;
+    if (data.review_range_to)    document.getElementById('drReviewTo').value   = data.review_range_to;
   }
 }
 
 async function submitReview() {
   if (!studentData) return;
-  const text = document.getElementById('reviewText').value.trim();
-  if (!text) { showToast('اكتب مراجعتك أولاً', 'error'); return; }
+  const linkFrom   = document.getElementById('drLinkFrom')?.value.trim()   || null;
+  const linkTo     = document.getElementById('drLinkTo')?.value.trim()     || null;
+  const reviewFrom = document.getElementById('drReviewFrom')?.value.trim() || null;
+  const reviewTo   = document.getElementById('drReviewTo')?.value.trim()   || null;
+
+  if (!linkFrom && !linkTo && !reviewFrom && !reviewTo) {
+    showToast('أدخل بيانات الربط أو المراجعة أولاً', 'error'); return;
+  }
+
   const btn = document.getElementById('reviewBtn');
   btn.disabled = true; btn.textContent = 'جاري الحفظ…';
   const { error } = await client.from('daily_reviews').upsert(
-    { student_id: studentData.id, review_date: todayStr, review_text: text, teacher_logged: false },
+    {
+      student_id: studentData.id,
+      review_date: todayStr,
+      link_from: linkFrom,
+      link_to: linkTo,
+      review_range_from: reviewFrom,
+      review_range_to: reviewTo,
+      student_submitted: true,
+      teacher_logged: false
+    },
     { onConflict: 'student_id,review_date' }
   );
-  btn.disabled = false; btn.textContent = 'تحديث المراجعة';
+  btn.disabled = false; btn.textContent = 'اعتماد ورصد اليوم';
   if (error) { showToast('خطأ: ' + error.message, 'error'); return; }
-  showToast('تم تسجيل المراجعة ✓', 'success');
+  showToast('تم الاعتماد ✓', 'success');
+  checkDailyReview(); /* أعد عرض الحالة المقفولة */
 }
 
 /* ========== SESSIONS ========== */
