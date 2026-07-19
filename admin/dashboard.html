@@ -1358,7 +1358,7 @@
         <td style="color:var(--accent);font-weight:600">${s.users?.username || '—'}</td>
         <td>${s.users?.phone || '—'}</td>
         <td>${s.programs?.name || '—'}</td>
-        <td><button class="btn-pw" onclick="openResetPwModal('${s.users?.id}','${(s.users?.name||'').replace(/'/g,'\\'')}')">🔑 تغيير كلمة المرور</button></td>
+        <td><button class="btn-pw" data-uid="${s.users?.id||''}" data-name="${(s.users?.name||'').replace(/"/g,'&quot;')}" onclick="openResetPwModal(this.dataset.uid,this.dataset.name)">🔑 تغيير كلمة المرور</button></td>
       </tr>`).join('')}</tbody>
     </table>`;
   }
