@@ -1022,22 +1022,34 @@ async function loadStudyPlan() {
   syncMemorizedFromProgress();
 }
 
-/* بعد تحميل الخطة والتقدم: نحسب أعلى memo_to من الأيام المنجزة ونحدّث memorized_hadiths إذا كانت أعلى من القيمة الحالية */
+/* بعد تحميل الخطة والتقدم: نحسب عدد الأحاديث المحفوظة = أعلى memo_to منجز - أول memo_from في الخطة + 1 */
 async function syncMemorizedFromProgress() {
   if (!studentData || !studyPlanDays.length) return;
-  let maxMemo = studentData.memorized_hadiths || 0;
+
+  // أول memo_from في الخطة (اليوم الأول الذي له memo_from)
+  const sortedDays = [...studyPlanDays].sort((a, b) => a.day_number - b.day_number);
+  const firstDay = sortedDays.find(d => d.memo_from);
+  if (!firstDay) return;
+  const firstMemoFrom = parseInt(firstDay.memo_from);
+  if (isNaN(firstMemoFrom)) return;
+
+  // أعلى memo_to من الأيام المنجزة
+  let maxMemoTo = 0;
   studyPlanDays.forEach(d => {
     if (spChecked[d.id + '_memo'] && d.memo_to) {
       const v = parseInt(d.memo_to);
-      if (!isNaN(v) && v > maxMemo) maxMemo = v;
+      if (!isNaN(v) && v > maxMemoTo) maxMemoTo = v;
     }
   });
-  if (maxMemo > (studentData.memorized_hadiths || 0)) {
+  if (!maxMemoTo) return;
+
+  const calculated = maxMemoTo - firstMemoFrom + 1;
+  if (calculated > 0 && calculated !== (studentData.memorized_hadiths || 0)) {
     const { error } = await client.from('students')
-      .update({ memorized_hadiths: maxMemo })
+      .update({ memorized_hadiths: calculated })
       .eq('id', studentData.id);
     if (!error) {
-      studentData.memorized_hadiths = maxMemo;
+      studentData.memorized_hadiths = calculated;
       loadStats();
     }
   }
@@ -1172,16 +1184,30 @@ async function toggleSpTask(dayId, taskKey, btn, memoFrom, memoTo) {
 
   await saveSpProgress(dayId, taskKey, done);
 
-  /* تحديث أحاديث محفوظة عند إنجاز واجب الحفظ: SET إلى memo_to إذا أكبر من الحالي */
-  if (taskKey === 'memo' && studentData && memoTo) {
-    const newMemo = parseInt(memoTo);
-    if (!isNaN(newMemo) && done && newMemo > (studentData.memorized_hadiths || 0)) {
-      const { error } = await client.from('students')
-        .update({ memorized_hadiths: newMemo })
-        .eq('id', studentData.id);
-      if (!error) {
-        studentData.memorized_hadiths = newMemo;
-        await loadStats();
+  /* تحديث أحاديث محفوظة عند تغيير checkbox الحفظ: إعادة حساب من جميع الأيام المنجزة */
+  if (taskKey === 'memo' && studentData && studyPlanDays.length) {
+    const sortedDays = [...studyPlanDays].sort((a, b) => a.day_number - b.day_number);
+    const firstDay = sortedDays.find(d => d.memo_from);
+    if (firstDay) {
+      const firstMemoFrom = parseInt(firstDay.memo_from);
+      let maxMemoTo = 0;
+      studyPlanDays.forEach(d => {
+        if (spChecked[d.id + '_memo'] && d.memo_to) {
+          const v = parseInt(d.memo_to);
+          if (!isNaN(v) && v > maxMemoTo) maxMemoTo = v;
+        }
+      });
+      if (!isNaN(firstMemoFrom) && maxMemoTo > 0) {
+        const calculated = maxMemoTo - firstMemoFrom + 1;
+        if (calculated > 0 && calculated !== (studentData.memorized_hadiths || 0)) {
+          const { error } = await client.from('students')
+            .update({ memorized_hadiths: calculated })
+            .eq('id', studentData.id);
+          if (!error) {
+            studentData.memorized_hadiths = calculated;
+            await loadStats();
+          }
+        }
       }
     }
   }
