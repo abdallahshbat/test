@@ -17,71 +17,48 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f0f4f8;color:#1a202c;m
 .btn-logout{background:rgba(255,255,255,.15);border:none;color:#fff;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.85rem;font-family:inherit}
 .btn-logout:hover{background:rgba(255,255,255,.25)}
 
-/* SIDEBAR / BOTTOM NAV removed — single-view layout */
-.sidebar{display:none}
-.bottom-nav{display:none}
-
 /* MAIN */
 .main-content{margin-top:56px;padding:16px}
 @media(min-width:768px){.main-content{padding:24px}}
 
-/* VIEW */
-.view{display:none}
-.view.active{display:block}
-
 /* CARDS */
 .card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:16px}
 .card-title{font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:12px;border-bottom:2px solid var(--border);padding-bottom:8px}
-
-.stat-box{background:var(--card);border-radius:var(--radius);padding:14px 10px;text-align:center;box-shadow:var(--shadow)}
-.stat-box .num{font-size:1.8rem;font-weight:800;color:var(--primary)}
-.stat-box .lbl{font-size:.72rem;color:var(--muted);margin-top:4px}
-
-/* WELCOME */
-
-/* LAST SESSION */
 
 /* FORM */
 label{display:block;font-size:.85rem;font-weight:600;color:#4a5568;margin-bottom:4px;margin-top:12px}
 label:first-child{margin-top:0}
 input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.95rem;font-family:inherit;outline:none;transition:border .2s;direction:rtl;background:#fff}
 input:focus,select:focus,textarea:focus{border-color:var(--primary)}
+input:disabled,select:disabled{background:#f5f5f5;color:#999;cursor:not-allowed}
 textarea{resize:vertical;min-height:70px}
-
-/* TABS */
-.tab-bar{display:flex;gap:8px;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:8px}
-.tab-btn{padding:8px 20px;border-radius:8px 8px 0 0;border:none;background:transparent;cursor:pointer;font-size:14px;color:#718096;font-family:inherit}
-.tab-btn.active{background:#276749;color:white;border-radius:8px}
-.tab-pane{display:none!important}
-.tab-pane.active{display:block!important}
-#studentSelect{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #e2e8f0;font-size:14px;direction:rtl;background:white}
 
 /* SEARCH */
 .search-wrap{position:relative}
-.search-wrap input{padding-left:36px}
+.search-wrap input{padding-right:12px;padding-left:36px}
 .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
 .dropdown-list{position:absolute;top:100%;right:0;left:0;background:#fff;border:1.5px solid var(--border);border-radius:8px;max-height:200px;overflow-y:auto;z-index:200;box-shadow:var(--shadow)}
 .dropdown-item{padding:10px 14px;cursor:pointer;font-size:.9rem;border-bottom:1px solid var(--border)}
 .dropdown-item:last-child{border:none}
 .dropdown-item:hover{background:#f7fafc}
 
-/* STUDENT INFO */
-.student-info-card{background:#e8f5e9;border-radius:var(--radius);padding:14px;margin-bottom:8px;display:none}
-.student-info-card.show{display:block}
-.progress-task{display:flex;align-items:center;gap:6px;padding:3px 0}
-.progress-task .pt-icon{font-size:.9rem}
-.progress-task .pt-label{flex:1}
-.progress-task .pt-done{color:#27ae60;font-weight:700}
-.progress-task .pt-pending{color:#e67e22;font-weight:700}
-.info-row{display:flex;justify-content:space-between;font-size:.85rem;padding:3px 0}
-.info-row .key{color:var(--muted);font-weight:600}
-.info-row .val{color:var(--text);font-weight:700}
+/* SELECTED STUDENT BAR */
+.selected-student-bar{display:none;background:#e8f5e9;border-radius:10px;padding:12px 14px;margin-top:10px}
+.selected-student-bar.show{display:block}
+.selected-student-name{font-weight:700;font-size:1rem;color:var(--primary)}
+.selected-student-meta{font-size:.82rem;color:var(--muted);margin-top:4px}
+.last-memo-day{font-size:.85rem;color:#2d6a4f;font-weight:600;margin-top:4px}
+
+/* TRACK BUTTONS */
+.track-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.track-btn{padding:14px 10px;border:2px solid var(--border);border-radius:var(--radius);background:#fff;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text);transition:all .2s;text-align:center}
+.track-btn:hover{border-color:var(--primary);color:var(--primary)}
+.track-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 
 /* FORM ROW */
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
 /* ERROR COUNTERS */
-.error-section{margin-bottom:16px}
 .error-type{background:#fff7f7;border:1.5px solid #ffd6d6;border-radius:var(--radius);padding:14px;margin-bottom:10px}
 .error-type-title{font-size:.82rem;font-weight:700;color:var(--danger);margin-bottom:4px}
 .error-type-sub{font-size:.75rem;color:#718096;margin-bottom:10px;line-height:1.5}
@@ -98,19 +75,31 @@ textarea{resize:vertical;min-height:70px}
 .score-display .score-num{font-size:3.5rem;font-weight:900;line-height:1}
 .score-display .score-lbl{font-size:.9rem;opacity:.8;margin-top:4px}
 
+/* REVIEW LOCKED */
+.review-locked-card{background:#f5f5f5;border:1.5px solid #ddd;border-radius:var(--radius);padding:14px;color:#666;font-size:.9rem}
+.review-locked-rows{margin-top:10px}
+.review-locked-row{display:flex;justify-content:space-between;padding:4px 0;font-size:.85rem;border-bottom:1px solid #eee}
+.review-locked-row:last-child{border:none}
+.review-locked-key{color:#888}
+.review-locked-val{font-weight:700;color:#444}
+
 /* BUTTONS */
 .btn-primary{width:100%;padding:14px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s}
 .btn-primary:hover{background:#1b4332}
 .btn-primary:disabled{background:#a0aec0;cursor:not-allowed}
 .btn-secondary{padding:8px 14px;background:#edf2f7;color:var(--text);border:none;border-radius:8px;font-size:.82rem;cursor:pointer;font-family:inherit}
-.btn-edit{padding:6px 12px;background:#ebf8ff;color:#2b6cb0;border:none;border-radius:6px;font-size:.8rem;cursor:pointer;font-family:inherit}
+.btn-edit{padding:5px 10px;background:#ebf8ff;color:#2b6cb0;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;font-family:inherit}
+.btn-view{padding:5px 10px;background:#f0f0f0;color:#666;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;font-family:inherit}
 
-/* HISTORY TABLE */
+/* HISTORY */
 .history-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:540px}
+table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:480px}
 th{background:#f7fafc;color:var(--muted);font-weight:700;padding:8px 10px;text-align:right;border-bottom:2px solid var(--border)}
 td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
 tr:hover td{background:#f7fafc}
+.type-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.72rem;font-weight:700}
+.type-hafiz{background:#dcfce7;color:#15803d}
+.type-review{background:#dbeafe;color:#1d4ed8}
 
 /* TOAST */
 .toast-wrap{position:fixed;top:68px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
@@ -123,6 +112,7 @@ tr:hover td{background:#f7fafc}
 .badge-green{background:#dcfce7;color:#15803d}
 .badge-yellow{background:#fef9c3;color:#a16207}
 .badge-red{background:#fee2e2;color:#b91c1c}
+.hidden{display:none!important}
 </style>
 </head>
 <body>
@@ -135,99 +125,60 @@ tr:hover td{background:#f7fafc}
   <button class="btn-logout" onclick="logout()">خروج</button>
 </div>
 
-
 <!-- TOAST -->
 <div class="toast-wrap" id="toastWrap"></div>
 
 <!-- MAIN -->
 <div class="main-content">
 
-  <!-- RECORD VIEW (only view) -->
-  <div class="view active" id="view-record">
+  <!-- 1. Student Selection -->
+  <div class="card">
+    <div class="card-title">اختر الطالب</div>
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="#718096" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="studentSearch" placeholder="ابحث باسم الطالب..." autocomplete="off" oninput="filterStudents()" onfocus="showStudentDropdown()" onblur="hideStudentDropdownDelayed()">
+      <div class="dropdown-list" id="studentDropdown" style="display:none"></div>
+    </div>
+    <div class="selected-student-bar" id="selectedStudentBar">
+      <div class="selected-student-name" id="selStudentName">—</div>
+      <div class="selected-student-meta" id="selStudentMeta"></div>
+      <div class="last-memo-day hidden" id="lastMemoDay"></div>
+    </div>
+  </div>
 
-    <!-- Student Selection (tabbed) -->
-    <div class="card">
-      <div class="card-title">اختر الطالب</div>
-      <div class="tab-bar">
-        <button class="tab-btn active" id="tab-btn-dropdown" onclick="switchTab('dropdown')">📋 قائمة</button>
-        <button class="tab-btn" id="tab-btn-search" onclick="switchTab('search')">🔍 بحث</button>
+  <!-- 2. Track Selection -->
+  <div class="card hidden" id="trackCard">
+    <div class="card-title">نوع الرصد</div>
+    <div class="track-btns">
+      <button class="track-btn" id="trackBtnHafiz" onclick="selectTrack('hafiz')">📖 رصد الحفظ</button>
+      <button class="track-btn" id="trackBtnReview" onclick="selectTrack('review')">🔗 رصد الربط والمراجعة</button>
+    </div>
+  </div>
+
+  <!-- 3a. حفظ Form -->
+  <div class="card hidden" id="hafizFormCard">
+    <div class="card-title">تفاصيل جلسة الحفظ</div>
+    <label>المجلد (الجزء)</label>
+    <input type="number" id="folder" min="1" placeholder="رقم المجلد">
+    <div class="form-row">
+      <div>
+        <label>الحديث من</label>
+        <input type="number" id="hadithFrom" min="1" placeholder="من">
       </div>
-
-      <!-- Tab 1: Dropdown -->
-      <div class="tab-pane active" id="tab-dropdown">
-        <select id="studentSelect" onchange="selectStudentById(this.value)">
-          <option value="">-- اختر طالباً --</option>
-        </select>
-      </div>
-
-      <!-- Tab 2: Search -->
-      <div class="tab-pane" id="tab-search">
-        <div class="search-wrap">
-          <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="#718096" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="studentSearch" placeholder="ابحث عن طالب..." autocomplete="off" oninput="filterStudents()" onfocus="showDropdown()" onblur="hideDropdownDelayed()">
-          <div class="dropdown-list" id="studentDropdown" style="display:none"></div>
-        </div>
-      </div>
-
-      <!-- Student info -->
-      <div class="student-info-card" id="studentInfo" style="margin-top:12px">
-        <div class="info-row"><span class="key">الاسم</span><span class="val" id="infoName">—</span></div>
-        <div class="info-row"><span class="key">آخر محفوظ</span><span class="val" id="infoLastMem">—</span></div>
-        <div class="info-row"><span class="key">آخر مسموع</span><span class="val" id="infoLastRec">—</span></div>
-        <div class="info-row"><span class="key">الفوات</span><span class="val" id="infoGap">—</span></div>
-        <div id="todayPlanProgress" style="margin-top:10px;display:none">
-          <div style="font-size:.78rem;font-weight:700;color:#2d6a4f;margin-bottom:6px">📋 إنجاز خطة اليوم:</div>
-          <div id="planProgressItems" style="font-size:.82rem;color:#4a5568"></div>
-        </div>
+      <div>
+        <label>الحديث إلى</label>
+        <input type="number" id="hadithTo" min="1" placeholder="إلى">
       </div>
     </div>
-
-    <!-- Session Form -->
-    <div class="card">
-      <div class="card-title">تفاصيل الجلسة</div>
-      <label>المجلد (الجزء)</label>
-      <input type="number" id="folder" min="1" placeholder="رقم المجلد">
-      <div class="form-row">
-        <div>
-          <label>الحديث من</label>
-          <input type="number" id="hadithFrom" min="1" placeholder="من">
-        </div>
-        <div>
-          <label>الحديث إلى</label>
-          <input type="number" id="hadithTo" min="1" placeholder="إلى">
-        </div>
-      </div>
-      <label>عدد مرات التكرار</label>
-      <input type="number" id="repetitions" min="1" placeholder="عدد التكرارات">
-      <div class="form-row">
-        <div>
-          <label>الربط من صفحة</label>
-          <input type="number" id="linkingFrom" min="1" placeholder="من صفحة">
-        </div>
-        <div>
-          <label>الربط إلى صفحة</label>
-          <input type="number" id="linkingTo" min="1" placeholder="إلى صفحة">
-        </div>
-      </div>
-      <div class="form-row" id="reviewRangeRow">
-        <div>
-          <label>المراجعة من صفحة</label>
-          <input type="number" id="reviewFrom" min="1" placeholder="من صفحة">
-        </div>
-        <div>
-          <label>المراجعة إلى صفحة</label>
-          <input type="number" id="reviewTo" min="1" placeholder="إلى صفحة">
-        </div>
-      </div>
-      <div id="reviewLockedMsg" style="display:none;padding:10px 14px;background:var(--surface2,#f5f5f5);border-radius:8px;color:#888;font-size:.88rem;margin-bottom:8px;border:1px solid #ddd">
-        🔒 الطالب اعتمد الربط والمراجعة — للعرض فقط
-      </div>
-    </div>
+    <label>هل كرّر المحفوظ 15 مرة؟</label>
+    <select id="repetitionsSelect">
+      <option value="">-- اختر --</option>
+      <option value="yes">نعم</option>
+      <option value="no">لا</option>
+    </select>
 
     <!-- Error Counters -->
-    <div class="card">
-      <div class="card-title">الأخطاء</div>
-
+    <div style="margin-top:16px">
       <div class="error-type">
         <div class="error-type-title">النوع الأول — خصم كامل (1-)</div>
         <div class="error-type-sub">خطأ في أصل المتن/الراوي &bull; التوقف الطويل &bull; الفتح</div>
@@ -240,7 +191,6 @@ tr:hover td{background:#f7fafc}
           <button class="counter-btn btn-plus" onclick="adjustError('full',1)">+</button>
         </div>
       </div>
-
       <div class="error-type">
         <div class="error-type-title">النوع الثاني — خصم نصفي (0.5-)</div>
         <div class="error-type-sub">اللحن الجلي النحوي &bull; التردد أو التلعثم</div>
@@ -253,7 +203,6 @@ tr:hover td{background:#f7fafc}
           <button class="counter-btn btn-plus" onclick="adjustError('half',1)">+</button>
         </div>
       </div>
-
       <div class="error-type">
         <div class="error-type-title">النوع الثالث — خصم ربع (0.25-)</div>
         <div class="error-type-sub">الخلط بين الأحاديث &bull; إبدال كلمة بمرادف &bull; اللحن الخفي النطقي</div>
@@ -269,43 +218,46 @@ tr:hover td{background:#f7fafc}
     </div>
 
     <!-- Score -->
-    <div class="score-display">
+    <div class="score-display" style="margin-top:4px">
       <div class="score-num" id="scoreDisplay">10.00</div>
       <div class="score-lbl">الدرجة من 10</div>
     </div>
 
-    <!-- Notes + Submit -->
-    <div class="card">
-      <label>ملاحظات (اختياري)</label>
-      <textarea id="sessionNotes" placeholder="ملاحظات إضافية..."></textarea>
-      <div style="margin-top:16px">
-        <button class="btn-primary" id="submitBtn" onclick="submitSession()">رصد الجلسة</button>
-      </div>
-      <div style="margin-top:10px;text-align:center">
-        <button class="btn-secondary" id="cancelEditBtn" style="display:none" onclick="cancelEdit()">إلغاء التعديل</button>
-      </div>
+    <label>ملاحظات (اختياري)</label>
+    <textarea id="hafizNotes" placeholder="ملاحظات إضافية..."></textarea>
+    <div style="margin-top:16px">
+      <button class="btn-primary" id="hafizSubmitBtn" onclick="submitHafiz()">رصد الجلسة</button>
     </div>
-
-    <!-- Session History -->
-    <div class="card" id="historyCard" style="display:none">
-      <div class="card-title">سجل الجلسات</div>
-      <div class="history-wrap">
-        <table id="historyTable">
-          <thead>
-            <tr>
-              <th>التاريخ</th>
-              <th>الحديث</th>
-              <th>الدرجة</th>
-              <th>ملاحظات</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="historyBody"></tbody>
-        </table>
-      </div>
+    <div style="margin-top:10px;text-align:center">
+      <button class="btn-secondary hidden" id="cancelEditBtn" onclick="cancelEdit()">إلغاء التعديل</button>
     </div>
+  </div>
 
-  </div><!-- /view-record -->
+  <!-- 3b. ربط ومراجعة Form -->
+  <div class="card hidden" id="reviewFormCard">
+    <div class="card-title">رصد الربط والمراجعة</div>
+    <div id="reviewFormInner"></div>
+  </div>
+
+  <!-- 4. Combined History -->
+  <div class="card hidden" id="historyCard">
+    <div class="card-title">آخر ما رصدت</div>
+    <div class="history-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>النوع</th>
+            <th>التفاصيل</th>
+            <th>الدرجة</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+  </div>
+
 </div><!-- /main-content -->
 
 <script>
@@ -316,86 +268,46 @@ let supabaseClient;
 let currentTeacher = null;
 let allStudents = [];
 let selectedStudent = null;
+let selectedTrack = null; // 'hafiz' | 'review'
 let errors = {full:0, half:0, quarter:0};
-let editingSessionId = null;
+let editingSessionId = null; // for recitation_sessions edit
+let editingDrId = null;      // for daily_reviews edit
 
-// --- INIT SUPABASE ---
+// --- INIT ---
 function initSupabase() {
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-      storage: localStorage,
-      storageKey: 'huffaz-auth'
-    }
+    auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, storage:localStorage, storageKey:'huffaz-auth' }
   });
 }
 
-// --- AUTH CHECK ---
 async function checkAuth() {
   initSupabase();
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) { location.href = '../login.html'; return; }
-
-  // جلب بيانات المستخدم من جدول users
-  const { data: userData } = await supabaseClient
-    .from('users')
-    .select('name, role')
-    .eq('id', session.user.id)
-    .single();
-
-  if (!userData || userData.role !== 'teacher') {
-    location.href = '../login.html';
-    return;
-  }
-
+  const { data: userData } = await supabaseClient.from('users').select('name, role').eq('id', session.user.id).single();
+  if (!userData || userData.role !== 'teacher') { location.href = '../login.html'; return; }
   document.getElementById('teacherNameTop').textContent = userData.name || '';
   await loadTeacher(session.user.id);
 }
 
 async function loadTeacher(userId) {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  console.log('session:', session);
-  console.log('user id:', session?.user?.id);
   const { data, error } = await supabaseClient.from('teachers').select('id, max_students').eq('user_id', userId).single();
-  console.log('teacher data:', data);
-  console.log('teacher error:', error);
-  if (error || !data) {
-    currentTeacher = { id: null, max_students: 0 };
-  } else {
-    currentTeacher = data;
-  }
+  currentTeacher = (!error && data) ? data : { id: null, max_students: 0 };
   await loadStudents();
 }
 
 // --- STUDENTS ---
 async function loadStudents() {
-  if (!currentTeacher) return;
   const { data, error } = await supabaseClient
     .from('students')
-    .select(`
-      id,
-      memorized_hadiths,
-      status,
-      user_id,
-      users!students_user_id_fkey (name)
-    `)
+    .select('id, memorized_hadiths, status, user_id, users!students_user_id_fkey(name)')
     .eq('status', 'active');
-  console.log('students data:', data);
-  console.log('students error:', error);
   if (error) { showToast('خطأ في تحميل الطلاب', 'error'); return; }
-  allStudents = (data || []).map(s => ({
-    id: s.id,
-    name: s.users?.name || 'طالب',
-    memorized: s.memorized_hadiths || 0
-  }));
-  populateSelect();
-  renderDropdown(allStudents);
+  allStudents = (data || []).map(s => ({ id: s.id, name: s.users?.name || 'طالب', memorized: s.memorized_hadiths || 0 }));
+  renderStudentDropdown(allStudents);
 }
 
-function renderDropdown(list) {
-  // Update search dropdown
+function renderStudentDropdown(list) {
   const dd = document.getElementById('studentDropdown');
   dd.innerHTML = '';
   if (!list.length) {
@@ -411,172 +323,116 @@ function renderDropdown(list) {
   }
 }
 
-function populateSelect() {
-  const sel = document.getElementById('studentSelect');
-  sel.innerHTML = '<option value="">-- اختر طالباً --</option>';
-  allStudents.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.id;
-    opt.textContent = s.name;
-    sel.appendChild(opt);
-  });
-}
-
-function switchTab(name) {
-  ['dropdown','search'].forEach(t => {
-    document.getElementById('tab-' + t).classList.remove('active');
-    document.getElementById('tab-btn-' + t).classList.remove('active');
-  });
-  document.getElementById('tab-' + name).classList.add('active');
-  document.getElementById('tab-btn-' + name).classList.add('active');
-  // Clear selection when switching tabs
-  selectedStudent = null;
-  document.getElementById('studentInfo').classList.remove('show');
-  document.getElementById('historyCard').style.display = 'none';
-  if (name === 'search') {
-    document.getElementById('studentSearch').value = '';
-    renderDropdown(allStudents);
-  } else {
-    document.getElementById('studentSelect').value = '';
-  }
-}
-
-function selectStudentById(id) {
-  if (!id) { selectedStudent = null; document.getElementById('studentInfo').classList.remove('show'); return; }
-  const s = allStudents.find(x => x.id === id);
-  if (s) selectStudent(s);
-}
-
 function filterStudents() {
   const q = document.getElementById('studentSearch').value.trim().toLowerCase();
-  const filtered = q ? allStudents.filter(s => s.name.includes(q)) : allStudents;
-  renderDropdown(filtered);
-  showDropdown();
+  renderStudentDropdown(q ? allStudents.filter(s => s.name.includes(q)) : allStudents);
+  showStudentDropdown();
 }
 
-function showDropdown() {
-  document.getElementById('studentDropdown').style.display = 'block';
-}
-
-function hideDropdownDelayed() {
-  setTimeout(() => { document.getElementById('studentDropdown').style.display = 'none'; }, 200);
-}
+function showStudentDropdown() { document.getElementById('studentDropdown').style.display = 'block'; }
+function hideStudentDropdownDelayed() { setTimeout(() => { document.getElementById('studentDropdown').style.display = 'none'; }, 200); }
 
 async function selectStudent(s) {
   selectedStudent = s;
+  selectedTrack = null;
+  editingSessionId = null;
+  editingDrId = null;
+
   document.getElementById('studentSearch').value = s.name;
   document.getElementById('studentDropdown').style.display = 'none';
-  document.getElementById('infoName').textContent = s.name;
-  document.getElementById('infoLastMem').textContent = s.memorized || '—';
+  document.getElementById('selStudentName').textContent = s.name;
+  document.getElementById('selStudentMeta').textContent = 'عدد الأحاديث المحفوظة: ' + s.memorized;
+  document.getElementById('selectedStudentBar').classList.add('show');
 
-  // fetch last recitation session
-  const { data: sessions } = await supabaseClient
-    .from('recitation_sessions')
-    .select('hadith_to, score, date')
-    .eq('student_id', s.id)
-    .order('date', { ascending: false })
-    .limit(1);
+  // Reset track UI
+  document.getElementById('trackBtnHafiz').classList.remove('active');
+  document.getElementById('trackBtnReview').classList.remove('active');
+  document.getElementById('hafizFormCard').classList.add('hidden');
+  document.getElementById('reviewFormCard').classList.add('hidden');
+  resetHafizForm();
 
-  if (sessions && sessions.length) {
-    const last = sessions[0];
-    document.getElementById('infoLastRec').textContent = last.hadith_to || '—';
-    const gap = s.memorized - (last.hadith_to || 0);
-    document.getElementById('infoGap').textContent = gap > 0 ? gap + ' حديث' : '—';
-  } else {
-    document.getElementById('infoLastRec').textContent = '—';
-    document.getElementById('infoGap').textContent = '—';
-  }
+  document.getElementById('trackCard').classList.remove('hidden');
 
-  document.getElementById('studentInfo').classList.add('show');
-  loadSessionHistory(s.id);
-  loadTodayPlanProgress(s.id);
-  checkStudentDailyReview(s.id);
+  // Load last memo day
+  loadLastMemoDay(s.id);
+
+  // Load combined history
+  loadHistory(s.id);
 }
 
-function setReviewLocked(locked, dr) {
-  const rfEl = document.getElementById('reviewFrom');
-  const rtEl = document.getElementById('reviewTo');
-  const lfEl = document.getElementById('linkingFrom');
-  const ltEl = document.getElementById('linkingTo');
-  const msg = document.getElementById('reviewLockedMsg');
-  if (locked && dr) {
-    rfEl.value = dr.review_range_from || '';
-    rtEl.value = dr.review_range_to || '';
-    lfEl.value = dr.link_from || '';
-    ltEl.value = dr.link_to || '';
-    [rfEl, rtEl, lfEl, ltEl].forEach(el => el.disabled = true);
-    msg.style.display = 'block';
-  } else {
-    [rfEl, rtEl, lfEl, ltEl].forEach(el => el.disabled = false);
-    msg.style.display = 'none';
-  }
-}
-
-async function checkStudentDailyReview(studentId) {
-  const today = new Date().toISOString().slice(0, 10);
-  const { data } = await supabaseClient
-    .from('daily_reviews')
-    .select('student_submitted, link_from, link_to, review_range_from, review_range_to')
-    .eq('student_id', studentId)
-    .eq('date', today)
-    .maybeSingle();
-  if (data?.student_submitted) {
-    setReviewLocked(true, data);
-  } else {
-    setReviewLocked(false);
-  }
-}
-
-async function loadTodayPlanProgress(studentId) {
-  const progressBox = document.getElementById('todayPlanProgress');
-  const progressItems = document.getElementById('planProgressItems');
-  progressBox.style.display = 'none';
+async function loadLastMemoDay(studentId) {
+  const el = document.getElementById('lastMemoDay');
+  el.classList.add('hidden');
+  el.textContent = '';
 
   // Get student's current plan
-  const { data: stu } = await supabaseClient
-    .from('students').select('current_plan_id').eq('id', studentId).single();
+  const { data: stu } = await supabaseClient.from('students').select('current_plan_id').eq('id', studentId).maybeSingle();
   if (!stu?.current_plan_id) return;
 
-  const today = new Date().toISOString().slice(0, 10);
-
-  // Get today's plan day (approximate by day_number matching days elapsed)
-  const { data: days } = await supabaseClient
-    .from('study_plan_days').select('*').eq('plan_id', stu.current_plan_id).order('day_number');
-  if (!days || !days.length) return;
-
-  // Get completed tasks for this student today
-  const { data: progress } = await supabaseClient
+  // Get last completed memo task
+  const { data: prog } = await supabaseClient
     .from('student_plan_progress')
-    .select('plan_day_id, task_key, completed, completed_at')
+    .select('plan_day_id, completed_at')
     .eq('student_id', studentId)
+    .eq('task_key', 'memo')
     .eq('completed', true)
-    .gte('completed_at', today + 'T00:00:00.000Z')
-    .lt('completed_at', today + 'T23:59:59.999Z');
+    .order('completed_at', { ascending: false })
+    .limit(1);
 
-  if (!progress || !progress.length) {
-    progressBox.style.display = 'block';
-    progressItems.innerHTML = '<span style="color:#e67e22">لم ينجز الطالب أي مهمة من خطته اليوم بعد</span>';
-    return;
-  }
+  if (!prog || !prog.length) return;
 
-  const doneKeys = new Set(progress.map(p => p.plan_day_id + '_' + p.task_key));
-  const taskLabels = { memo: 'حفظ', link: 'ربط', review: 'مراجعة' };
-  const taskIcons = { memo: '📖', link: '🔗', review: '📚' };
+  const planDayId = prog[0].plan_day_id;
+  const { data: day } = await supabaseClient
+    .from('study_plan_days')
+    .select('day_number, memo_from, memo_to')
+    .eq('id', planDayId)
+    .maybeSingle();
 
-  // Show completed tasks
-  const lines = progress.map(p => {
-    const day = days.find(d => d.id === p.plan_day_id);
-    const label = taskLabels[p.task_key] || p.task_key;
-    const icon = taskIcons[p.task_key] || '✅';
-    return `<div class="progress-task"><span class="pt-icon">${icon}</span><span class="pt-label">${label}${day ? ' — اليوم ' + day.day_number : ''}</span><span class="pt-done">✓ منجز</span></div>`;
-  }).join('');
+  if (!day) return;
 
-  progressBox.style.display = 'block';
-  progressItems.innerHTML = lines;
+  let txt = 'آخر يوم حفظ: اليوم ' + day.day_number;
+  if (day.memo_from && day.memo_to) txt += ' (حديث ' + day.memo_from + ' – ' + day.memo_to + ')';
+  el.textContent = txt;
+  el.classList.remove('hidden');
 }
 
+// --- TRACK SELECTION ---
+function selectTrack(track) {
+  selectedTrack = track;
+  editingSessionId = null;
+  editingDrId = null;
 
-// --- ERROR COUNTERS ---
+  document.getElementById('trackBtnHafiz').classList.toggle('active', track === 'hafiz');
+  document.getElementById('trackBtnReview').classList.toggle('active', track === 'review');
+
+  if (track === 'hafiz') {
+    document.getElementById('hafizFormCard').classList.remove('hidden');
+    document.getElementById('reviewFormCard').classList.add('hidden');
+    resetHafizForm();
+  } else {
+    document.getElementById('reviewFormCard').classList.remove('hidden');
+    document.getElementById('hafizFormCard').classList.add('hidden');
+    loadReviewForm(selectedStudent.id);
+  }
+}
+
+// --- HAFIZ FORM ---
+function resetHafizForm() {
+  document.getElementById('folder').value = '';
+  document.getElementById('hadithFrom').value = '';
+  document.getElementById('hadithTo').value = '';
+  document.getElementById('repetitionsSelect').value = '';
+  document.getElementById('hafizNotes').value = '';
+  errors = {full:0, half:0, quarter:0};
+  document.getElementById('fullVal').textContent = '0';
+  document.getElementById('halfVal').textContent = '0';
+  document.getElementById('quarterVal').textContent = '0';
+  document.getElementById('scoreDisplay').textContent = '10.00';
+  document.getElementById('hafizSubmitBtn').textContent = 'رصد الجلسة';
+  document.getElementById('cancelEditBtn').classList.add('hidden');
+  editingSessionId = null;
+}
+
 function adjustError(type, delta) {
   errors[type] = Math.max(0, errors[type] + delta);
   document.getElementById(type + 'Val').textContent = errors[type];
@@ -588,18 +444,14 @@ function updateScore() {
   document.getElementById('scoreDisplay').textContent = score.toFixed(2);
 }
 
-// --- SUBMIT SESSION ---
-async function submitSession() {
+async function submitHafiz() {
   if (!selectedStudent) { showToast('اختر طالباً أولاً', 'error'); return; }
   const folder = parseInt(document.getElementById('folder').value) || null;
   const hadithFrom = parseInt(document.getElementById('hadithFrom').value) || null;
   const hadithTo = parseInt(document.getElementById('hadithTo').value) || null;
-  const repetitions = parseInt(document.getElementById('repetitions').value) || null;
-  const linkingFrom = parseInt(document.getElementById('linkingFrom').value) || null;
-  const linkingTo = parseInt(document.getElementById('linkingTo').value) || null;
-  const reviewFrom = parseInt(document.getElementById('reviewFrom').value) || null;
-  const reviewTo = parseInt(document.getElementById('reviewTo').value) || null;
-  const notes = document.getElementById('sessionNotes').value.trim() || null;
+  const repVal = document.getElementById('repetitionsSelect').value;
+  const repetitions = repVal === 'yes' ? 15 : (repVal === 'no' ? 0 : null);
+  const notes = document.getElementById('hafizNotes').value.trim() || null;
   const score = Math.max(0, 10 - errors.full - errors.half * 0.5 - errors.quarter * 0.25);
   const today = new Date().toISOString().slice(0, 10);
 
@@ -611,10 +463,6 @@ async function submitSession() {
     hadith_from: hadithFrom,
     hadith_to: hadithTo,
     repetitions,
-    linking_from: linkingFrom,
-    linking_to: linkingTo,
-    review_from: reviewFrom,
-    review_to: reviewTo,
     full_mark_errors: errors.full,
     half_mark_errors: errors.half,
     quarter_mark_errors: errors.quarter,
@@ -622,7 +470,7 @@ async function submitSession() {
     notes
   };
 
-  const btn = document.getElementById('submitBtn');
+  const btn = document.getElementById('hafizSubmitBtn');
   btn.disabled = true;
   btn.textContent = 'جاري الحفظ...';
 
@@ -634,120 +482,200 @@ async function submitSession() {
   }
 
   btn.disabled = false;
-  btn.textContent = 'رصد الجلسة';
-
-  // Upsert daily_reviews (only if student hasn't submitted yet)
-  if (!result.error && (linkingFrom || linkingTo || reviewFrom || reviewTo)) {
-    const { data: existingDr } = await supabaseClient
-      .from('daily_reviews')
-      .select('id, student_submitted')
-      .eq('student_id', selectedStudent.id)
-      .eq('date', today)
-      .single();
-    if (!existingDr?.student_submitted) {
-      await supabaseClient.from('daily_reviews').upsert(
-        { student_id: selectedStudent.id, date: today,
-          link_from: linkingFrom ? String(linkingFrom) : null,
-          link_to: linkingTo ? String(linkingTo) : null,
-          review_range_from: reviewFrom ? String(reviewFrom) : null,
-          review_range_to: reviewTo ? String(reviewTo) : null,
-          student_submitted: false },
-        { onConflict: 'student_id,date' }
-      );
-    }
-  }
 
   if (result.error) {
     showToast('خطأ: ' + result.error.message, 'error');
+    btn.textContent = editingSessionId ? 'حفظ التعديل' : 'رصد الجلسة';
     return;
   }
   showToast(editingSessionId ? 'تم تعديل الجلسة ✓' : 'تم رصد الجلسة ✓', 'success');
-  cancelEdit();
-  resetForm(false);
-  loadSessionHistory(selectedStudent.id);
-}
-
-function resetForm(clearStudent) {
-  if (clearStudent !== false) {
-    selectedStudent = null;
-    document.getElementById('studentSearch').value = '';
-    document.getElementById('studentSelect').value = '';
-    document.getElementById('studentInfo').classList.remove('show');
-    document.getElementById('historyCard').style.display = 'none';
-  }
-  document.getElementById('folder').value = '';
-  document.getElementById('hadithFrom').value = '';
-  document.getElementById('hadithTo').value = '';
-  document.getElementById('repetitions').value = '';
-  document.getElementById('linkingFrom').value = '';
-  document.getElementById('linkingTo').value = '';
-  document.getElementById('reviewFrom').value = '';
-  document.getElementById('reviewTo').value = '';
-  setReviewLocked(false);
-  document.getElementById('sessionNotes').value = '';
-  errors = {full:0, half:0, quarter:0};
-  document.getElementById('fullVal').textContent = '0';
-  document.getElementById('halfVal').textContent = '0';
-  document.getElementById('quarterVal').textContent = '0';
-  document.getElementById('scoreDisplay').textContent = '10.00';
+  resetHafizForm();
+  loadHistory(selectedStudent.id);
 }
 
 function cancelEdit() {
-  editingSessionId = null;
-  document.getElementById('submitBtn').textContent = 'رصد الجلسة';
-  document.getElementById('cancelEditBtn').style.display = 'none';
-  resetForm(false);
+  resetHafizForm();
 }
 
-// --- SESSION HISTORY ---
-async function loadSessionHistory(studentId) {
-  const { data, error } = await supabaseClient
-    .from('recitation_sessions')
-    .select('id, date, hadith_from, hadith_to, score, notes, folder, repetitions, linking_from, linking_to, review_from, review_to, full_mark_errors, half_mark_errors, quarter_mark_errors')
+// --- REVIEW FORM ---
+async function loadReviewForm(studentId) {
+  const inner = document.getElementById('reviewFormInner');
+  inner.innerHTML = '<div class="empty">جاري التحميل...</div>';
+
+  const today = new Date().toISOString().slice(0, 10);
+  const { data: dr } = await supabaseClient
+    .from('daily_reviews')
+    .select('id, student_submitted, link_from, link_to, review_range_from, review_range_to')
     .eq('student_id', studentId)
-    .eq('teacher_id', currentTeacher.id)
-    .order('date', { ascending: false });
+    .eq('date', today)
+    .maybeSingle();
 
-  const card = document.getElementById('historyCard');
-  const body = document.getElementById('historyBody');
-
-  if (error || !data || !data.length) {
-    card.style.display = 'none';
+  if (dr?.student_submitted) {
+    // Read-only
+    inner.innerHTML = `
+      <div class="review-locked-card">
+        <div>🔒 الطالب اعتمد الربط والمراجعة — للعرض فقط</div>
+        <div class="review-locked-rows">
+          <div class="review-locked-row"><span class="review-locked-key">الربط من</span><span class="review-locked-val">${dr.link_from || '—'}</span></div>
+          <div class="review-locked-row"><span class="review-locked-key">الربط إلى</span><span class="review-locked-val">${dr.link_to || '—'}</span></div>
+          <div class="review-locked-row"><span class="review-locked-key">المراجعة من</span><span class="review-locked-val">${dr.review_range_from || '—'}</span></div>
+          <div class="review-locked-row"><span class="review-locked-key">المراجعة إلى</span><span class="review-locked-val">${dr.review_range_to || '—'}</span></div>
+        </div>
+      </div>`;
+    editingDrId = null;
     return;
   }
 
-  card.style.display = 'block';
+  // Editable form
+  editingDrId = dr ? dr.id : null;
+  inner.innerHTML = `
+    <div class="form-row">
+      <div><label>الربط من صفحة</label><input type="number" id="linkFrom" min="1" placeholder="من" value="${dr?.link_from || ''}"></div>
+      <div><label>الربط إلى صفحة</label><input type="number" id="linkTo" min="1" placeholder="إلى" value="${dr?.link_to || ''}"></div>
+    </div>
+    <div class="form-row" style="margin-top:4px">
+      <div><label>المراجعة من صفحة</label><input type="number" id="reviewFrom" min="1" placeholder="من" value="${dr?.review_range_from || ''}"></div>
+      <div><label>المراجعة إلى صفحة</label><input type="number" id="reviewTo" min="1" placeholder="إلى" value="${dr?.review_range_to || ''}"></div>
+    </div>
+    <div style="margin-top:16px">
+      <button class="btn-primary" id="reviewSubmitBtn" onclick="submitReview()">رصد الربط والمراجعة</button>
+    </div>`;
+}
+
+async function submitReview() {
+  if (!selectedStudent) return;
+  const today = new Date().toISOString().slice(0, 10);
+  const linkFrom = document.getElementById('linkFrom')?.value.trim() || null;
+  const linkTo = document.getElementById('linkTo')?.value.trim() || null;
+  const reviewFrom = document.getElementById('reviewFrom')?.value.trim() || null;
+  const reviewTo = document.getElementById('reviewTo')?.value.trim() || null;
+
+  const btn = document.getElementById('reviewSubmitBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'جاري الحفظ...'; }
+
+  const payload = {
+    student_id: selectedStudent.id,
+    date: today,
+    link_from: linkFrom,
+    link_to: linkTo,
+    review_range_from: reviewFrom,
+    review_range_to: reviewTo,
+    student_submitted: false
+  };
+
+  const result = await supabaseClient.from('daily_reviews').upsert(payload, { onConflict: 'student_id,date' });
+
+  if (result.error) {
+    showToast('خطأ: ' + result.error.message, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'رصد الربط والمراجعة'; }
+    return;
+  }
+  showToast('تم رصد الربط والمراجعة ✓', 'success');
+  loadHistory(selectedStudent.id);
+  // Reload form to reflect saved state
+  loadReviewForm(selectedStudent.id);
+}
+
+// --- COMBINED HISTORY ---
+async function loadHistory(studentId) {
+  const historyCard = document.getElementById('historyCard');
+  const body = document.getElementById('historyBody');
+  historyCard.classList.remove('hidden');
+  body.innerHTML = '<tr><td colspan="5" class="empty">جاري التحميل...</td></tr>';
+
+  // Fetch recitation_sessions
+  const { data: sessions } = await supabaseClient
+    .from('recitation_sessions')
+    .select('id, date, hadith_from, hadith_to, score, notes, folder, repetitions, full_mark_errors, half_mark_errors, quarter_mark_errors, teacher_id')
+    .eq('student_id', studentId)
+    .order('date', { ascending: false })
+    .limit(30);
+
+  // Fetch daily_reviews
+  const { data: reviews } = await supabaseClient
+    .from('daily_reviews')
+    .select('id, date, link_from, link_to, review_range_from, review_range_to, student_submitted')
+    .eq('student_id', studentId)
+    .order('date', { ascending: false })
+    .limit(30);
+
+  const rows = [];
+
+  (sessions || []).forEach(s => {
+    rows.push({ type: 'hafiz', date: s.date, data: s, canEdit: s.teacher_id === currentTeacher.id });
+  });
+  (reviews || []).forEach(r => {
+    rows.push({ type: 'review', date: r.date, data: r, canEdit: !r.student_submitted });
+  });
+
+  // Sort by date desc, then by type (hafiz first on same day)
+  rows.sort((a, b) => {
+    if (b.date !== a.date) return b.date.localeCompare(a.date);
+    return a.type === 'hafiz' ? -1 : 1;
+  });
+
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="5" class="empty">لا يوجد سجل بعد</td></tr>';
+    return;
+  }
+
   body.innerHTML = '';
-
-  data.forEach(s => {
-    const scoreVal = parseFloat(s.score);
-    let badgeClass = 'badge-green';
-    if (scoreVal < 7) badgeClass = 'badge-red';
-    else if (scoreVal < 8.5) badgeClass = 'badge-yellow';
-
+  rows.forEach(row => {
     const tr = document.createElement('tr');
+    let details = '—';
+    let scoreCell = '—';
+    let actionBtn = '';
+
+    if (row.type === 'hafiz') {
+      const s = row.data;
+      details = (s.hadith_from || '—') + ' – ' + (s.hadith_to || '—');
+      const scoreVal = parseFloat(s.score);
+      let bc = 'badge-green';
+      if (scoreVal < 7) bc = 'badge-red';
+      else if (scoreVal < 8.5) bc = 'badge-yellow';
+      scoreCell = `<span class="badge ${bc}">${scoreVal.toFixed(2)}</span>`;
+      if (row.canEdit) {
+        const esc = JSON.stringify(s).replace(/"/g, '&quot;');
+        actionBtn = `<button class="btn-edit" onclick="editHafizSession(${esc})">تعديل</button>`;
+      } else {
+        actionBtn = '<span style="font-size:.75rem;color:#aaa">للعرض</span>';
+      }
+    } else {
+      const r = row.data;
+      const lf = r.link_from || '—', lt = r.link_to || '—';
+      const rf = r.review_range_from || '—', rt = r.review_range_to || '—';
+      details = `ربط: ${lf}–${lt} / مراجعة: ${rf}–${rt}`;
+      scoreCell = '—';
+      if (row.canEdit) {
+        actionBtn = `<button class="btn-edit" onclick="editReviewRecord('${r.id}')">تعديل</button>`;
+      } else {
+        actionBtn = '<span style="font-size:.75rem;color:#aaa">معتمد</span>';
+      }
+    }
+
+    const typeBadge = row.type === 'hafiz'
+      ? '<span class="type-badge type-hafiz">حفظ</span>'
+      : '<span class="type-badge type-review">ربط/مراجعة</span>';
+
     tr.innerHTML = `
-      <td>${s.date || '—'}</td>
-      <td>${s.hadith_from || '—'} – ${s.hadith_to || '—'}</td>
-      <td><span class="badge ${badgeClass}">${scoreVal.toFixed(2)}</span></td>
-      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.notes || '—'}</td>
-      <td><button class="btn-edit" onclick="editSession(${JSON.stringify(s).replace(/"/g,'&quot;')})">تعديل</button></td>
-    `;
+      <td>${row.date || '—'}</td>
+      <td>${typeBadge}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${details}</td>
+      <td>${scoreCell}</td>
+      <td>${actionBtn}</td>`;
     body.appendChild(tr);
   });
 }
 
-function editSession(s) {
+function editHafizSession(s) {
+  selectTrack('hafiz');
   editingSessionId = s.id;
   document.getElementById('folder').value = s.folder || '';
   document.getElementById('hadithFrom').value = s.hadith_from || '';
   document.getElementById('hadithTo').value = s.hadith_to || '';
-  document.getElementById('repetitions').value = s.repetitions || '';
-  document.getElementById('linkingFrom').value = s.linking_from || '';
-  document.getElementById('linkingTo').value = s.linking_to || '';
-  document.getElementById('reviewFrom').value = s.review_from || '';
-  document.getElementById('reviewTo').value = s.review_to || '';
-  document.getElementById('sessionNotes').value = s.notes || '';
+  const rep = s.repetitions;
+  document.getElementById('repetitionsSelect').value = rep === 15 ? 'yes' : (rep === 0 || rep !== null ? 'no' : '');
+  document.getElementById('hafizNotes').value = s.notes || '';
   errors.full = s.full_mark_errors || 0;
   errors.half = s.half_mark_errors || 0;
   errors.quarter = s.quarter_mark_errors || 0;
@@ -755,12 +683,16 @@ function editSession(s) {
   document.getElementById('halfVal').textContent = errors.half;
   document.getElementById('quarterVal').textContent = errors.quarter;
   updateScore();
-  document.getElementById('submitBtn').textContent = 'حفظ التعديل';
-  document.getElementById('cancelEditBtn').style.display = 'block';
-  document.getElementById('view-record').scrollTop = 0;
-  window.scrollTo({top:0, behavior:'smooth'});
+  document.getElementById('hafizSubmitBtn').textContent = 'حفظ التعديل';
+  document.getElementById('cancelEditBtn').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+async function editReviewRecord(drId) {
+  // Switch to review track and reload the form for today (the form will show existing data if not student_submitted)
+  selectTrack('review');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
 // --- LOGOUT ---
 async function logout() {
