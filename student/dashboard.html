@@ -372,12 +372,48 @@ body,
 .daily-sep{font-size:.9rem;color:var(--text-muted);font-weight:700;text-align:center}
 .daily-locked-msg{background:var(--surface2);border-radius:var(--radius-sm);padding:12px 14px;border:1px solid var(--border);font-size:.82rem;color:var(--text-muted);text-align:center}
 
+/* ── REVIEW DONE CARD ─────────────────────────────── */
+.review-done-card{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;
+}
+.review-done-header{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px;border-bottom:1px solid var(--border);
+  background:var(--surface);
+}
+.review-done-badge{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--border);display:flex;align-items:center;
+  justify-content:center;font-size:.9rem;flex-shrink:0;
+}
+.review-done-title{font-size:.85rem;font-weight:700;color:var(--text-secondary)}
+.review-done-by{font-size:.72rem;color:var(--text-muted);margin-top:1px}
+.review-done-rows{padding:10px 14px}
+.review-done-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid var(--border);font-size:.83rem;
+}
+.review-done-row:last-child{border:none}
+.review-done-lbl{color:var(--text-muted);font-weight:600}
+.review-done-val{color:var(--text-primary);font-weight:700;direction:ltr}
+
 /* ── REVIEW ───────────────────────────────────────── */
 .review-done-msg{
   background:var(--green-light);border-radius:var(--radius);
   padding:16px;text-align:center;color:var(--green-dark);
   font-weight:700;font-size:.88rem;border:1px solid rgba(76,175,125,.2);
 }
+
+/* ── PWA INSTALL CHIP (topbar) ────────────────────── */
+.pwa-chip{
+  display:none;align-items:center;gap:5px;
+  padding:5px 10px;border-radius:20px;
+  background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.4);
+  color:var(--gold);font-size:.7rem;font-weight:700;cursor:pointer;
+  white-space:nowrap;transition:.2s;flex-shrink:0;
+}
+.pwa-chip:hover{background:rgba(201,168,76,.35)}
 .review-textarea{
   width:100%;padding:12px 14px;border:1.5px solid var(--border);
   border-radius:var(--radius-sm);font-size:.88rem;font-family:inherit;
@@ -666,6 +702,7 @@ body,
   <span class="topbar-logo">حفّاظ</span>
   <span class="topbar-name" id="studentNameTop">…</span>
   <button class="topbar-theme" id="themeToggle" onclick="toggleTheme()" title="تبديل الوضع"></button>
+  <button class="pwa-chip" id="pwaChip" onclick="pwaChipClick()" title="تثبيت التطبيق">📲 تثبيت</button>
   <a href="../profile.html" class="topbar-profile" title="الملف الشخصي">👤</a>
   <button class="topbar-logout" onclick="logout()">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -802,25 +839,7 @@ body,
         <div><div class="card-title">رصد يومي — ربط ومراجعة</div></div>
       </div>
       <div id="reviewSection">
-        <div class="daily-fields">
-          <div class="daily-field-group">
-            <div class="daily-field-label">🔗 الربط</div>
-            <div class="daily-range-row">
-              <input type="text" class="daily-input" id="drLinkFrom" placeholder="من" />
-              <span class="daily-sep">—</span>
-              <input type="text" class="daily-input" id="drLinkTo" placeholder="إلى" />
-            </div>
-          </div>
-          <div class="daily-field-group">
-            <div class="daily-field-label">📚 المراجعة</div>
-            <div class="daily-range-row">
-              <input type="text" class="daily-input" id="drReviewFrom" placeholder="من" />
-              <span class="daily-sep">—</span>
-              <input type="text" class="daily-input" id="drReviewTo" placeholder="إلى" />
-            </div>
-          </div>
-        </div>
-        <button class="btn-primary btn-green" id="reviewBtn" onclick="submitReview()">اعتماد ورصد اليوم</button>
+        <div class="skel skel-box" style="height:50px"></div>
       </div>
     </div>
 
@@ -912,8 +931,22 @@ let planData = [];
 let studyPlanDays = [];
 let studyPlanInfo = null;
 let spChecked = {};
-const todayStr = new Date().toISOString().slice(0, 10);
 const WEEK_DAYS = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+
+function getTodayStr() { return new Date().toISOString().slice(0, 10); }
+/* ثابت يُستخدم في التصيير فقط — يُحدَّث منتصف الليل */
+let todayStr = getTodayStr();
+
+/* إعادة تشغيل رصد اليوم عند منتصف الليل */
+(function scheduleMidnightReset() {
+  const now = new Date();
+  const msToMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1) - now;
+  setTimeout(() => {
+    todayStr = getTodayStr();
+    checkDailyReview();   /* إعادة تحميل قسم الرصد لليوم الجديد */
+    scheduleMidnightReset();
+  }, msToMidnight + 500);
+})();
 
 async function init() {
   const { data: { session } } = await client.auth.getSession();
@@ -929,10 +962,13 @@ async function init() {
 
 async function loadStudentData() {
   const { data } = await client.from('students')
-    .select('id, memorized_hadiths, program_id, current_plan_id, programs(total_hadiths)')
+    .select('id, memorized_hadiths, program_id, current_plan_id, teacher_id, programs(total_hadiths), teachers(user_id, users(name))')
     .eq('user_id', currentUser.id)
-    .single();
-  if (data) studentData = data;
+    .maybeSingle();
+  if (data) {
+    studentData = data;
+    studentData.teacherName = data.teachers?.users?.name || 'المعلم';
+  }
 }
 
 /* ========== SP PROGRESS (persist checkboxes) ========== */
@@ -1343,28 +1379,66 @@ async function loadStats() {
 /* ========== DAILY REVIEW ========== */
 async function checkDailyReview() {
   if (!studentData) return;
+  const today = getTodayStr();
   const { data } = await client.from('daily_reviews')
     .select('id, student_submitted, link_from, link_to, review_range_from, review_range_to')
     .eq('student_id', studentData.id)
-    .eq('date', todayStr)
+    .eq('date', today)
     .maybeSingle();
 
   const section = document.getElementById('reviewSection');
 
-  if (data && (data.student_submitted || (data.link_from || data.link_to || data.review_range_from || data.review_range_to))) {
-    const by = data.student_submitted ? 'أنت' : 'المعلم';
+  const hasData = data && (data.link_from || data.link_to || data.review_range_from || data.review_range_to);
+  if (data && (data.student_submitted || hasData)) {
+    const byName = data.student_submitted ? 'أنت' : (studentData.teacherName || 'المعلم');
+    const byIcon = data.student_submitted ? '🎓' : '👨‍🏫';
     const lf = data.link_from || '—', lt = data.link_to || '—';
     const rf = data.review_range_from || '—', rt = data.review_range_to || '—';
     section.innerHTML = `
-      <div class="review-done-msg" style="text-align:right;line-height:2">
-        ✅ تم الاعتماد بواسطة ${by}<br>
-        🔗 الربط: ${lf} — ${lt}<br>
-        📚 المراجعة: ${rf} — ${rt}
+      <div class="review-done-card">
+        <div class="review-done-header">
+          <div class="review-done-badge">✓</div>
+          <div>
+            <div class="review-done-title">تم اعتماد رصد اليوم</div>
+            <div class="review-done-by">${byIcon} بواسطة: ${byName}</div>
+          </div>
+        </div>
+        <div class="review-done-rows">
+          <div class="review-done-row">
+            <span class="review-done-lbl">🔗 الربط</span>
+            <span class="review-done-val">${lf} — ${lt}</span>
+          </div>
+          <div class="review-done-row">
+            <span class="review-done-lbl">📚 المراجعة</span>
+            <span class="review-done-val">${rf} — ${rt}</span>
+          </div>
+        </div>
       </div>`;
     return;
   }
 
-  /* قابل للتعديل — أملأ الحقول إن وُجدت */
+  /* قابل للتعديل — أعد عرض الحقول الفارغة عند منتصف الليل */
+  section.innerHTML = `
+    <div class="daily-fields">
+      <div class="daily-field-group">
+        <div class="daily-field-label">🔗 الربط</div>
+        <div class="daily-range-row">
+          <input type="text" class="daily-input" id="drLinkFrom" placeholder="من" />
+          <span class="daily-sep">—</span>
+          <input type="text" class="daily-input" id="drLinkTo" placeholder="إلى" />
+        </div>
+      </div>
+      <div class="daily-field-group">
+        <div class="daily-field-label">📚 المراجعة</div>
+        <div class="daily-range-row">
+          <input type="text" class="daily-input" id="drReviewFrom" placeholder="من" />
+          <span class="daily-sep">—</span>
+          <input type="text" class="daily-input" id="drReviewTo" placeholder="إلى" />
+        </div>
+      </div>
+    </div>
+    <button class="btn-primary btn-green" id="reviewBtn" onclick="submitReview()">اعتماد ورصد اليوم</button>`;
+
   if (data) {
     if (data.link_from)          document.getElementById('drLinkFrom').value   = data.link_from;
     if (data.link_to)            document.getElementById('drLinkTo').value     = data.link_to;
@@ -1385,11 +1459,12 @@ async function submitReview() {
   }
 
   const btn = document.getElementById('reviewBtn');
-  btn.disabled = true; btn.textContent = 'جاري الحفظ…';
+  if (btn) { btn.disabled = true; btn.textContent = 'جاري الحفظ…'; }
+  const today = getTodayStr();
   const { error } = await client.from('daily_reviews').upsert(
     {
       student_id: studentData.id,
-      date: todayStr,
+      date: today,
       link_from: linkFrom,
       link_to: linkTo,
       review_range_from: reviewFrom,
@@ -1398,10 +1473,12 @@ async function submitReview() {
     },
     { onConflict: 'student_id,date' }
   );
-  btn.disabled = false; btn.textContent = 'اعتماد ورصد اليوم';
+  if (btn) { btn.disabled = false; btn.textContent = 'اعتماد ورصد اليوم'; }
   if (error) { showToast('خطأ: ' + error.message, 'error'); return; }
   showToast('تم الاعتماد ✓', 'success');
-  checkDailyReview(); /* أعد عرض الحالة المقفولة */
+  /* تحديث فوري: البطاقة الرمادية + إحصائيات منجزاتي */
+  await checkDailyReview();
+  loadStats();
 }
 
 /* ========== SESSIONS ========== */
@@ -1590,15 +1667,19 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Install prompt capture
+// Install prompt capture (Android/Chrome)
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   _deferredPrompt = e;
+  /* أظهر chip التثبيت في الشريط العلوي */
+  const chip = document.getElementById('pwaChip');
+  if (chip) chip.style.display = 'flex';
+  /* أظهر البانر التلقائي إذا لم يُرفض من قبل */
   if (!localStorage.getItem('huffaz-pwa-dismissed')) {
     setTimeout(() => {
       const b = document.getElementById('pwaBanner');
       if (b) b.style.display = 'flex';
-    }, 3000); // show after 3s so user sees the app first
+    }, 3000);
   }
 });
 
@@ -1631,15 +1712,34 @@ function pwaDismissIos() {
   if (b) { b.style.animation = 'toastOut .25s ease forwards'; setTimeout(() => b.style.display = 'none', 250); }
 }
 
-/* iOS PWA: show manual instructions if not installed and not dismissed */
+function pwaChipClick() {
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (isIos) {
+    /* iOS: أظهر الـ banner مع التعليمات */
+    const b = document.getElementById('pwaBannerIos');
+    if (b) b.style.display = 'flex';
+  } else if (_deferredPrompt) {
+    /* Android/Chrome: prompt مباشر */
+    pwaInstall();
+  } else {
+    showToast('افتح القائمة ← إضافة إلى الشاشة الرئيسية', 'success');
+  }
+}
+
+/* iOS PWA: show banner after 3.5s if not installed */
 (function() {
   const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const isInStandaloneMode = navigator.standalone === true;
-  if (isIos && !isInStandaloneMode && !localStorage.getItem('huffaz-pwa-dismissed')) {
-    setTimeout(() => {
-      const b = document.getElementById('pwaBannerIos');
-      if (b) b.style.display = 'flex';
-    }, 3500);
+  const chip = document.getElementById('pwaChip');
+  if (isIos && !isInStandaloneMode) {
+    /* أظهر الـ chip دائماً على iOS */
+    if (chip) chip.style.display = 'flex';
+    if (!localStorage.getItem('huffaz-pwa-dismissed')) {
+      setTimeout(() => {
+        const b = document.getElementById('pwaBannerIos');
+        if (b) b.style.display = 'flex';
+      }, 3500);
+    }
   }
 })();
 

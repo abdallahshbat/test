@@ -594,7 +594,7 @@ async function checkStudentDailyReview(studentId) {
     .select('student_submitted, link_from, link_to, review_range_from, review_range_to')
     .eq('student_id', studentId)
     .eq('date', today)
-    .single();
+    .maybeSingle();
   if (data?.student_submitted) {
     setReviewLocked(true, data);
   } else {
