@@ -391,8 +391,16 @@ async function loadStudents() {
   if (!currentTeacher) return;
   const { data, error } = await supabase
     .from('students')
-    .select('id, memorized_hadiths, users(name)')
+    .select(`
+      id,
+      memorized_hadiths,
+      status,
+      user_id,
+      users!students_user_id_fkey (name)
+    `)
     .eq('status', 'active');
+  console.log('students data:', data);
+  console.log('students error:', error);
   if (error) { showToast('خطأ في تحميل الطلاب', 'error'); return; }
   allStudents = (data || []).map(s => ({
     id: s.id,
