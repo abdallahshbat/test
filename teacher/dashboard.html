@@ -341,14 +341,8 @@ async function selectStudent(s) {
   document.getElementById('studentSearch').value = s.name;
   document.getElementById('studentDropdown').style.display = 'none';
   document.getElementById('selStudentName').textContent = s.name;
-  document.getElementById('selStudentMeta').textContent = 'جاري التحميل...';
+  document.getElementById('selStudentMeta').textContent = '';
   document.getElementById('selectedStudentBar').classList.add('show');
-
-  // Fetch fresh memorized_hadiths from DB
-  const { data: freshStu } = await supabaseClient
-    .from('students').select('memorized_hadiths').eq('id', s.id).maybeSingle();
-  const memorized = freshStu?.memorized_hadiths ?? s.memorized;
-  document.getElementById('selStudentMeta').textContent = 'عدد الأحاديث المحفوظة: ' + memorized;
 
   // Reset track UI
   document.getElementById('trackBtnHafiz').classList.remove('active');

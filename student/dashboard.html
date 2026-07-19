@@ -1353,12 +1353,19 @@ async function loadStats() {
   const drArr = (drRes.data || []).filter(r => r.student_submitted);
 
   const cnt       = arr.length;
-  const lastH     = arr[0]?.hadith_to || 0;
   const memorized = studentData.memorized_hadiths || 0;
   const totalH    = studentData.programs?.total_hadiths || 0;
   const avgScore  = cnt ? (arr.reduce((s, r) => s + (parseFloat(r.score) || 0), 0) / cnt).toFixed(2) : '—';
+
+  // أحاديث مسمّعة = max(hadith_to) - min(hadith_from) + 1
+  const validSess = arr.filter(r => r.hadith_from && r.hadith_to);
+  const recited = validSess.length
+    ? Math.max(...validSess.map(r => parseInt(r.hadith_to))) - Math.min(...validSess.map(r => parseInt(r.hadith_from))) + 1
+    : 0;
+
+  const lastH     = arr[0]?.hadith_to || 0;
   const gap       = Math.max(0, memorized - lastH);
-  const pct       = totalH ? Math.min(100, Math.round((lastH / totalH) * 100)) : 0;
+  const pct       = totalH ? Math.min(100, Math.round((recited / totalH) * 100)) : 0;
 
   /* ربط تراكمي: من جلسات المعلم + من الطالب (student_submitted) */
   const linkTeacher = arr.reduce((s, r) => s + Math.max(0, (r.linking_to || 0) - (r.linking_from || 0) + 1), 0);
@@ -1380,7 +1387,7 @@ async function loadStats() {
   const totalReview = revTeacher + revStudent;
 
   grid.innerHTML = `
-    <div class="stat-box"><div class="stat-num">${lastH || '—'}</div><div class="stat-lbl">📖 أحاديث مسمّعة</div></div>
+    <div class="stat-box"><div class="stat-num">${recited || '—'}</div><div class="stat-lbl">📖 أحاديث مسمّعة</div></div>
     <div class="stat-box"><div class="stat-num">${memorized}</div><div class="stat-lbl">🧠 أحاديث محفوظة</div></div>
     <div class="stat-box"><div class="stat-num">${cnt}</div><div class="stat-lbl">🎯 عدد الجلسات</div></div>
     <div class="stat-box"><div class="stat-num">${avgScore}</div><div class="stat-lbl">⭐ متوسط التقييم / 10</div></div>
