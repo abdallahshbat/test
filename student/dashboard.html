@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>لوحة الطالب — حفّاظ</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#1C2B3A" id="themeColorMeta">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="حفّاظ">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 /* ── RESET & BASE ─────────────────────────────────── */
@@ -574,6 +580,54 @@ body,
 [data-theme="dark"] .sp-day-header:active{background:var(--border)}
 [data-theme="dark"] .no-plan-msg{border-color:var(--border)}
 
+/* ── PWA: INSTALL BANNER ──────────────────────────── */
+.pwa-banner{
+  position:fixed;bottom:calc(var(--nav-h) + 10px);right:12px;left:12px;
+  background:linear-gradient(135deg,#1C2B3A,#263647);
+  border:1px solid rgba(201,168,76,.3);border-radius:var(--radius);
+  padding:14px 16px;z-index:300;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:var(--shadow-lg);
+  animation:bannerSlideUp .35s cubic-bezier(.22,.68,0,1.2) both;
+}
+@keyframes bannerSlideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.pwa-banner-icon{font-size:1.8rem;flex-shrink:0}
+.pwa-banner-text{flex:1}
+.pwa-banner-title{font-size:.85rem;font-weight:800;color:#fff;margin-bottom:2px}
+.pwa-banner-sub{font-size:.72rem;color:rgba(255,255,255,.6)}
+.pwa-banner-actions{display:flex;gap:6px;flex-shrink:0}
+.pwa-install-btn{
+  padding:8px 14px;background:linear-gradient(135deg,var(--gold),var(--gold-dark));
+  color:#fff;border:none;border-radius:var(--radius-sm);
+  font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit;
+  white-space:nowrap;transition:.15s;
+}
+.pwa-install-btn:hover{opacity:.9;transform:scale(1.03)}
+.pwa-dismiss-btn{
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(255,255,255,.12);border:none;
+  color:rgba(255,255,255,.7);font-size:.9rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:.15s;
+}
+.pwa-dismiss-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+
+/* ── PWA: UPDATE TOAST ────────────────────────────── */
+.pwa-update{
+  position:fixed;top:70px;right:12px;left:12px;
+  background:linear-gradient(135deg,var(--green),var(--green-dark));
+  border-radius:var(--radius);padding:12px 16px;z-index:400;
+  display:flex;align-items:center;gap:10px;
+  box-shadow:var(--shadow-lg);color:#fff;
+  animation:bannerIn .3s ease both;
+}
+.pwa-update-text{flex:1;font-size:.82rem;font-weight:700}
+.pwa-update-btn{
+  padding:6px 14px;background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.3);
+  color:#fff;border-radius:var(--radius-sm);font-size:.75rem;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap;
+}
+.pwa-update-btn:hover{background:rgba(255,255,255,.4)}
+
 /* ── RESPONSIVE ───────────────────────────────────── */
 @media(min-width:480px){
   .stats-grid{grid-template-columns:1fr 1fr 1fr}
@@ -620,6 +674,26 @@ body,
 
 <!-- TOAST -->
 <div class="toast-wrap" id="toastWrap"></div>
+
+<!-- PWA INSTALL BANNER (shown by JS when prompt available) -->
+<div class="pwa-banner" id="pwaBanner" style="display:none">
+  <span class="pwa-banner-icon">📲</span>
+  <div class="pwa-banner-text">
+    <div class="pwa-banner-title">ثبّت تطبيق حفّاظ</div>
+    <div class="pwa-banner-sub">استخدمه بدون إنترنت من شاشة الرئيسية</div>
+  </div>
+  <div class="pwa-banner-actions">
+    <button class="pwa-install-btn" onclick="pwaInstall()">تثبيت</button>
+    <button class="pwa-dismiss-btn" onclick="pwaDismiss()">✕</button>
+  </div>
+</div>
+
+<!-- PWA UPDATE BANNER (shown when new SW available) -->
+<div class="pwa-update" id="pwaUpdate" style="display:none">
+  <span>🔄</span>
+  <div class="pwa-update-text">تحديث جديد متاح!</div>
+  <button class="pwa-update-btn" onclick="pwaReload()">تحديث الآن</button>
+</div>
 
 <!-- MAIN -->
 <div class="main">
@@ -1320,6 +1394,96 @@ function showToast(msg, type) {
 }
 
 init();
+
+/* ========== PWA ========== */
+let _deferredPrompt = null;
+let _swReg = null;
+
+// Service Worker registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      _swReg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+
+      // Detect new SW waiting → show update banner
+      const checkUpdate = reg => {
+        if (reg.waiting) {
+          document.getElementById('pwaUpdate').style.display = 'flex';
+        }
+      };
+      checkUpdate(_swReg);
+      _swReg.addEventListener('updatefound', () => {
+        const newSW = _swReg.installing;
+        newSW.addEventListener('statechange', () => {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            document.getElementById('pwaUpdate').style.display = 'flex';
+          }
+        });
+      });
+
+      // Reload once new SW takes control
+      navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
+    } catch (e) {
+      console.warn('SW registration failed:', e);
+    }
+  });
+}
+
+// Install prompt capture
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredPrompt = e;
+  if (!localStorage.getItem('huffaz-pwa-dismissed')) {
+    setTimeout(() => {
+      const b = document.getElementById('pwaBanner');
+      if (b) b.style.display = 'flex';
+    }, 3000); // show after 3s so user sees the app first
+  }
+});
+
+// After install
+window.addEventListener('appinstalled', () => {
+  _deferredPrompt = null;
+  const b = document.getElementById('pwaBanner');
+  if (b) b.style.display = 'none';
+  showToast('تم تثبيت التطبيق بنجاح 🎉', 'success');
+});
+
+function pwaInstall() {
+  if (!_deferredPrompt) return;
+  _deferredPrompt.prompt();
+  _deferredPrompt.userChoice.then(choice => {
+    _deferredPrompt = null;
+    document.getElementById('pwaBanner').style.display = 'none';
+  });
+}
+
+function pwaDismiss() {
+  localStorage.setItem('huffaz-pwa-dismissed', '1');
+  const b = document.getElementById('pwaBanner');
+  if (b) { b.style.animation = 'toastOut .25s ease forwards'; setTimeout(() => b.style.display = 'none', 250); }
+}
+
+function pwaReload() {
+  if (_swReg?.waiting) {
+    _swReg.waiting.postMessage({ type: 'SKIP_WAITING' });
+  } else {
+    location.reload();
+  }
+}
+
+// Update theme-color meta when dark mode toggles
+function syncThemeColorMeta() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+    (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme:dark)').matches);
+  const meta = document.getElementById('themeColorMeta');
+  if (meta) meta.setAttribute('content', isDark ? '#0D1520' : '#1C2B3A');
+}
+// call on toggle
+const _origToggleTheme = toggleTheme;
+// eslint-disable-next-line no-global-assign
+window.toggleTheme = function() { _origToggleTheme(); syncThemeColorMeta(); };
+syncThemeColorMeta();
 </script>
 </body>
 </html>

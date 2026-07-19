@@ -1,0 +1,44 @@
+{
+  "name": "حفّاظ — لوحة الطالب",
+  "short_name": "حفّاظ",
+  "description": "منصة حفّاظ لمتابعة خطة الحفظ والتسميع",
+  "start_url": "./dashboard.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1C2B3A",
+  "background_color": "#F7F8FA",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["education"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%231C2B3A'/%3E%3Ctext x='96' y='130' font-size='110' text-anchor='middle' fill='%23C9A84C'%3E📖%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%231C2B3A'/%3E%3Ctext x='256' y='350' font-size='300' text-anchor='middle' fill='%23C9A84C'%3E📖%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "خطتي",
+      "short_name": "الخطة",
+      "description": "عرض الخطة الدراسية",
+      "url": "./dashboard.html#study",
+      "icons": [{ "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Ctext y='80' font-size='80'%3E📖%3C/text%3E%3C/svg%3E", "sizes": "96x96" }]
+    },
+    {
+      "name": "منجزاتي",
+      "short_name": "المنجزات",
+      "description": "عرض المنجزات والإحصائيات",
+      "url": "./dashboard.html#achieve",
+      "icons": [{ "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Ctext y='80' font-size='80'%3E🏆%3C/text%3E%3C/svg%3E", "sizes": "96x96" }]
+    }
+  ]
+}
