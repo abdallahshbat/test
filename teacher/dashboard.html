@@ -68,6 +68,13 @@ input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--bord
 input:focus,select:focus,textarea:focus{border-color:var(--primary)}
 textarea{resize:vertical;min-height:70px}
 
+/* TABS */
+.tab-bar{display:flex;border-bottom:2px solid var(--border);margin-bottom:14px}
+.tab-btn{flex:1;padding:8px;background:none;border:none;font-family:inherit;font-size:.9rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
 /* SEARCH */
 .search-wrap{position:relative}
 .search-wrap input{padding-left:36px}
@@ -204,16 +211,32 @@ tr:hover td{background:#f7fafc}
   <!-- RECORD VIEW -->
   <div class="view" id="view-record">
 
-    <!-- Student Search -->
+    <!-- Student Selection (tabbed) -->
     <div class="card">
       <div class="card-title">اختر الطالب</div>
-      <div class="search-wrap">
-        <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="#718096" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="studentSearch" placeholder="ابحث عن طالب..." autocomplete="off" oninput="filterStudents()" onfocus="showDropdown()" onblur="hideDropdownDelayed()">
-        <div class="dropdown-list" id="studentDropdown" style="display:none"></div>
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-btn-dropdown" onclick="switchTab('dropdown')">📋 قائمة</button>
+        <button class="tab-btn" id="tab-btn-search" onclick="switchTab('search')">🔍 بحث</button>
       </div>
+
+      <!-- Tab 1: Dropdown -->
+      <div class="tab-pane active" id="tab-dropdown">
+        <select id="studentSelect" onchange="selectStudentById(this.value)">
+          <option value="">-- اختر طالباً --</option>
+        </select>
+      </div>
+
+      <!-- Tab 2: Search -->
+      <div class="tab-pane" id="tab-search">
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="#718096" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="studentSearch" placeholder="ابحث عن طالب..." autocomplete="off" oninput="filterStudents()" onfocus="showDropdown()" onblur="hideDropdownDelayed()">
+          <div class="dropdown-list" id="studentDropdown" style="display:none"></div>
+        </div>
+      </div>
+
       <!-- Student info -->
-      <div class="student-info-card" id="studentInfo">
+      <div class="student-info-card" id="studentInfo" style="margin-top:12px">
         <div class="info-row"><span class="key">الاسم</span><span class="val" id="infoName">—</span></div>
         <div class="info-row"><span class="key">آخر محفوظ</span><span class="val" id="infoLastMem">—</span></div>
         <div class="info-row"><span class="key">آخر مسموع</span><span class="val" id="infoLastRec">—</span></div>
@@ -407,23 +430,61 @@ async function loadStudents() {
     name: s.users?.name || 'طالب',
     memorized: s.memorized_hadiths || 0
   }));
+  populateSelect();
   renderDropdown(allStudents);
 }
 
 function renderDropdown(list) {
+  // Update search dropdown
   const dd = document.getElementById('studentDropdown');
   dd.innerHTML = '';
   if (!list.length) {
     dd.innerHTML = '<div class="dropdown-item" style="color:#718096">لا يوجد طلاب</div>';
-    return;
+  } else {
+    list.forEach(s => {
+      const d = document.createElement('div');
+      d.className = 'dropdown-item';
+      d.textContent = s.name;
+      d.onmousedown = () => selectStudent(s);
+      dd.appendChild(d);
+    });
   }
-  list.forEach(s => {
-    const d = document.createElement('div');
-    d.className = 'dropdown-item';
-    d.textContent = s.name;
-    d.onmousedown = () => selectStudent(s);
-    dd.appendChild(d);
+}
+
+function populateSelect() {
+  const sel = document.getElementById('studentSelect');
+  sel.innerHTML = '<option value="">-- اختر طالباً --</option>';
+  allStudents.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = s.name;
+    sel.appendChild(opt);
   });
+}
+
+function switchTab(name) {
+  ['dropdown','search'].forEach(t => {
+    document.getElementById('tab-' + t).classList.remove('active');
+    document.getElementById('tab-btn-' + t).classList.remove('active');
+  });
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('tab-btn-' + name).classList.add('active');
+  // Clear selection when switching tabs
+  selectedStudent = null;
+  document.getElementById('studentInfo').classList.remove('show');
+  document.getElementById('historyCard').style.display = 'none';
+  if (name === 'search') {
+    document.getElementById('studentSearch').value = '';
+    renderDropdown(allStudents);
+  } else {
+    document.getElementById('studentSelect').value = '';
+  }
+}
+
+function selectStudentById(id) {
+  if (!id) { selectedStudent = null; document.getElementById('studentInfo').classList.remove('show'); return; }
+  const s = allStudents.find(x => x.id === id);
+  if (s) selectStudent(s);
 }
 
 function filterStudents() {
@@ -590,6 +651,7 @@ function resetForm(clearStudent) {
   if (clearStudent !== false) {
     selectedStudent = null;
     document.getElementById('studentSearch').value = '';
+    document.getElementById('studentSelect').value = '';
     document.getElementById('studentInfo').classList.remove('show');
     document.getElementById('historyCard').style.display = 'none';
   }
