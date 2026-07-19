@@ -1306,13 +1306,13 @@ async function loadStats() {
   const totalReview = revTeacher + revStudent;
 
   grid.innerHTML = `
-    <div class="stat-box"><div class="stat-num">${lastH || '—'}</div><div class="stat-lbl">أحاديث مسمّعة</div></div>
-    <div class="stat-box"><div class="stat-num">${cnt}</div><div class="stat-lbl">عدد الجلسات</div></div>
-    <div class="stat-box"><div class="stat-num">${avgScore}</div><div class="stat-lbl">متوسط التقييم / 10</div></div>
-    <div class="stat-box"><div class="stat-num">${memorized}</div><div class="stat-lbl">أحاديث محفوظة</div></div>
-    <div class="stat-box"><div class="stat-num">${gap}</div><div class="stat-lbl">فرق الحفظ والتسميع</div></div>
-    <div class="stat-box"><div class="stat-num">${totalLink}</div><div class="stat-lbl">صفحات الربط</div></div>
-    <div class="stat-box"><div class="stat-num">${totalReview}</div><div class="stat-lbl">صفحات المراجعة</div></div>
+    <div class="stat-box"><div class="stat-num">${lastH || '—'}</div><div class="stat-lbl">📖 أحاديث مسمّعة</div></div>
+    <div class="stat-box"><div class="stat-num">${memorized}</div><div class="stat-lbl">🧠 أحاديث محفوظة</div></div>
+    <div class="stat-box"><div class="stat-num">${cnt}</div><div class="stat-lbl">🎯 عدد الجلسات</div></div>
+    <div class="stat-box"><div class="stat-num">${avgScore}</div><div class="stat-lbl">⭐ متوسط التقييم / 10</div></div>
+    <div class="stat-box" style="grid-column:1/-1"><div class="stat-num">${gap}</div><div class="stat-lbl">📊 فرق الحفظ والتسميع</div></div>
+    <div class="stat-box"><div class="stat-num">${totalLink}</div><div class="stat-lbl">🔗 صفحات الربط</div></div>
+    <div class="stat-box"><div class="stat-num">${totalReview}</div><div class="stat-lbl">📚 صفحات المراجعة</div></div>
   `;
   if (totalH > 0) {
     document.getElementById('progressSection').style.display = 'block';
