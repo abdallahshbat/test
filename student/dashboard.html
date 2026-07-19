@@ -1420,37 +1420,16 @@ async function checkDailyReview() {
     .maybeSingle();
 
   const section = document.getElementById('reviewSection');
+  const submitted = data?.student_submitted || false;
 
-  const hasData = data && (data.link_from || data.link_to || data.review_range_from || data.review_range_to);
-  if (data && (data.student_submitted || hasData)) {
-    const byName = data.student_submitted ? 'أنت' : (studentData.teacherName || 'المعلم');
-    const byIcon = data.student_submitted ? '🎓' : '👨‍🏫';
-    const lf = data.link_from || '—', lt = data.link_to || '—';
-    const rf = data.review_range_from || '—', rt = data.review_range_to || '—';
-    section.innerHTML = `
-      <div class="review-done-card">
-        <div class="review-done-header">
-          <div class="review-done-badge">✓</div>
-          <div>
-            <div class="review-done-title">تم اعتماد رصد اليوم</div>
-            <div class="review-done-by">${byIcon} بواسطة: ${byName}</div>
-          </div>
-        </div>
-        <div class="review-done-rows">
-          <div class="review-done-row">
-            <span class="review-done-lbl">🔗 الربط</span>
-            <span class="review-done-val">${lf} — ${lt}</span>
-          </div>
-          <div class="review-done-row">
-            <span class="review-done-lbl">📚 المراجعة</span>
-            <span class="review-done-val">${rf} — ${rt}</span>
-          </div>
-        </div>
-      </div>`;
-    return;
-  }
+  // دائماً نعرض نفس الحقول — المقفولة رمادية، الفارغة قابلة للتعديل
+  const flds = [
+    { id:'drLinkFrom',   val: data?.link_from,          label:'🔗 الربط من' },
+    { id:'drLinkTo',     val: data?.link_to,            label:'إلى' },
+    { id:'drReviewFrom', val: data?.review_range_from,  label:'📚 المراجعة من' },
+    { id:'drReviewTo',   val: data?.review_range_to,    label:'إلى' },
+  ];
 
-  /* قابل للتعديل — أعد عرض الحقول الفارغة عند منتصف الليل */
   section.innerHTML = `
     <div class="daily-fields">
       <div class="daily-field-group">
@@ -1470,14 +1449,16 @@ async function checkDailyReview() {
         </div>
       </div>
     </div>
-    <button class="btn-primary btn-green" id="reviewBtn" onclick="submitReview()">اعتماد ورصد اليوم</button>`;
+    ${submitted ? `<div style="text-align:center;padding:10px 0;font-size:.85rem;color:#2d6a4f;font-weight:700">✓ تم الاعتماد بواسطة أنت</div>` : ''}
+    ${!submitted ? `<button class="btn-primary btn-green" id="reviewBtn" onclick="submitReview()">اعتماد ورصد اليوم</button>` : ''}`;
 
-  if (data) {
-    if (data.link_from)          document.getElementById('drLinkFrom').value   = data.link_from;
-    if (data.link_to)            document.getElementById('drLinkTo').value     = data.link_to;
-    if (data.review_range_from)  document.getElementById('drReviewFrom').value = data.review_range_from;
-    if (data.review_range_to)    document.getElementById('drReviewTo').value   = data.review_range_to;
-  }
+  // قفل الحقول: submitted → كل شيء، وإلا → فقط الحقول التي فيها قيمة
+  flds.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (!el) return;
+    if (f.val) { el.value = f.val; }
+    if (submitted || f.val) { el.disabled = true; }
+  });
 }
 
 async function submitReview() {

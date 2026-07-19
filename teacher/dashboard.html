@@ -516,36 +516,37 @@ async function loadReviewForm(studentId) {
     .eq('date', today)
     .maybeSingle();
 
-  if (dr?.student_submitted) {
-    // Read-only
-    inner.innerHTML = `
-      <div class="review-locked-card">
-        <div>🔒 الطالب اعتمد الربط والمراجعة — للعرض فقط</div>
-        <div class="review-locked-rows">
-          <div class="review-locked-row"><span class="review-locked-key">الربط من</span><span class="review-locked-val">${dr.link_from || '—'}</span></div>
-          <div class="review-locked-row"><span class="review-locked-key">الربط إلى</span><span class="review-locked-val">${dr.link_to || '—'}</span></div>
-          <div class="review-locked-row"><span class="review-locked-key">المراجعة من</span><span class="review-locked-val">${dr.review_range_from || '—'}</span></div>
-          <div class="review-locked-row"><span class="review-locked-key">المراجعة إلى</span><span class="review-locked-val">${dr.review_range_to || '—'}</span></div>
-        </div>
-      </div>`;
-    editingDrId = null;
-    return;
-  }
+  const submitted = dr?.student_submitted || false;
+  editingDrId = (dr && !submitted) ? dr.id : null;
 
-  // Editable form
-  editingDrId = dr ? dr.id : null;
+  // دائماً نعرض نفس الحقول — المقفولة disabled رمادية، الفارغة قابلة للتعديل
   inner.innerHTML = `
     <div class="form-row">
-      <div><label>الربط من صفحة</label><input type="number" id="linkFrom" min="1" placeholder="من" value="${dr?.link_from || ''}"></div>
-      <div><label>الربط إلى صفحة</label><input type="number" id="linkTo" min="1" placeholder="إلى" value="${dr?.link_to || ''}"></div>
+      <div><label>الربط من صفحة</label><input type="number" id="linkFrom" min="1" placeholder="من"></div>
+      <div><label>الربط إلى صفحة</label><input type="number" id="linkTo" min="1" placeholder="إلى"></div>
     </div>
     <div class="form-row" style="margin-top:4px">
-      <div><label>المراجعة من صفحة</label><input type="number" id="reviewFrom" min="1" placeholder="من" value="${dr?.review_range_from || ''}"></div>
-      <div><label>المراجعة إلى صفحة</label><input type="number" id="reviewTo" min="1" placeholder="إلى" value="${dr?.review_range_to || ''}"></div>
+      <div><label>المراجعة من صفحة</label><input type="number" id="reviewFrom" min="1" placeholder="من"></div>
+      <div><label>المراجعة إلى صفحة</label><input type="number" id="reviewTo" min="1" placeholder="إلى"></div>
     </div>
+    ${submitted ? `<div style="margin-top:12px;text-align:center;font-size:.85rem;color:#2d6a4f;font-weight:700">🔒 الطالب اعتمد — للعرض فقط</div>` : `
     <div style="margin-top:16px">
       <button class="btn-primary" id="reviewSubmitBtn" onclick="submitReview()">رصد الربط والمراجعة</button>
-    </div>`;
+    </div>`}`;
+
+  // قفل الحقول: submitted → كل شيء، وإلا → فقط الحقول التي فيها قيمة مسبقة
+  const fieldMap = [
+    { id: 'linkFrom',   val: dr?.link_from },
+    { id: 'linkTo',     val: dr?.link_to },
+    { id: 'reviewFrom', val: dr?.review_range_from },
+    { id: 'reviewTo',   val: dr?.review_range_to },
+  ];
+  fieldMap.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (!el) return;
+    if (f.val) { el.value = f.val; }
+    if (submitted || f.val) { el.disabled = true; }
+  });
 }
 
 async function submitReview() {
