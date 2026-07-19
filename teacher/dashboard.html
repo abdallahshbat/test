@@ -270,8 +270,9 @@ let allStudents = [];
 let selectedStudent = null;
 let selectedTrack = null; // 'hafiz' | 'review'
 let errors = {full:0, half:0, quarter:0};
-let editingSessionId = null; // for recitation_sessions edit
-let editingDrId = null;      // for daily_reviews edit
+let editingSessionId = null;   // for recitation_sessions edit
+let editingSessionDate = null; // original date of session being edited
+let editingDrId = null;        // for daily_reviews edit
 
 // --- INIT ---
 function initSupabase() {
@@ -433,6 +434,7 @@ function resetHafizForm() {
   document.getElementById('hafizSubmitBtn').textContent = 'رصد الجلسة';
   document.getElementById('cancelEditBtn').classList.add('hidden');
   editingSessionId = null;
+  editingSessionDate = null;
 }
 
 function adjustError(type, delta) {
@@ -456,11 +458,13 @@ async function submitHafiz() {
   const notes = document.getElementById('hafizNotes').value.trim() || null;
   const score = Math.max(0, 10 - errors.full - errors.half * 0.5 - errors.quarter * 0.25);
   const today = new Date().toISOString().slice(0, 10);
+  // When editing preserve the original date; for new sessions use today
+  const sessionDate = (editingSessionId && editingSessionDate) ? editingSessionDate : today;
 
   const payload = {
     student_id: selectedStudent.id,
     teacher_id: currentTeacher.id,
-    date: today,
+    date: sessionDate,
     folder,
     hadith_from: hadithFrom,
     hadith_to: hadithTo,
@@ -672,6 +676,7 @@ async function loadHistory(studentId) {
 function editHafizSession(s) {
   selectTrack('hafiz');
   editingSessionId = s.id;
+  editingSessionDate = s.date;
   document.getElementById('folder').value = s.folder || '';
   document.getElementById('hadithFrom').value = s.hadith_from || '';
   document.getElementById('hadithTo').value = s.hadith_to || '';
