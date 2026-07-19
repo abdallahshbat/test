@@ -427,7 +427,7 @@ async function loadTeacher(userId) {
 // --- STUDENTS ---
 async function loadStudents() {
   if (!currentTeacher) return;
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('students')
     .select(`
       id,
@@ -525,7 +525,7 @@ async function selectStudent(s) {
   document.getElementById('infoLastMem').textContent = s.memorized || '—';
 
   // fetch last recitation session
-  const { data: sessions } = await supabase
+  const { data: sessions } = await supabaseClient
     .from('recitation_sessions')
     .select('hadith_to, score, date')
     .eq('student_id', s.id)
@@ -549,27 +549,27 @@ async function selectStudent(s) {
 // --- HOME STATS ---
 async function loadHomeStats() {
   if (!currentTeacher) return;
-  const { count: totalStudents } = await supabase
+  const { count: totalStudents } = await supabaseClient
     .from('students')
     .select('id', { count: 'exact', head: true })
     .eq('teacher_id', currentTeacher.id);
   document.getElementById('statStudents').textContent = totalStudents ?? 0;
 
   const today = new Date().toISOString().slice(0, 10);
-  const { count: todaySessions } = await supabase
+  const { count: todaySessions } = await supabaseClient
     .from('recitation_sessions')
     .select('id', { count: 'exact', head: true })
     .eq('teacher_id', currentTeacher.id)
     .eq('date', today);
   document.getElementById('statToday').textContent = todaySessions ?? 0;
 
-  const { count: totalSessions } = await supabase
+  const { count: totalSessions } = await supabaseClient
     .from('recitation_sessions')
     .select('id', { count: 'exact', head: true })
     .eq('teacher_id', currentTeacher.id);
   document.getElementById('statTotal').textContent = totalSessions ?? 0;
 
-  const { data: lastArr } = await supabase
+  const { data: lastArr } = await supabaseClient
     .from('recitation_sessions')
     .select('date, hadith_from, hadith_to, score, students(users(name))')
     .eq('teacher_id', currentTeacher.id)
@@ -694,7 +694,7 @@ function cancelEdit() {
 
 // --- SESSION HISTORY ---
 async function loadSessionHistory(studentId) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('recitation_sessions')
     .select('id, date, hadith_from, hadith_to, score, notes, folder, repetitions, linking_from, linking_to, self_review_notes, full_mark_errors, half_mark_errors, quarter_mark_errors')
     .eq('student_id', studentId)
