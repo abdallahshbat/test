@@ -314,7 +314,8 @@ async function loadStudents() {
   const { data, error } = await supabaseClient
     .from('students')
     .select('id, memorized_hadiths, status, user_id, users!students_user_id_fkey(name)')
-    .eq('status', 'active');
+    .eq('status', 'active')
+    .eq('is_archived', false);
   if (error) { showToast('خطأ في تحميل الطلاب', 'error'); return; }
   allStudents = (data || []).map(s => ({ id: s.id, name: s.users?.name || 'طالب', memorized: s.memorized_hadiths || 0 }));
   renderStudentDropdown(allStudents);

@@ -1620,7 +1620,7 @@
   let allStudentsListData = [];
   async function loadStudentsList() {
     const { data } = await client.from('students')
-      .select('id, user_id, users(id, name, username, phone), programs(name)')
+      .select('id, user_id, is_archived, users(id, name, username, phone), programs(name)')
       .order('id', { ascending: false });
     allStudentsListData = data || [];
     renderStudentsList(allStudentsListData);
@@ -1630,16 +1630,32 @@
     const el = document.getElementById('sfStudentsList');
     if (!arr.length) { el.innerHTML = '<p class="empty-row" style="padding:20px;text-align:center;color:var(--text-muted)">لا يوجد طلاب مسجلون بعد</p>'; return; }
     el.innerHTML = `<table class="sf-table">
-      <thead><tr><th>#</th><th>الاسم</th><th>اسم المستخدم</th><th>الجوال</th><th>البرنامج</th><th>إجراء</th></tr></thead>
-      <tbody>${arr.map((s,i) => `<tr>
+      <thead><tr><th>#</th><th>الاسم</th><th>اسم المستخدم</th><th>الجوال</th><th>البرنامج</th><th>الحالة</th><th>إجراء</th></tr></thead>
+      <tbody>${arr.map((s,i) => `<tr style="${s.is_archived ? 'opacity:.55;background:#f9f9f9' : ''}">
         <td style="color:var(--text-muted)">${i+1}</td>
         <td style="font-weight:700">${s.users?.name || '—'}</td>
         <td style="color:var(--accent);font-weight:600">${s.users?.username || '—'}</td>
         <td>${s.users?.phone || '—'}</td>
         <td>${s.programs?.name || '—'}</td>
-        <td><button class="btn-pw" data-uid="${s.users?.id||''}" data-name="${(s.users?.name||'').replace(/"/g,'&quot;')}" onclick="openResetPwModal(this.dataset.uid,this.dataset.name)">🔑 تغيير كلمة المرور</button></td>
+        <td>${s.is_archived ? '<span style="font-size:.75rem;font-weight:700;color:#b91c1c;background:#fee2e2;padding:2px 8px;border-radius:20px">مؤرشف</span>' : '<span style="font-size:.75rem;font-weight:700;color:#065f46;background:#d1fae5;padding:2px 8px;border-radius:20px">نشط</span>'}</td>
+        <td style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn-pw" data-uid="${s.users?.id||''}" data-name="${(s.users?.name||'').replace(/"/g,'&quot;')}" onclick="openResetPwModal(this.dataset.uid,this.dataset.name)">🔑 كلمة المرور</button>
+          ${s.is_archived
+            ? `<button class="btn-pw" style="background:#d1fae5;color:#065f46;border-color:#a7f3d0" onclick="toggleArchiveStudent('${s.id}',false,${JSON.stringify(s.users?.name||'')})">↩️ استعادة</button>`
+            : `<button class="btn-pw" style="background:#fee2e2;color:#b91c1c;border-color:#fca5a5" onclick="toggleArchiveStudent('${s.id}',true,${JSON.stringify(s.users?.name||'')})">📦 أرشفة</button>`
+          }
+        </td>
       </tr>`).join('')}</tbody>
     </table>`;
+  }
+
+  async function toggleArchiveStudent(studentId, archive, name) {
+    const action = archive ? 'أرشفة' : 'استعادة';
+    if (!confirm(`هل أنت متأكد من ${action} الطالب "${name}"؟`)) return;
+    const { error } = await client.from('students').update({ is_archived: archive }).eq('id', studentId);
+    if (error) { showToast('خطأ: ' + error.message, 'error'); return; }
+    showToast(`تم ${action} الطالب ✓`, 'success');
+    loadStudentsList();
   }
 
   function filterStudentsList() {

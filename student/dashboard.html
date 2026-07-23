@@ -986,10 +986,20 @@ async function init() {
 
 async function loadStudentData() {
   const { data } = await client.from('students')
-    .select('id, memorized_hadiths, program_id, current_plan_id, teacher_id, programs(total_hadiths), teachers(user_id, users(name))')
+    .select('id, memorized_hadiths, program_id, current_plan_id, teacher_id, is_archived, programs(total_hadiths), teachers(user_id, users(name))')
     .eq('user_id', currentUser.id)
     .maybeSingle();
   if (data) {
+    if (data.is_archived) {
+      document.body.innerHTML = `<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3f4f6;font-family:'Segoe UI',sans-serif;direction:rtl;padding:24px">
+        <div style="background:#fff;border-radius:16px;padding:36px 32px;max-width:380px;width:100%;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.1)">
+          <div style="font-size:3rem;margin-bottom:16px">🔒</div>
+          <h2 style="font-size:1.2rem;font-weight:800;color:#1f2937;margin-bottom:8px">تم تعليق الحساب</h2>
+          <p style="font-size:.9rem;color:#6b7280;line-height:1.6">تم أرشفة حسابك مؤقتاً. للاستفسار تواصل مع المشرف.</p>
+        </div>
+      </div>`;
+      return;
+    }
     studentData = data;
     studentData.teacherName = data.teachers?.users?.name || 'المعلم';
   }
@@ -1606,14 +1616,15 @@ async function loadHonor() {
   const list = document.getElementById('honorList');
   /* نجلب متوسط درجات كل طالب عبر SQL مباشرة لنضمن أفضل 10 فقط */
   const { data, error } = await client.from('recitation_sessions')
-    .select('student_id, score, students(users(name))')
+    .select('student_id, score, students!inner(is_archived, users(name))')
+    .eq('students.is_archived', false)
     .not('score', 'is', null)
     .limit(2000);
   if (error || !data || !data.length) { list.innerHTML = '<div class="empty-state"><span class="empty-icon">🌟</span><div class="empty-text">لا توجد بيانات بعد</div></div>'; return; }
   const map = {};
   data.forEach(r => {
     const id = r.student_id;
-    if (!map[id]) map[id] = { name: r.students?.users?.name || 'طالب', scores: [] };
+    if (!map[id]) map[id] = { name: r.students?.users?.name || r.students?.[0]?.users?.name || 'طالب', scores: [] };
     const s = parseFloat(r.score);
     if (!isNaN(s)) map[id].scores.push(s);
   });
