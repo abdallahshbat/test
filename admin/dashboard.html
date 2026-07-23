@@ -312,7 +312,7 @@
           <div class="file-name-display" id="pm-filename">لم يُختر ملف</div>
         </div>
         <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">
-          الأعمدة: (1) حفظ من &bull; (2) حفظ إلى &bull; (3) ربط من &bull; (4) ربط إلى &bull; (5) مراجعة من &bull; (6) مراجعة إلى — الصف الأول عناوين تُتجاهل
+          الأعمدة: (A) حفظ من &bull; (B) من قوله &bull; (C) حفظ إلى &bull; (D) إلى قوله &bull; (E) ربط من &bull; (F) ربط إلى &bull; (G) مراجعة من &bull; (H) مراجعة إلى — الصف الأول عناوين تُتجاهل
         </div>
       </div>
       <div id="pm-preview" style="font-size:0.82rem;color:var(--accent);font-weight:600;margin-top:4px"></div>
@@ -326,9 +326,10 @@
           <input type="url" id="pm-book-url" class="form-control" placeholder="https://..." />
         </div>
       </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-reset" onclick="closePlanModal()">إلغاء</button>
+      <div class="form-group">
+        <label>رابط مجموعة الواتساب <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+        <input type="url" id="pm-whatsapp" class="form-control" placeholder="https://chat.whatsapp.com/..." />
+      </div>
       <button class="btn-submit" id="pm-save" onclick="savePlan()">حفظ الخطة</button>
     </div>
   </div>
@@ -368,6 +369,10 @@
         </div>
       </div>
       <div class="form-group">
+        <label>رابط مجموعة الواتساب <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+        <input type="url" id="edit-whatsapp" class="form-control" placeholder="https://chat.whatsapp.com/..." />
+      </div>
+      <div class="form-group">
         <label>رفع ملف Excel جديد <span style="color:var(--text-muted);font-weight:400">(اختياري — يستبدل الأيام الحالية)</span></label>
         <div class="file-upload-area" onclick="document.getElementById('edit-pm-file').click()">
           <input type="file" id="edit-pm-file" accept=".xlsx,.xls" onchange="handleEditPlanFile(this)" />
@@ -376,7 +381,7 @@
           <div class="file-name-display" id="edit-pm-filename">لم يُختر ملف — الأيام الحالية تبقى كما هي</div>
         </div>
         <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">
-          الأعمدة: (1) حفظ من &bull; (2) حفظ إلى &bull; (3) ربط من &bull; (4) ربط إلى &bull; (5) مراجعة من &bull; (6) مراجعة إلى
+          الأعمدة: (A) حفظ من &bull; (B) من قوله &bull; (C) حفظ إلى &bull; (D) إلى قوله &bull; (E) ربط من &bull; (F) ربط إلى &bull; (G) مراجعة من &bull; (H) مراجعة إلى — الصف الأول عناوين تُتجاهل
         </div>
       </div>
       <div id="edit-pm-preview" style="font-size:0.82rem;color:var(--accent);font-weight:600;margin-top:4px"></div>
@@ -979,7 +984,7 @@
               <td style="color:var(--text-muted)">${new Date(p.created_at).toLocaleDateString('ar-SA')}</td>
               <td style="display:flex;gap:8px">
                 <button class="btn-view" onclick="viewPlanDays('${p.id}','${p.plan_name}')">استعراض</button>
-                <button class="btn-view" style="background:var(--accent);color:#fff" onclick="openEditPlanModal('${p.id}',${JSON.stringify(p.plan_name)},${JSON.stringify(p.audio_url||'')},${JSON.stringify(p.book_url||'')},${JSON.stringify(p.book_name||'')},${JSON.stringify(p.folder_name||'')})">تعديل</button>
+                <button class="btn-view" style="background:var(--accent);color:#fff" onclick="openEditPlanModal('${p.id}',${JSON.stringify(p.plan_name)},${JSON.stringify(p.audio_url||'')},${JSON.stringify(p.book_url||'')},${JSON.stringify(p.book_name||'')},${JSON.stringify(p.folder_name||'')},${JSON.stringify(p.whatsapp_url||'')})">تعديل</button>
                 <button class="btn-danger" onclick="deletePlan('${p.id}')">حذف</button>
               </td>
             </tr>
@@ -1006,14 +1011,16 @@
     document.getElementById('daysModalBody').innerHTML = `
       <table>
         <thead>
-          <tr><th>اليوم</th><th>حفظ من</th><th>حفظ إلى</th><th>ربط من</th><th>ربط إلى</th><th>مراجعة من</th><th>مراجعة إلى</th></tr>
+          <tr><th>اليوم</th><th>حفظ من</th><th>من قوله</th><th>حفظ إلى</th><th>إلى قوله</th><th>ربط من</th><th>ربط إلى</th><th>مراجعة من</th><th>مراجعة إلى</th></tr>
         </thead>
         <tbody>
           ${data.map(d => `
             <tr>
               <td style="font-weight:700;color:var(--accent)">${d.day_number}</td>
               <td>${d.memo_from || '—'}</td>
+              <td style="font-size:0.8rem;color:var(--text-muted)">${d.memo_from_text || '—'}</td>
               <td>${d.memo_to || '—'}</td>
+              <td style="font-size:0.8rem;color:var(--text-muted)">${d.memo_to_text || '—'}</td>
               <td>${d.link_from || '—'}</td>
               <td>${d.link_to || '—'}</td>
               <td>${d.review_from || '—'}</td>
@@ -1036,13 +1043,14 @@
   /* ========== EDIT PLAN MODAL ========== */
   let editPendingRows = [];
 
-  function openEditPlanModal(planId, planName, audioUrl, bookUrl, bookName, folderName) {
+  function openEditPlanModal(planId, planName, audioUrl, bookUrl, bookName, folderName, whatsappUrl) {
     document.getElementById('edit-plan-id').value = planId;
     document.getElementById('edit-pm-name').value = planName || '';
     document.getElementById('edit-pm-book').value = bookName || '';
     document.getElementById('edit-pm-folder').value = folderName || '';
     document.getElementById('edit-audio').value = audioUrl || '';
     document.getElementById('edit-book-url').value = bookUrl || '';
+    document.getElementById('edit-whatsapp').value = whatsappUrl || '';
     document.getElementById('edit-pm-filename').textContent = 'لم يُختر ملف — الأيام الحالية تبقى كما هي';
     document.getElementById('edit-pm-preview').textContent = '';
     document.getElementById('edit-pm-file').value = '';
@@ -1068,13 +1076,15 @@
         const r = rows[i];
         if (!r || r.length === 0) continue;
         editPendingRows.push({
-          day_number: i,
-          memo_from:   String(r[0] ?? '').trim() || null,
-          memo_to:     String(r[1] ?? '').trim() || null,
-          link_from:   String(r[2] ?? '').trim() || null,
-          link_to:     String(r[3] ?? '').trim() || null,
-          review_from: String(r[4] ?? '').trim() || null,
-          review_to:   String(r[5] ?? '').trim() || null,
+          day_number:     i,
+          memo_from:      String(r[0] ?? '').trim() || null,
+          memo_from_text: String(r[1] ?? '').trim() || null,
+          memo_to:        String(r[2] ?? '').trim() || null,
+          memo_to_text:   String(r[3] ?? '').trim() || null,
+          link_from:      String(r[4] ?? '').trim() || null,
+          link_to:        String(r[5] ?? '').trim() || null,
+          review_from:    String(r[6] ?? '').trim() || null,
+          review_to:      String(r[7] ?? '').trim() || null,
         });
       }
       document.getElementById('edit-pm-preview').textContent = `✓ تم قراءة ${editPendingRows.length} يوم — سيستبدل الأيام الحالية عند الحفظ`;
@@ -1084,11 +1094,12 @@
 
   async function saveEditPlan() {
     const planId   = document.getElementById('edit-plan-id').value;
-    const name     = document.getElementById('edit-pm-name').value.trim();
-    const book     = document.getElementById('edit-pm-book').value.trim();
-    const folder   = document.getElementById('edit-pm-folder').value.trim();
-    const audioUrl = document.getElementById('edit-audio').value.trim();
-    const bookUrl  = document.getElementById('edit-book-url').value.trim();
+    const name        = document.getElementById('edit-pm-name').value.trim();
+    const book        = document.getElementById('edit-pm-book').value.trim();
+    const folder      = document.getElementById('edit-pm-folder').value.trim();
+    const audioUrl    = document.getElementById('edit-audio').value.trim();
+    const bookUrl     = document.getElementById('edit-book-url').value.trim();
+    const whatsappUrl = document.getElementById('edit-whatsapp').value.trim();
 
     if (!name || !book) { showToast('يرجى إدخال اسم الخطة والكتاب', 'error'); return; }
 
@@ -1100,7 +1111,8 @@
       book_name: book,
       folder_name: folder || null,
       audio_url: audioUrl || null,
-      book_url: bookUrl || null
+      book_url: bookUrl || null,
+      whatsapp_url: whatsappUrl || null
     }).eq('id', planId);
 
     if (error) { showToast('خطأ: ' + error.message, 'error'); btn.disabled = false; btn.textContent = 'حفظ التعديلات'; return; }
@@ -1126,6 +1138,7 @@
     document.getElementById('pm-folder').value = '';
     document.getElementById('pm-audio').value = '';
     document.getElementById('pm-book-url').value = '';
+    document.getElementById('pm-whatsapp').value = '';
     document.getElementById('pm-filename').textContent = 'لم يُختر ملف';
     document.getElementById('pm-preview').textContent = '';
     document.getElementById('pm-file').value = '';
@@ -1153,13 +1166,15 @@
         const r = rows[i];
         if (!r || r.length === 0) continue;
         pendingPlanRows.push({
-          day_number: i,
-          memo_from:   String(r[0] ?? '').trim() || null,
-          memo_to:     String(r[1] ?? '').trim() || null,
-          link_from:   String(r[2] ?? '').trim() || null,
-          link_to:     String(r[3] ?? '').trim() || null,
-          review_from: String(r[4] ?? '').trim() || null,
-          review_to:   String(r[5] ?? '').trim() || null,
+          day_number:     i,
+          memo_from:      String(r[0] ?? '').trim() || null,
+          memo_from_text: String(r[1] ?? '').trim() || null,
+          memo_to:        String(r[2] ?? '').trim() || null,
+          memo_to_text:   String(r[3] ?? '').trim() || null,
+          link_from:      String(r[4] ?? '').trim() || null,
+          link_to:        String(r[5] ?? '').trim() || null,
+          review_from:    String(r[6] ?? '').trim() || null,
+          review_to:      String(r[7] ?? '').trim() || null,
         });
       }
       document.getElementById('pm-preview').textContent = `✓ تم قراءة ${pendingPlanRows.length} يوم من الملف`;
@@ -1168,11 +1183,12 @@
   }
 
   async function savePlan() {
-    const name     = document.getElementById('pm-name').value.trim();
-    const book     = document.getElementById('pm-book').value.trim();
-    const folder   = document.getElementById('pm-folder').value.trim();
-    const audioUrl = document.getElementById('pm-audio').value.trim();
-    const bookUrl  = document.getElementById('pm-book-url').value.trim();
+    const name        = document.getElementById('pm-name').value.trim();
+    const book        = document.getElementById('pm-book').value.trim();
+    const folder      = document.getElementById('pm-folder').value.trim();
+    const audioUrl    = document.getElementById('pm-audio').value.trim();
+    const bookUrl     = document.getElementById('pm-book-url').value.trim();
+    const whatsappUrl = document.getElementById('pm-whatsapp').value.trim();
 
     if (!name || !book) { showToast('يرجى إدخال اسم الخطة والكتاب', 'error'); return; }
 
@@ -1180,7 +1196,7 @@
     btn.disabled = true; btn.textContent = 'جارٍ الحفظ…';
 
     const { data: plan, error: planErr } = await client.from('study_plans')
-      .insert({ plan_name: name, book_name: book, folder_name: folder || null, audio_url: audioUrl || null, book_url: bookUrl || null })
+      .insert({ plan_name: name, book_name: book, folder_name: folder || null, audio_url: audioUrl || null, book_url: bookUrl || null, whatsapp_url: whatsappUrl || null })
       .select().single();
 
     if (planErr) { showToast('خطأ: ' + planErr.message, 'error'); btn.disabled = false; btn.textContent = 'حفظ الخطة'; return; }

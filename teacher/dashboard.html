@@ -527,12 +527,12 @@ async function loadReviewForm(studentId) {
   // دائماً نعرض نفس الحقول — المقفولة disabled رمادية، الفارغة قابلة للتعديل
   inner.innerHTML = `
     <div class="form-row">
-      <div><label>الربط من صفحة</label><input type="number" id="linkFrom" min="1" placeholder="من"></div>
-      <div><label>الربط إلى صفحة</label><input type="number" id="linkTo" min="1" placeholder="إلى"></div>
+      <div><label>الربط من حديث</label><input type="number" id="linkFrom" min="1" placeholder="من"></div>
+      <div><label>الربط إلى حديث</label><input type="number" id="linkTo" min="1" placeholder="إلى"></div>
     </div>
     <div class="form-row" style="margin-top:4px">
-      <div><label>المراجعة من صفحة</label><input type="number" id="reviewFrom" min="1" placeholder="من"></div>
-      <div><label>المراجعة إلى صفحة</label><input type="number" id="reviewTo" min="1" placeholder="إلى"></div>
+      <div><label>المراجعة من حديث</label><input type="number" id="reviewFrom" min="1" placeholder="من"></div>
+      <div><label>المراجعة إلى حديث</label><input type="number" id="reviewTo" min="1" placeholder="إلى"></div>
     </div>
     ${submitted ? `<div style="margin-top:12px;text-align:center;font-size:.85rem;color:#2d6a4f;font-weight:700">🔒 الطالب اعتمد — للعرض فقط</div>` : `
     <div style="margin-top:16px">

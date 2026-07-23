@@ -1125,9 +1125,14 @@ function getSpTasks(day) {
   const tasks = [];
   /* سماع — دائماً يظهر إذا وُجد رابط صوتي، بدون نطاق */
   if (studyPlanInfo?.audio_url) tasks.push({ key: 'listen', type: 'سماع', cls: 'sp-type-listen', label: 'استمع للدرس', noCheckbox: false });
-  if (day.memo_from || day.memo_to) tasks.push({ key: 'memo', type: 'حفظ', cls: 'sp-type-memo', label: [day.memo_from, day.memo_to].filter(Boolean).join(' — ') });
-  if (day.link_from || day.link_to) tasks.push({ key: 'link', type: 'ربط', cls: 'sp-type-link', label: [day.link_from, day.link_to].filter(Boolean).join(' — ') });
-  if (day.review_from || day.review_to) tasks.push({ key: 'review', type: 'مراجعة', cls: 'sp-type-review', label: [day.review_from, day.review_to].filter(Boolean).join(' — ') });
+  if (day.memo_from || day.memo_to) {
+    let memoLabel = `من حديث ${day.memo_from || '?'} إلى حديث ${day.memo_to || '?'}`;
+    if (day.memo_from_text) memoLabel += ` — من قوله: ${day.memo_from_text}`;
+    if (day.memo_to_text)   memoLabel += ` / إلى قوله: ${day.memo_to_text}`;
+    tasks.push({ key: 'memo', type: 'حفظ', cls: 'sp-type-memo', label: memoLabel });
+  }
+  if (day.link_from || day.link_to) tasks.push({ key: 'link', type: 'ربط', cls: 'sp-type-link', label: `من حديث ${day.link_from || '?'} إلى حديث ${day.link_to || '?'}` });
+  if (day.review_from || day.review_to) tasks.push({ key: 'review', type: 'مراجعة', cls: 'sp-type-review', label: `من حديث ${day.review_from || '?'} إلى حديث ${day.review_to || '?'}` });
   return tasks;
 }
 
@@ -1160,7 +1165,7 @@ function renderSpDay(day) {
     </div>
     <div class="sp-day-body">
       ${tasks.length ? tasksHtml : '<div class="empty" style="padding:8px">لا توجد مهام</div>'}
-      ${tasks.length ? `<div class="sp-day-actions"><button class="btn-sp-copy" onclick="copySpDay(${day.day_number},'${day.id}')">📱 نسخ للواتساب</button></div>` : ''}
+      ${tasks.length ? `<div class="sp-day-actions"><button class="btn-sp-copy" onclick="copySpDay(${day.day_number},'${day.id}')">📱 نسخ للواتساب</button>${studyPlanInfo?.whatsapp_url ? `<a href="${studyPlanInfo.whatsapp_url}" target="_blank" rel="noopener" class="btn-sp-copy" style="background:#25d366;color:#fff;text-decoration:none">💬 فتح القروب</a>` : ''}</div>` : ''}
     </div>
   </div>`;
 }
@@ -1228,7 +1233,10 @@ function copySpDay(dayNum, dayId) {
     `اليوم ${dayNum}`,
     ''
   ];
-  tasks.forEach(t => lines.push(`${t.type === 'حفظ' ? '📖' : t.type === 'ربط' ? '🔗' : '📚'} ${t.type}: ${t.label}`));
+  tasks.forEach(t => {
+    const icon = t.type === 'حفظ' ? '📖' : t.type === 'ربط' ? '🔗' : '📚';
+    lines.push(`${icon} ${t.type}: ${t.label}`);
+  });
   lines.push('', '✅ تم بحمد الله');
   const text = lines.join('\n');
   (navigator.clipboard?.writeText(text) || Promise.reject())
