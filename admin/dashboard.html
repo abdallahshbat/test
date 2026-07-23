@@ -977,7 +977,7 @@
     const [userRes, profileRes, sessionsRes, progressRes] = await Promise.all([
       client.from('users').select('name, username, role, created_at').eq('id', userId).single(),
       client.from('user_profiles').select('*').eq('id', userId).single(),
-      client.from('recitation_sessions').select('date, hadith_from, hadith_to, score').eq('student_id', studentId).order('date', { ascending: false }).limit(5),
+      client.from('recitation_sessions').select('date, hadith_from, hadith_to, score, teachers(users(name))').eq('student_id', studentId).order('date', { ascending: false }),
       studentMeta?.current_plan_id
         ? client.from('student_plan_progress').select('plan_day_id, task_key, completed, completed_at').eq('student_id', studentId).eq('completed', true).order('completed_at', { ascending: false })
         : Promise.resolve({ data: [] })
@@ -1002,15 +1002,37 @@
       : '—';
 
     const sessionsHTML = sessions.length
-      ? sessions.map(s => {
-          const sc = parseFloat(s.score);
-          const cls = sc >= 8.5 ? 'chip-green' : sc >= 7 ? 'chip-yellow' : 'chip-red';
-          return `<div class="session-mini-row">
-            <span>${s.date || '—'} — أحاديث ${s.hadith_from || '—'}–${s.hadith_to || '—'}</span>
-            <span class="score-chip ${cls}">${isNaN(sc) ? '—' : sc.toFixed(2)}/10</span>
-          </div>`;
-        }).join('')
-      : '<p style="color:var(--text-muted);font-size:.85rem;text-align:center;padding:12px">لا توجد جلسات بعد</p>';
+      ? `<div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:.83rem">
+            <thead>
+              <tr style="background:var(--bg-secondary,#f3f4f6);text-align:right">
+                <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">#</th>
+                <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">التاريخ</th>
+                <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">المعلم الراصد</th>
+                <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">من حديث</th>
+                <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">إلى حديث</th>
+                <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">التقييم</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${sessions.map((s, i) => {
+                const sc = parseFloat(s.score);
+                const scoreColor = sc >= 8.5 ? '#065f46' : sc >= 7 ? '#92400e' : '#991b1b';
+                const scoreBg    = sc >= 8.5 ? '#d1fae5' : sc >= 7 ? '#fef3c7' : '#fee2e2';
+                const teacherName = s.teachers?.users?.name || '—';
+                return `<tr style="border-bottom:1px solid var(--border-color,#e5e7eb)">
+                  <td style="padding:8px 12px;color:var(--text-muted)">${i + 1}</td>
+                  <td style="padding:8px 12px">${s.date || '—'}</td>
+                  <td style="padding:8px 12px;font-weight:600">${teacherName}</td>
+                  <td style="padding:8px 12px">${s.hadith_from ?? '—'}</td>
+                  <td style="padding:8px 12px">${s.hadith_to ?? '—'}</td>
+                  <td style="padding:8px 12px"><span style="padding:3px 10px;border-radius:20px;font-size:.78rem;font-weight:700;background:${scoreBg};color:${scoreColor}">${isNaN(sc) ? '—' : sc % 1 === 0 ? sc : sc.toFixed(2)} / 10</span></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`
+      : '<p style="color:var(--text-muted);font-size:.85rem;text-align:center;padding:12px">لا توجد سجلات رصد بعد</p>';
 
     content.innerHTML = `
       <div class="detail-header">
@@ -1053,7 +1075,7 @@
         <div style="font-size:.8rem;color:var(--text-muted)">${todayProgress.map(p => {const l={memo:'حفظ',link:'ربط',review:'مراجعة'};return l[p.task_key]||p.task_key;}).join(' · ')}</div>` : '<div style="font-size:.82rem;color:#e67e22">لم ينجز الطالب أي مهمة اليوم بعد</div>'}
       </div>` : ''}
       <div class="sessions-mini">
-        <h3>آخر الجلسات</h3>
+        <h3>📋 سجل رصد المعلمين</h3>
         ${sessionsHTML}
       </div>
       <div style="margin-top:16px">
