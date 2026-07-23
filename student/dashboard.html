@@ -731,6 +731,10 @@ body,
     <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
     الشرف
   </button>
+  <button class="nav-btn" id="nb-rooms" onclick="showView('rooms')">
+    <svg viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.868V19a1 1 0 01-1.447.894L15 18M3 8a1 1 0 011-1h11a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V8z"/></svg>
+    غرفي
+  </button>
 </nav>
 
 <!-- TOAST -->
@@ -873,6 +877,20 @@ body,
         <div class="skel skel-line"></div>
         <div class="skel skel-line" style="width:80%"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- ROOMS VIEW -->
+  <div class="view" id="view-rooms">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#e0f2fe;color:#0369a1">🎤</div>
+        <div>
+          <div class="card-title">جلسات التسميع</div>
+          <div class="card-sub">غرفك الصوتية المسندة</div>
+        </div>
+      </div>
+      <div id="roomsList"><div class="skel skel-line"></div><div class="skel skel-line"></div></div>
     </div>
   </div>
 
@@ -1646,12 +1664,55 @@ function showView(name) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   const view = document.getElementById('view-' + name);
   view.classList.add('active');
-  // re-trigger entrance animation
   view.style.animation = 'none';
   void view.offsetWidth;
   view.style.animation = '';
   const nb = document.getElementById('nb-' + name);
   if (nb) nb.classList.add('active');
+  if (name === 'rooms') loadRooms();
+}
+
+/* ========== AUDIO ROOMS ========== */
+async function loadRooms() {
+  const list = document.getElementById('roomsList');
+  if (!studentData) { list.innerHTML = '<div class="empty-state"><span class="empty-icon">🎤</span><div class="empty-text">لا توجد بيانات</div></div>'; return; }
+  const { data, error } = await client.from('room_assignments')
+    .select('room_id, audio_rooms(id, name, meet_url, days, start_time, end_time, outside_behavior)')
+    .eq('assignee_type', 'student')
+    .eq('assignee_id', studentData.id);
+  if (error || !data?.length) {
+    list.innerHTML = '<div class="empty-state"><span class="empty-icon">🎤</span><div class="empty-text">لم تُسند لك أي غرف صوتية بعد</div></div>';
+    return;
+  }
+  const AR_DAYS = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  function isRoomActive(r) {
+    const now = new Date();
+    const todayAr = AR_DAYS[now.getDay()];
+    if (!r.days.includes(todayAr)) return false;
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    const nowTime = hh + ':' + mm;
+    return nowTime >= r.start_time.slice(0,5) && nowTime <= r.end_time.slice(0,5);
+  }
+  list.innerHTML = data.map(a => {
+    const r = a.audio_rooms;
+    if (!r) return '';
+    const active = isRoomActive(r);
+    let btn = '';
+    if (active) {
+      btn = `<a href="${r.meet_url}" target="_blank" rel="noopener" class="btn-primary btn-green" style="display:inline-block;text-align:center;text-decoration:none;margin-top:10px">📹 ادخل الغرفة</a>`;
+    } else if (r.outside_behavior === 'hidden') {
+      btn = '';
+    } else {
+      btn = `<button class="btn-primary" style="margin-top:10px;opacity:.5;cursor:not-allowed" disabled>📹 ادخل الغرفة</button>`;
+    }
+    return `<div style="border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="font-size:.95rem;font-weight:800;color:var(--text-primary);margin-bottom:4px">🎤 ${r.name}</div>
+      <div style="font-size:.82rem;color:var(--text-secondary)">📅 ${r.days.join(' · ')}</div>
+      <div style="font-size:.82rem;color:var(--text-secondary)">🕐 ${r.start_time.slice(0,5)} – ${r.end_time.slice(0,5)}</div>
+      ${btn}
+    </div>`;
+  }).join('');
 }
 
 /* ========== COUNT-UP ========== */

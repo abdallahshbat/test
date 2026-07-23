@@ -258,6 +258,12 @@ tr:hover td{background:#f7fafc}
     </div>
   </div>
 
+  <!-- جلساتي -->
+  <div class="card" id="teacherRoomsCard" style="display:none">
+    <div class="card-title">📅 جلساتي</div>
+    <div id="teacherRoomsList"></div>
+  </div>
+
 </div><!-- /main-content -->
 
 <script>
@@ -300,6 +306,7 @@ async function loadTeacher(userId) {
   const { data, error } = await supabaseClient.from('teachers').select('id, max_students').eq('user_id', userId).single();
   currentTeacher = (!error && data) ? data : { id: null, max_students: 0 };
   await loadStudents();
+  loadTeacherRooms();
 }
 
 // --- STUDENTS ---
@@ -705,6 +712,44 @@ async function editReviewRecord(drId) {
   // Switch to review track and reload the form for today (the form will show existing data if not student_submitted)
   selectTrack('review');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// --- TEACHER ROOMS ---
+async function loadTeacherRooms() {
+  if (!currentTeacher?.id) return;
+  const { data, error } = await supabaseClient.from('room_assignments')
+    .select('room_id, audio_rooms(id, name, meet_url, days, start_time, end_time, outside_behavior)')
+    .eq('assignee_type', 'teacher')
+    .eq('assignee_id', currentTeacher.id);
+  const card = document.getElementById('teacherRoomsCard');
+  const list = document.getElementById('teacherRoomsList');
+  if (error || !data?.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  const AR_DAYS = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  function isActive(r) {
+    const now = new Date();
+    const todayAr = AR_DAYS[now.getDay()];
+    if (!r.days.includes(todayAr)) return false;
+    const nowTime = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    return nowTime >= r.start_time.slice(0,5) && nowTime <= r.end_time.slice(0,5);
+  }
+  list.innerHTML = data.map(a => {
+    const r = a.audio_rooms;
+    if (!r) return '';
+    const active = isActive(r);
+    let btn = '';
+    if (active) {
+      btn = `<a href="${r.meet_url}" target="_blank" rel="noopener" class="btn-primary" style="display:inline-block;text-align:center;text-decoration:none;background:#2d6a4f;color:#fff;border-radius:8px;padding:8px 18px;font-size:.85rem;font-weight:700;margin-top:8px">📹 ادخل الغرفة</a>`;
+    } else if (r.outside_behavior !== 'hidden') {
+      btn = `<button class="btn-primary" style="margin-top:8px;opacity:.5;cursor:not-allowed;background:#aaa;border:none;color:#fff;border-radius:8px;padding:8px 18px;font-size:.85rem;font-weight:700" disabled>📹 ادخل الغرفة</button>`;
+    }
+    return `<div style="border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="font-size:.95rem;font-weight:800;color:var(--primary);margin-bottom:4px">🎤 ${r.name}</div>
+      <div style="font-size:.82rem;color:var(--muted)">📅 ${r.days.join(' · ')}</div>
+      <div style="font-size:.82rem;color:var(--muted)">🕐 ${r.start_time.slice(0,5)} – ${r.end_time.slice(0,5)}</div>
+      ${btn}
+    </div>`;
+  }).join('');
 }
 
 // --- LOGOUT ---

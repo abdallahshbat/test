@@ -262,6 +262,19 @@
     select.form-control { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%236b7280'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 10px center; }
     .as-tab-btn { padding:10px 22px; background:var(--card-bg); border:1.5px solid var(--border); border-radius:10px; font-size:.88rem; font-weight:700; cursor:pointer; font-family:inherit; color:var(--text-muted); transition:all .18s; }
     .as-tab-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .day-check { display:flex;align-items:center;gap:5px;padding:5px 10px;border:1.5px solid var(--border);border-radius:20px;cursor:pointer;font-size:.82rem;font-weight:600;transition:all .15s;user-select:none }
+    .day-check:has(input:checked) { background:var(--accent);color:#fff;border-color:var(--accent) }
+    .day-check input { display:none }
+    .room-card { background:var(--card-bg);border:1.5px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px }
+    .room-card-info { flex:1 }
+    .room-card-name { font-size:.95rem;font-weight:800;color:var(--accent);margin-bottom:4px }
+    .room-card-meta { font-size:.8rem;color:var(--text-muted) }
+    .room-card-actions { display:flex;gap:8px;flex-shrink:0 }
+    .ar-room-row { display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border) }
+    .ar-room-row:last-child { border:none }
+    .tf-table { width:100%;border-collapse:collapse;font-size:.88rem }
+    .tf-table th { background:var(--bg);padding:10px 12px;text-align:right;font-weight:700;color:var(--text-muted);border-bottom:2px solid var(--border) }
+    .tf-table td { padding:10px 12px;border-bottom:1px solid var(--border) }
     .as-tab-btn:not(.active):hover { border-color:var(--accent); color:var(--accent); }
     .sf-table { width:100%; border-collapse:collapse; font-size:.84rem; }
     .sf-table th { padding:11px 14px; background:#f9fafb; font-weight:700; color:var(--text-muted); text-align:right; border-bottom:1px solid var(--border); font-size:.78rem; white-space:nowrap; }
@@ -393,6 +406,79 @@
   </div>
 </div>
 
+<!-- MODAL: غرفة صوتية (إضافة/تعديل) -->
+<div class="modal-overlay hidden" id="roomModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="roomModalTitle">إضافة غرفة صوتية</h2>
+      <button class="modal-close" onclick="closeRoomModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="room-id" />
+      <div class="form-group">
+        <label>اسم الغرفة *</label>
+        <input type="text" id="room-name" class="form-control" placeholder="مثال: غرفة المجموعة الأولى" />
+      </div>
+      <div class="form-group">
+        <label>رابط Google Meet *</label>
+        <input type="url" id="room-url" class="form-control" placeholder="https://meet.google.com/..." />
+      </div>
+      <div class="form-group">
+        <label>أيام الغرفة *</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px" id="room-days-wrap">
+          <label class="day-check"><input type="checkbox" value="الأحد"> الأحد</label>
+          <label class="day-check"><input type="checkbox" value="الاثنين"> الاثنين</label>
+          <label class="day-check"><input type="checkbox" value="الثلاثاء"> الثلاثاء</label>
+          <label class="day-check"><input type="checkbox" value="الأربعاء"> الأربعاء</label>
+          <label class="day-check"><input type="checkbox" value="الخميس"> الخميس</label>
+          <label class="day-check"><input type="checkbox" value="الجمعة"> الجمعة</label>
+          <label class="day-check"><input type="checkbox" value="السبت"> السبت</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>وقت البداية *</label>
+          <input type="time" id="room-start" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>وقت النهاية *</label>
+          <input type="time" id="room-end" class="form-control" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>سلوك الزر خارج الوقت</label>
+        <div style="display:flex;gap:20px;margin-top:6px">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="radio" name="room-behavior" value="disabled" checked> معطّل ورمادي</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="radio" name="room-behavior" value="hidden"> مخفي تماماً</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-reset" onclick="closeRoomModal()">إلغاء</button>
+      <button class="btn-submit" id="room-save" onclick="saveRoom()">حفظ الغرفة</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: إسناد غرف -->
+<div class="modal-overlay hidden" id="assignRoomsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="assignRoomsTitle">إسناد غرف</h2>
+      <button class="modal-close" onclick="closeAssignRoomsModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ar-type" />
+      <input type="hidden" id="ar-id" />
+      <div id="ar-rooms-list"><p style="color:var(--text-muted)">جارٍ التحميل…</p></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-reset" onclick="closeAssignRoomsModal()">إلغاء</button>
+      <button class="btn-submit" id="ar-save" onclick="saveAssignRooms()">حفظ الإسناد</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: استعراض أيام الخطة -->
 <div class="modal-overlay hidden" id="daysModal">
   <div class="modal" style="max-width:700px">
@@ -435,8 +521,13 @@
   <div class="nav-section">
     <div class="nav-section-title">المعلمون</div>
     <div class="nav-item" onclick="showView('add-teacher')"><span class="nav-icon">➕</span> إضافة معلم</div>
-    <div class="nav-item" onclick="showView('teacher-files')"><span class="nav-icon">📁</span> ملفات المعلمين</div>
+    <div class="nav-item" onclick="showView('teacher-files');loadTeacherFiles()"><span class="nav-icon">📁</span> ملفات المعلمين</div>
     <div class="nav-item" onclick="showView('import-teachers')"><span class="nav-icon">📥</span> استيراد معلمين (Excel)</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">الغرف الصوتية</div>
+    <div class="nav-item" onclick="showView('audio-rooms');loadAudioRooms()"><span class="nav-icon">🎤</span> الغرف الصوتية</div>
   </div>
 
   <div class="nav-section">
@@ -701,7 +792,24 @@
       </div>
     </div>
 
-    <div class="view" id="view-teacher-files"><div class="section-placeholder"><div class="ph-icon">📁</div><h3>ملفات المعلمين</h3><p>قائمة المعلمين المسجلين وملفاتهم ستظهر هنا</p></div></div>
+    <div class="view" id="view-teacher-files">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <h2 style="font-size:1.1rem;font-weight:800;color:var(--accent)">📁 ملفات المعلمين</h2>
+        </div>
+        <div id="teacherFilesBody"><p class="empty-row">جارٍ التحميل…</p></div>
+      </div>
+    </div>
+
+    <div class="view" id="view-audio-rooms">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <h2 style="font-size:1.1rem;font-weight:800;color:var(--accent)">🎤 الغرف الصوتية</h2>
+          <button class="btn-submit" onclick="openRoomModal()">+ إضافة غرفة</button>
+        </div>
+        <div id="audioRoomsBody"><p class="empty-row">جارٍ التحميل…</p></div>
+      </div>
+    </div>
     <div class="view" id="view-import-teachers"><div class="section-placeholder"><div class="ph-icon">📥</div><h3>استيراد معلمين (Excel)</h3><p>رفع ملف Excel لاستيراد بيانات المعلمين دفعة واحدة</p></div></div>
     <div class="view" id="view-course-days"><div class="section-placeholder"><div class="ph-icon">📅</div><h3>أيام الدورة</h3><p>ضبط أيام الدورة وجدولها الزمني</p></div></div>
     <div class="view" id="view-graduation"><div class="section-placeholder"><div class="ph-icon">🎓</div><h3>لوحة ختام الدورة</h3><p>إحصائيات ونتائج ختام الدورة ستظهر هنا</p></div></div>
@@ -730,6 +838,7 @@
     'import-plans':     { title: 'الخطط العلمية',           breadcrumb: 'الطلاب › الخطط العلمية' },
     'add-teacher':      { title: 'إضافة معلم',             breadcrumb: 'المعلمون › إضافة معلم' },
     'teacher-files':    { title: 'ملفات المعلمين',          breadcrumb: 'المعلمون › ملفات المعلمين' },
+    'audio-rooms':      { title: 'الغرف الصوتية',           breadcrumb: 'الغرف الصوتية' },
     'import-teachers':  { title: 'استيراد معلمين',         breadcrumb: 'المعلمون › استيراد معلمين (Excel)' },
     'course-days':      { title: 'أيام الدورة',             breadcrumb: 'الإعدادات › أيام الدورة' },
     'graduation':       { title: 'لوحة ختام الدورة',       breadcrumb: 'الإعدادات › لوحة ختام الدورة' },
@@ -951,6 +1060,9 @@
       <div class="sessions-mini">
         <h3>آخر الجلسات</h3>
         ${sessionsHTML}
+      </div>
+      <div style="margin-top:16px">
+        <button class="btn-submit" onclick="openAssignRoomsModal('student','${studentId}',${JSON.stringify(name)})">🎤 إسناد غرف صوتية</button>
       </div>
     `;
   }
@@ -1211,6 +1323,157 @@
     btn.disabled = false; btn.textContent = 'حفظ الخطة';
     closePlanModal();
     loadStudyPlans();
+  }
+
+  /* ========== AUDIO ROOMS ========== */
+  const AR_DAYS = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  let allAudioRooms = [];
+  let editingRoomId = null;
+
+  async function loadAudioRooms() {
+    const body = document.getElementById('audioRoomsBody');
+    body.innerHTML = '<p class="empty-row">جارٍ التحميل…</p>';
+    const { data, error } = await client.from('audio_rooms').select('*').order('created_at', { ascending: false });
+    if (error) { body.innerHTML = '<p class="empty-row">خطأ في التحميل</p>'; return; }
+    allAudioRooms = data || [];
+    if (!allAudioRooms.length) { body.innerHTML = '<p class="empty-row">لا توجد غرف بعد — أضف غرفة جديدة</p>'; return; }
+    body.innerHTML = allAudioRooms.map(r => `
+      <div class="room-card">
+        <div class="room-card-info">
+          <div class="room-card-name">🎤 ${r.name}</div>
+          <div class="room-card-meta">${r.days.join(' · ')} &bull; ${r.start_time.slice(0,5)} – ${r.end_time.slice(0,5)}</div>
+          <div class="room-card-meta" style="margin-top:3px">خارج الوقت: ${r.outside_behavior === 'hidden' ? 'مخفي' : 'معطّل'}</div>
+        </div>
+        <div class="room-card-actions">
+          <button class="btn-view" style="background:var(--accent);color:#fff" onclick="editRoom('${r.id}')">تعديل</button>
+          <button class="btn-danger" onclick="deleteRoom('${r.id}')">حذف</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openRoomModal(roomId) {
+    editingRoomId = roomId || null;
+    document.getElementById('roomModalTitle').textContent = editingRoomId ? 'تعديل غرفة صوتية' : 'إضافة غرفة صوتية';
+    document.getElementById('room-id').value = editingRoomId || '';
+    document.getElementById('room-name').value = '';
+    document.getElementById('room-url').value = '';
+    document.getElementById('room-start').value = '';
+    document.getElementById('room-end').value = '';
+    document.querySelectorAll('#room-days-wrap input').forEach(c => c.checked = false);
+    document.querySelector('input[name="room-behavior"][value="disabled"]').checked = true;
+    if (editingRoomId) {
+      const r = allAudioRooms.find(x => x.id === editingRoomId);
+      if (r) {
+        document.getElementById('room-name').value = r.name;
+        document.getElementById('room-url').value = r.meet_url;
+        document.getElementById('room-start').value = r.start_time.slice(0,5);
+        document.getElementById('room-end').value = r.end_time.slice(0,5);
+        document.querySelectorAll('#room-days-wrap input').forEach(c => { c.checked = r.days.includes(c.value); });
+        document.querySelector(`input[name="room-behavior"][value="${r.outside_behavior}"]`).checked = true;
+      }
+    }
+    document.getElementById('roomModal').classList.remove('hidden');
+  }
+
+  function closeRoomModal() { document.getElementById('roomModal').classList.add('hidden'); editingRoomId = null; }
+
+  async function saveRoom() {
+    const name     = document.getElementById('room-name').value.trim();
+    const meetUrl  = document.getElementById('room-url').value.trim();
+    const start    = document.getElementById('room-start').value;
+    const end      = document.getElementById('room-end').value;
+    const days     = [...document.querySelectorAll('#room-days-wrap input:checked')].map(c => c.value);
+    const behavior = document.querySelector('input[name="room-behavior"]:checked')?.value || 'disabled';
+    if (!name || !meetUrl || !start || !end || !days.length) { showToast('يرجى تعبئة جميع الحقول الإلزامية', 'error'); return; }
+    const btn = document.getElementById('room-save');
+    btn.disabled = true; btn.textContent = 'جارٍ الحفظ…';
+    const payload = { name, meet_url: meetUrl, days, start_time: start, end_time: end, outside_behavior: behavior };
+    const { error } = editingRoomId
+      ? await client.from('audio_rooms').update(payload).eq('id', editingRoomId)
+      : await client.from('audio_rooms').insert(payload);
+    btn.disabled = false; btn.textContent = 'حفظ الغرفة';
+    if (error) { showToast('خطأ: ' + error.message, 'error'); return; }
+    showToast(editingRoomId ? 'تم تعديل الغرفة ✓' : 'تمت إضافة الغرفة ✓', 'success');
+    closeRoomModal();
+    loadAudioRooms();
+  }
+
+  function editRoom(id) { openRoomModal(id); }
+
+  async function deleteRoom(id) {
+    if (!confirm('هل أنت متأكد من حذف هذه الغرفة؟')) return;
+    const { error } = await client.from('audio_rooms').delete().eq('id', id);
+    if (error) { showToast('خطأ: ' + error.message, 'error'); return; }
+    showToast('تم الحذف ✓', 'success');
+    loadAudioRooms();
+  }
+
+  /* ===== ROOM ASSIGNMENT ===== */
+  let arCurrentAssigned = new Set();
+
+  async function openAssignRoomsModal(type, id, name) {
+    document.getElementById('ar-type').value = type;
+    document.getElementById('ar-id').value = id;
+    document.getElementById('assignRoomsTitle').textContent = `إسناد غرف — ${name}`;
+    document.getElementById('ar-rooms-list').innerHTML = '<p style="color:var(--text-muted)">جارٍ التحميل…</p>';
+    document.getElementById('assignRoomsModal').classList.remove('hidden');
+    const [roomsRes, assignRes] = await Promise.all([
+      client.from('audio_rooms').select('id, name, days, start_time, end_time').order('name'),
+      client.from('room_assignments').select('room_id').eq('assignee_type', type).eq('assignee_id', id)
+    ]);
+    const rooms  = roomsRes.data  || [];
+    const assigned = new Set((assignRes.data || []).map(a => a.room_id));
+    arCurrentAssigned = assigned;
+    if (!rooms.length) { document.getElementById('ar-rooms-list').innerHTML = '<p style="color:var(--text-muted)">لا توجد غرف مضافة بعد</p>'; return; }
+    document.getElementById('ar-rooms-list').innerHTML = rooms.map(r => `
+      <div class="ar-room-row">
+        <input type="checkbox" id="ar-${r.id}" value="${r.id}" ${assigned.has(r.id) ? 'checked' : ''} style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent)">
+        <label for="ar-${r.id}" style="cursor:pointer;flex:1">
+          <span style="font-weight:700">${r.name}</span>
+          <span style="font-size:.78rem;color:var(--text-muted);margin-right:8px">${r.days.join('·')} ${r.start_time.slice(0,5)}–${r.end_time.slice(0,5)}</span>
+        </label>
+      </div>
+    `).join('');
+  }
+
+  function closeAssignRoomsModal() { document.getElementById('assignRoomsModal').classList.add('hidden'); }
+
+  async function saveAssignRooms() {
+    const type = document.getElementById('ar-type').value;
+    const id   = document.getElementById('ar-id').value;
+    const checked = [...document.querySelectorAll('#ar-rooms-list input[type=checkbox]:checked')].map(c => c.value);
+    const unchecked = [...document.querySelectorAll('#ar-rooms-list input[type=checkbox]:not(:checked)')].map(c => c.value);
+    const btn = document.getElementById('ar-save');
+    btn.disabled = true; btn.textContent = 'جارٍ الحفظ…';
+    const toAdd = checked.filter(rid => !arCurrentAssigned.has(rid));
+    const toRemove = unchecked.filter(rid => arCurrentAssigned.has(rid));
+    const ops = [];
+    if (toAdd.length) ops.push(client.from('room_assignments').insert(toAdd.map(rid => ({ room_id: rid, assignee_type: type, assignee_id: id }))));
+    if (toRemove.length) ops.push(client.from('room_assignments').delete().eq('assignee_type', type).eq('assignee_id', id).in('room_id', toRemove));
+    const results = await Promise.all(ops);
+    btn.disabled = false; btn.textContent = 'حفظ الإسناد';
+    const err = results.find(r => r.error);
+    if (err) { showToast('خطأ: ' + err.error.message, 'error'); return; }
+    showToast('تم حفظ الإسناد ✓', 'success');
+    closeAssignRoomsModal();
+  }
+
+  /* ===== TEACHER FILES ===== */
+  async function loadTeacherFiles() {
+    const body = document.getElementById('teacherFilesBody');
+    body.innerHTML = '<p class="empty-row">جارٍ التحميل…</p>';
+    const { data, error } = await client.from('teachers').select('id, users(name, username, phone)').order('id', { ascending: false });
+    if (error || !data?.length) { body.innerHTML = '<p class="empty-row">لا يوجد معلمون مسجلون بعد</p>'; return; }
+    body.innerHTML = `<table class="tf-table">
+      <thead><tr><th>الاسم</th><th>اسم المستخدم</th><th>الجوال</th><th>إجراء</th></tr></thead>
+      <tbody>${data.map(t => `<tr>
+        <td style="font-weight:700">${t.users?.name || '—'}</td>
+        <td style="color:var(--accent);font-weight:600">${t.users?.username || '—'}</td>
+        <td>${t.users?.phone || '—'}</td>
+        <td><button class="btn-view" style="background:var(--accent);color:#fff" onclick="openAssignRoomsModal('teacher','${t.id}',${JSON.stringify(t.users?.name||'')})">🎤 إسناد غرف</button></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
   }
 
   /* ========== LOGOUT ========== */
