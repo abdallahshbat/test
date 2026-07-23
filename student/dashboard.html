@@ -269,6 +269,9 @@ body,
 .sp-day-card:hover{box-shadow:var(--shadow)}
 .sp-day-card.sp-today{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.15)}
 .sp-day-card.sp-done{border-color:var(--green);opacity:.8}
+.sp-day-card.sp-locked{opacity:.45;filter:grayscale(.25)}
+.sp-day-card.sp-locked .sp-day-header{cursor:not-allowed}
+.sp-day-card.sp-locked .sp-day-body{display:none!important}
 .sp-day-header{
   padding:13px 16px;display:flex;justify-content:space-between;align-items:center;
   cursor:pointer;background:var(--surface2);user-select:none;
@@ -1111,7 +1114,14 @@ function renderStudyPlan() {
         <div class="sp-banner-sub">${studyPlanInfo.book_name}${studyPlanInfo.folder_name ? ' — ' + studyPlanInfo.folder_name : ''} &bull; ${doneDays}/${totalDays} يوم مكتمل</div>
       </div>
     </div>
-    ${studyPlanDays.length ? studyPlanDays.map(d => renderSpDay(d)).join('') : '<div class="empty-state"><span class="empty-icon">📋</span><div class="empty-text">لا توجد أيام في هذه الخطة</div></div>'}
+    ${studyPlanDays.length ? (() => {
+      const sorted = [...studyPlanDays].sort((a, b) => a.day_number - b.day_number);
+      const activeIdx = getActiveDayIndex(sorted);
+      return sorted.map((d, i) => {
+        const status = isSpDayDone(d) ? 'done' : (i === activeIdx ? 'active' : 'locked');
+        return renderSpDay(d, status);
+      }).join('');
+    })() : '<div class="empty-state"><span class="empty-icon">📋</span><div class="empty-text">لا توجد أيام في هذه الخطة</div></div>'}
   `;
 }
 
@@ -1119,6 +1129,32 @@ function isSpDayDone(day) {
   /* مهمة السماع لا تؤثر على اكتمال اليوم — فقط الحفظ والربط والمراجعة */
   const tasks = getSpTasks(day).filter(t => t.key !== 'listen');
   return tasks.length > 0 && tasks.every(t => spChecked[day.id + '_' + t.key]);
+}
+
+function getActiveDayIndex(sorted) {
+  sorted = sorted || [...studyPlanDays].sort((a, b) => a.day_number - b.day_number);
+  for (let i = 0; i < sorted.length; i++) {
+    if (!isSpDayDone(sorted[i])) return i;
+  }
+  return sorted.length - 1;
+}
+
+function refreshDayLockStates() {
+  const sorted = [...studyPlanDays].sort((a, b) => a.day_number - b.day_number);
+  const activeIdx = getActiveDayIndex(sorted);
+  sorted.forEach((day, i) => {
+    const card = document.getElementById('spday-' + day.id);
+    if (!card) return;
+    const isDone = isSpDayDone(day);
+    const isActive = i === activeIdx;
+    const isLocked = i > activeIdx;
+    card.classList.toggle('sp-done', isDone);
+    card.classList.toggle('sp-today', isActive && !isDone);
+    card.classList.toggle('sp-locked', isLocked);
+    if (isActive && !card.classList.contains('sp-open')) card.classList.add('sp-open');
+    const si = card.querySelector('.sp-day-status');
+    if (si) si.textContent = isDone ? '✅' : isLocked ? '🔒' : '⭕';
+  });
 }
 
 function getSpTasks(day) {
@@ -1136,16 +1172,21 @@ function getSpTasks(day) {
   return tasks;
 }
 
-function renderSpDay(day) {
-  const tasks = getSpTasks(day);
-  const allDone = isSpDayDone(day);
-  const statusIcon = allDone ? '✅' : '⭕';
+function renderSpDay(day, status) {
+  status = status || 'active';
+  const isDone   = status === 'done';
+  const isLocked = status === 'locked';
+  const isActive = status === 'active';
+  const statusIcon = isDone ? '✅' : isLocked ? '🔒' : '⭕';
+  const extraClasses = (isDone ? ' sp-done' : '') + (isActive ? ' sp-today sp-open' : '') + (isLocked ? ' sp-locked' : '');
+  const headerOnclick = isLocked ? '' : `onclick="this.parentElement.classList.toggle('sp-open')"`;
+
   const audioUrl = studyPlanInfo?.audio_url || '';
   const bookUrl  = studyPlanInfo?.book_url  || '';
+  const tasks = getSpTasks(day);
 
   const tasksHtml = tasks.map(t => {
     const done = !!spChecked[day.id + '_' + t.key];
-    /* رابط الفتح: سماع → audio, باقي المهام → book */
     const linkUrl = t.key === 'listen' ? audioUrl : bookUrl;
     const linkBtn = linkUrl
       ? `<a href="${linkUrl}" target="_blank" rel="noopener" class="sp-task-link-btn ${t.key === 'listen' ? 'sp-link-audio' : 'sp-link-book'}">${t.key === 'listen' ? '🎧 استمع' : '📖 افتح'}</a>`
@@ -1158,8 +1199,8 @@ function renderSpDay(day) {
     </div>`;
   }).join('');
 
-  return `<div class="sp-day-card${allDone ? ' sp-done' : ''}" id="spday-${day.id}">
-    <div class="sp-day-header" onclick="this.parentElement.classList.toggle('sp-open')">
+  return `<div class="sp-day-card${extraClasses}" id="spday-${day.id}">
+    <div class="sp-day-header" ${headerOnclick}>
       <div class="sp-day-num">اليوم ${day.day_number}</div>
       <span class="sp-day-status">${statusIcon}</span>
     </div>
@@ -1179,16 +1220,7 @@ async function toggleSpTask(dayId, taskKey, btn, memoFrom, memoTo) {
   const row = btn.closest('.sp-task-row');
   if (row) row.querySelector('.sp-task-label').classList.toggle('done', done);
 
-  const card = document.getElementById('spday-' + dayId);
-  if (card) {
-    const day = studyPlanDays.find(d => d.id === dayId);
-    if (day) {
-      const allDone = isSpDayDone(day);
-      const si = card.querySelector('.sp-day-status');
-      if (si) si.textContent = allDone ? '✅' : '⭕';
-      card.classList.toggle('sp-done', allDone);
-    }
-  }
+  refreshDayLockStates();
 
   await saveSpProgress(dayId, taskKey, done);
 
