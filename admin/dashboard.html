@@ -1175,7 +1175,7 @@
               <td style="color:var(--text-muted)">${new Date(p.created_at).toLocaleDateString('ar-SA')}</td>
               <td style="display:flex;gap:8px">
                 <button class="btn-view" onclick="viewPlanDays('${p.id}','${p.plan_name}')">استعراض</button>
-                <button class="btn-view" style="background:var(--accent);color:#fff" onclick="openEditPlanModal('${p.id}',${JSON.stringify(p.plan_name)},${JSON.stringify(p.audio_url||'')},${JSON.stringify(p.book_url||'')},${JSON.stringify(p.book_name||'')},${JSON.stringify(p.folder_name||'')},${JSON.stringify(p.whatsapp_url||'')})">تعديل</button>
+                <button class="btn-view" style="background:var(--accent);color:#fff" onclick="openEditPlanModal('${p.id}')">تعديل</button>
                 <button class="btn-danger" onclick="deletePlan('${p.id}')">حذف</button>
               </td>
             </tr>
@@ -1234,14 +1234,15 @@
   /* ========== EDIT PLAN MODAL ========== */
   let editPendingRows = [];
 
-  function openEditPlanModal(planId, planName, audioUrl, bookUrl, bookName, folderName, whatsappUrl) {
+  function openEditPlanModal(planId) {
+    const p = allPlans.find(x => x.id === planId) || {};
     document.getElementById('edit-plan-id').value = planId;
-    document.getElementById('edit-pm-name').value = planName || '';
-    document.getElementById('edit-pm-book').value = bookName || '';
-    document.getElementById('edit-pm-folder').value = folderName || '';
-    document.getElementById('edit-audio').value = audioUrl || '';
-    document.getElementById('edit-book-url').value = bookUrl || '';
-    document.getElementById('edit-whatsapp').value = whatsappUrl || '';
+    document.getElementById('edit-pm-name').value = p.plan_name || '';
+    document.getElementById('edit-pm-book').value = p.book_name || '';
+    document.getElementById('edit-pm-folder').value = p.folder_name || '';
+    document.getElementById('edit-audio').value = p.audio_url || '';
+    document.getElementById('edit-book-url').value = p.book_url || '';
+    document.getElementById('edit-whatsapp').value = p.whatsapp_url || '';
     document.getElementById('edit-pm-filename').textContent = 'لم يُختر ملف — الأيام الحالية تبقى كما هي';
     document.getElementById('edit-pm-preview').textContent = '';
     document.getElementById('edit-pm-file').value = '';
