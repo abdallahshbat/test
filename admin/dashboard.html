@@ -531,9 +531,8 @@
 
   <div class="nav-section">
     <div class="nav-section-title">المعلمون</div>
-    <div class="nav-item" onclick="showView('add-teacher')"><span class="nav-icon">➕</span> إضافة معلم</div>
+    <div class="nav-item" onclick="showView('add-teacher')"><span class="nav-icon">➕</span> إضافة معلم / استيراد</div>
     <div class="nav-item" onclick="showView('teacher-files');loadTeacherFiles()"><span class="nav-icon">📁</span> ملفات المعلمين</div>
-    <div class="nav-item" onclick="showView('import-teachers')"><span class="nav-icon">📥</span> استيراد معلمين (Excel)</div>
   </div>
 
   <div class="nav-section">
@@ -820,7 +819,6 @@
         <div id="audioRoomsBody"><p class="empty-row">جارٍ التحميل…</p></div>
       </div>
     </div>
-    <div class="view" id="view-import-teachers"><div class="section-placeholder"><div class="ph-icon">📥</div><h3>استيراد معلمين (Excel)</h3><p>رفع ملف Excel لاستيراد بيانات المعلمين دفعة واحدة</p></div></div>
 
     <div class="view" id="view-settings"><div class="section-placeholder"><div class="ph-icon">⚙️</div><h3>الإعدادات العامة</h3><p>إعدادات المنصة العامة ستكون هنا</p></div></div>
 
@@ -845,10 +843,9 @@
     'exams':            { title: 'الاختبارات المرحلية',     breadcrumb: 'الطلاب › الاختبارات المرحلية' },
     'import-students':  { title: 'استيراد طلاب',           breadcrumb: 'الطلاب › استيراد طلاب (Excel)' },
     'import-plans':     { title: 'الخطط العلمية',           breadcrumb: 'الطلاب › الخطط العلمية' },
-    'add-teacher':      { title: 'إضافة معلم',             breadcrumb: 'المعلمون › إضافة معلم' },
+    'add-teacher':      { title: 'إضافة معلم / استيراد',   breadcrumb: 'المعلمون › إضافة معلم / استيراد' },
     'teacher-files':    { title: 'ملفات المعلمين',          breadcrumb: 'المعلمون › ملفات المعلمين' },
     'audio-rooms':      { title: 'الغرف الصوتية',           breadcrumb: 'الغرف الصوتية' },
-    'import-teachers':  { title: 'استيراد معلمين',         breadcrumb: 'المعلمون › استيراد معلمين (Excel)' },
     'settings':         { title: 'الإعدادات العامة',        breadcrumb: 'الإعدادات › الإعدادات العامة' },
   };
 
