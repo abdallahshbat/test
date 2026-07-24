@@ -1675,12 +1675,15 @@ function showView(name) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   const view = document.getElementById('view-' + name);
   view.classList.add('active');
-  view.style.animation = 'none';
-  void view.offsetWidth;
-  view.style.animation = '';
+  if (name !== 'study') {
+    view.style.animation = 'none';
+    void view.offsetWidth;
+    view.style.animation = '';
+  }
   const nb = document.getElementById('nb-' + name);
   if (nb) nb.classList.add('active');
   if (name === 'rooms') loadRooms();
+  if (name === 'study') refreshDayLockStates();
 }
 
 /* ========== AUDIO ROOMS ========== */
