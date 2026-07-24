@@ -483,26 +483,6 @@
   </div>
 </div>
 
-<!-- MODAL: سجل الطالب في خطة معينة -->
-<div class="modal-overlay hidden" id="studentPlanRecordModal">
-  <div class="modal" style="max-width:860px;width:96%">
-    <div class="modal-header">
-      <h3 id="sprTitle">سجل الطالب</h3>
-      <button class="modal-close" onclick="document.getElementById('studentPlanRecordModal').classList.add('hidden')">×</button>
-    </div>
-    <div class="modal-body" style="max-height:75vh;overflow-y:auto">
-      <div id="sprSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px"></div>
-      <div style="font-weight:700;font-size:.92rem;margin-bottom:10px;color:var(--accent)">🎙️ جلسات التسميع مع المعلمين</div>
-      <div id="sprSessionsWrap" style="overflow-x:auto">
-        <table class="data-table">
-          <thead><tr><th>التاريخ</th><th>المعلم</th><th>الحفظ (من–إلى)</th><th>الربط</th><th>المراجعة</th><th>الدرجة</th><th>ملاحظات</th></tr></thead>
-          <tbody id="sprSessionsBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- MODAL: إسناد غرف -->
 <div class="modal-overlay hidden" id="assignRoomsModal">
   <div class="modal">
@@ -803,6 +783,33 @@
       </div>
     </div>
 
+    <!-- STUDENT PLAN RECORD (full page) -->
+    <div class="view" id="view-student-plan-record">
+      <div style="margin-bottom:16px">
+        <button class="btn-reset" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:.88rem;cursor:pointer" onclick="showView('student-history')">
+          ← رجوع إلى سجل الطلاب
+        </button>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+          <div id="sprTitle" style="font-weight:800;font-size:1.1rem;color:var(--text-main)">سجل الطالب</div>
+          <button class="btn-submit" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px" onclick="exportStudentPlanRecord()">
+            📥 تصدير Excel
+          </button>
+        </div>
+        <div id="sprSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px"></div>
+        <div style="font-weight:700;font-size:.92rem;margin-bottom:10px;color:var(--accent)">🎙️ جلسات التسميع مع المعلمين</div>
+        <div id="sprSessionsWrap" style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr>
+              <th>التاريخ</th><th>المعلم</th><th>الحفظ (من–إلى)</th><th>الربط</th><th>المراجعة</th><th>الدرجة</th><th>ملاحظات</th>
+            </tr></thead>
+            <tbody id="sprSessionsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- STUDENT FILES -->
     <div class="view" id="view-student-files">
       <div class="students-table-wrap">
@@ -937,7 +944,8 @@
     'attendance':       { title: 'متابعة الحضور',          breadcrumb: 'التشغيل اليومي › متابعة الحضور' },
     'recitation':       { title: 'رصد جلسة تسميع',         breadcrumb: 'التشغيل اليومي › رصد جلسة تسميع' },
     'add-student':      { title: 'إضافة طالب',             breadcrumb: 'الطلاب › إضافة طالب' },
-    'student-history':  { title: 'سجل الطلاب',             breadcrumb: 'الطلاب › سجل الطلاب' },
+    'student-history':       { title: 'سجل الطلاب',             breadcrumb: 'الطلاب › سجل الطلاب' },
+    'student-plan-record':   { title: 'سجل الطالب',             breadcrumb: 'الطلاب › سجل الطلاب › سجل الطالب' },
     'student-files':    { title: 'ملفات الطلاب',           breadcrumb: 'الطلاب › ملفات الطلاب' },
     'student-detail':   { title: 'ملف الطالب',             breadcrumb: 'الطلاب › ملفات الطلاب › ملف الطالب' },
     'top-students':     { title: 'قائمة المتميزين',         breadcrumb: 'الطلاب › قائمة المتميزين' },
@@ -2072,35 +2080,34 @@
     }).join('');
   }
 
+  let sprCurrentSessions = []; // لتصدير Excel
+  let sprCurrentRec = null;
+
   async function openStudentPlanRecord(studentId, planId, assignmentId) {
-    const modal = document.getElementById('studentPlanRecordModal');
-    const title = document.getElementById('sprTitle');
+    const title      = document.getElementById('sprTitle');
     const summaryDiv = document.getElementById('sprSummary');
     const sessBody   = document.getElementById('sprSessionsBody');
 
     const rec = allStudentHistory.find(r => r.student_id === studentId && r.plan_id === planId && r.assignment_id === assignmentId);
+    sprCurrentRec = rec;
     title.textContent = `سجل: ${rec?.student_name || '—'} — ${rec?.plan_name || '—'}`;
     summaryDiv.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem">جارٍ التحميل…</p>';
     sessBody.innerHTML   = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted)">جارٍ التحميل…</td></tr>';
-    modal.classList.remove('hidden');
+    showView('student-plan-record');
 
     const assignedAt = rec?.assigned_at || '1970-01-01';
-    // تحديد تاريخ الإسناد التالي لنفس الطالب ونفس الخطة (لتحديد نهاية الفترة)
     const nextAssign = allStudentHistory
       .filter(r => r.student_id === studentId && r.assigned_at > assignedAt)
       .sort((a, b) => a.assigned_at > b.assigned_at ? 1 : -1)[0];
     const assignedUntil = nextAssign?.assigned_at || null;
 
-    // جلب بيانات الخطة
     const [daysRes, progressRes, sessRes] = await Promise.all([
       client.from('study_plan_days')
         .select('id, day_number, memo_from, memo_to, link_from, link_to, review_from, review_to')
-        .eq('plan_id', planId)
-        .order('day_number'),
+        .eq('plan_id', planId).order('day_number'),
       client.from('student_plan_progress')
         .select('plan_day_id, task_key, completed_at')
-        .eq('student_id', studentId)
-        .eq('completed', true),
+        .eq('student_id', studentId).eq('completed', true),
       (() => {
         let q = client.from('recitation_sessions')
           .select('date, hadith_from, hadith_to, linking_from, linking_to, review_from, review_to, score, notes, folder, teachers(users(name))')
@@ -2115,32 +2122,35 @@
     const planDays = daysRes.data || [];
     const progress = progressRes.data || [];
     const sessions = sessRes.data || [];
+    sprCurrentSessions = sessions;
 
     const planDayIds = new Set(planDays.map(d => d.id));
-    const doneIds = new Set(progress.filter(p => planDayIds.has(p.plan_day_id)).map(p => p.plan_day_id));
-    const daysDone = doneIds.size;
-    const daysTotal = planDays.length;
+    const doneIds    = new Set(progress.filter(p => planDayIds.has(p.plan_day_id)).map(p => p.plan_day_id));
+    const daysDone   = doneIds.size;
+    const daysTotal  = planDays.length;
 
-    // حساب ملخص الحفظ والربط والمراجعة من التقدم
     const taskMap = {};
     progress.filter(p => planDayIds.has(p.plan_day_id)).forEach(p => {
       taskMap[p.task_key] = (taskMap[p.task_key] || 0) + 1;
     });
 
-    // إحصاءات الجلسات
-    const sessionCount = sessions.length;
-    const avgScore = sessions.filter(s => s.score != null).reduce((acc, s, _, arr) => acc + parseFloat(s.score) / arr.length, 0);
+    const scoredSessions = sessions.filter(s => s.score != null);
+    const sessionCount   = sessions.length;
+    const avgScore       = scoredSessions.length
+      ? scoredSessions.reduce((a, s) => a + parseFloat(s.score), 0) / scoredSessions.length
+      : null;
 
-    const statCard = (label, val, color='#1a3c2e') =>
+    const statCard = (label, val, color = '#1a3c2e') =>
       `<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;text-align:center">
         <div style="font-size:1.4rem;font-weight:800;color:${color}">${val}</div>
         <div style="font-size:.75rem;color:var(--text-muted);margin-top:2px">${label}</div>
       </div>`;
 
+    const scoreColor = avgScore == null ? '#1a3c2e' : avgScore >= 8.5 ? '#065f46' : '#92400e';
     summaryDiv.innerHTML =
       statCard('أيام الخطة المنجزة', `${daysDone} / ${daysTotal}`) +
       statCard('جلسات التسميع', sessionCount) +
-      statCard('متوسط الدرجات', sessionCount ? avgScore.toFixed(2) + '/10' : '—', sessionCount >= 8.5 ? '#065f46' : '#92400e') +
+      statCard('متوسط الدرجات', avgScore != null ? avgScore.toFixed(2) + '/10' : '—', scoreColor) +
       statCard('مهام حفظ مكتملة', taskMap['memo'] || 0) +
       statCard('مهام ربط مكتملة', taskMap['link'] || 0) +
       statCard('مهام مراجعة مكتملة', taskMap['review'] || 0);
@@ -2151,17 +2161,42 @@
     }
 
     sessBody.innerHTML = sessions.map(s => {
-      const scoreColor = s.score >= 8.5 ? '#065f46' : s.score >= 7 ? '#92400e' : '#991b1b';
+      const sc = parseFloat(s.score);
+      const scoreColor2 = sc >= 8.5 ? '#065f46' : sc >= 7 ? '#92400e' : '#991b1b';
       return `<tr>
         <td>${s.date || '—'}</td>
         <td>${s.teachers?.users?.name || '—'}</td>
         <td>${s.hadith_from != null ? `${s.hadith_from} – ${s.hadith_to}` : '—'}</td>
         <td>${s.linking_from != null ? `${s.linking_from} – ${s.linking_to}` : '—'}</td>
         <td>${s.review_from || s.review_to ? `${s.review_from || ''} – ${s.review_to || ''}` : '—'}</td>
-        <td style="font-weight:700;color:${scoreColor}">${s.score != null ? s.score : '—'}</td>
+        <td style="font-weight:700;color:${scoreColor2}">${s.score != null ? s.score : '—'}</td>
         <td style="font-size:.8rem;color:var(--text-muted)">${s.notes || ''}</td>
       </tr>`;
     }).join('');
+  }
+
+  function exportStudentPlanRecord() {
+    if (!sprCurrentSessions.length && !sprCurrentRec) { showToast('لا توجد بيانات للتصدير', 'error'); return; }
+    const studentName = sprCurrentRec?.student_name || 'الطالب';
+    const planName    = sprCurrentRec?.plan_name    || 'الخطة';
+
+    const rows = sprCurrentSessions.map(s => ({
+      'التاريخ':         s.date || '',
+      'المعلم':          s.teachers?.users?.name || '',
+      'الحفظ من':        s.hadith_from ?? '',
+      'الحفظ إلى':       s.hadith_to   ?? '',
+      'الربط من':        s.linking_from ?? '',
+      'الربط إلى':       s.linking_to   ?? '',
+      'المراجعة من':     s.review_from  || '',
+      'المراجعة إلى':    s.review_to    || '',
+      'الدرجة':          s.score        ?? '',
+      'ملاحظات':         s.notes        || ''
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, 'جلسات التسميع');
+    XLSX.writeFile(wb, `سجل_${studentName}_${planName}.xlsx`);
   }
 
   /* ========== LOGOUT ========== */
