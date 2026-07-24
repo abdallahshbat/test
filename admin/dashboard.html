@@ -518,6 +518,7 @@
     <div class="nav-item active" onclick="showView('home')"><span class="nav-icon">🏠</span> الرئيسية</div>
     <div class="nav-item" onclick="showView('attendance')"><span class="nav-icon">📊</span> متابعة الحضور</div>
     <div class="nav-item" onclick="showView('recitation')"><span class="nav-icon">🎙️</span> رصد جلسة تسميع</div>
+    <div class="nav-item" onclick="showView('recitation-log');loadRecitationLog()"><span class="nav-icon">📋</span> سجل الرصد</div>
   </div>
 
   <div class="nav-section">
@@ -580,6 +581,41 @@
 
     <div class="view" id="view-attendance"><div class="section-placeholder"><div class="ph-icon">📊</div><h3>متابعة الحضور</h3><p>سيتم عرض نسبة حضور الطلاب والمعلمين هنا</p></div></div>
     <div class="view" id="view-recitation"><div class="section-placeholder"><div class="ph-icon">🎙️</div><h3>رصد جلسة تسميع</h3><p>سيتم عرض جلسات التسميع النشطة وتفاصيلها هنا</p></div></div>
+
+    <!-- سجل الرصد -->
+    <div class="view" id="view-recitation-log">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <h2 style="font-size:1.1rem;font-weight:800;color:var(--accent)">📋 سجل الرصد</h2>
+          <button class="btn-submit" onclick="exportRecitationLog()" style="font-size:.82rem;padding:6px 14px">⬇️ تصدير Excel</button>
+        </div>
+        <!-- فلاتر -->
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;align-items:flex-end">
+          <div>
+            <label style="font-size:.78rem;font-weight:600;display:block;margin-bottom:3px">من تاريخ</label>
+            <input type="date" id="rl-from" class="form-control" style="padding:5px 8px;font-size:.82rem" oninput="applyRecitationFilters()">
+          </div>
+          <div>
+            <label style="font-size:.78rem;font-weight:600;display:block;margin-bottom:3px">إلى تاريخ</label>
+            <input type="date" id="rl-to" class="form-control" style="padding:5px 8px;font-size:.82rem" oninput="applyRecitationFilters()">
+          </div>
+          <div>
+            <label style="font-size:.78rem;font-weight:600;display:block;margin-bottom:3px">المعلم</label>
+            <select id="rl-teacher" class="form-control" style="padding:5px 8px;font-size:.82rem;min-width:140px" onchange="applyRecitationFilters()">
+              <option value="">— الكل —</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:.78rem;font-weight:600;display:block;margin-bottom:3px">الطالب</label>
+            <select id="rl-student" class="form-control" style="padding:5px 8px;font-size:.82rem;min-width:140px" onchange="applyRecitationFilters()">
+              <option value="">— الكل —</option>
+            </select>
+          </div>
+          <button class="btn-reset" style="font-size:.82rem;padding:6px 14px" onclick="resetRecitationFilters()">مسح الفلاتر</button>
+        </div>
+        <div id="recitationLogBody"><p class="empty-row">جارٍ التحميل…</p></div>
+      </div>
+    </div>
     <!-- ADD STUDENT VIEW -->
     <div class="view" id="view-add-student">
 
@@ -845,6 +881,7 @@
     'import-plans':     { title: 'الخطط العلمية',           breadcrumb: 'الطلاب › الخطط العلمية' },
     'add-teacher':      { title: 'إضافة معلم / استيراد',   breadcrumb: 'المعلمون › إضافة معلم / استيراد' },
     'teacher-files':    { title: 'ملفات المعلمين',          breadcrumb: 'المعلمون › ملفات المعلمين' },
+    'recitation-log':   { title: 'سجل الرصد',               breadcrumb: 'التشغيل اليومي › سجل الرصد' },
     'audio-rooms':      { title: 'الغرف الصوتية',           breadcrumb: 'الغرف الصوتية' },
     'settings':         { title: 'الإعدادات العامة',        breadcrumb: 'الإعدادات › الإعدادات العامة' },
   };
@@ -1619,6 +1656,138 @@
         }).join('')}
       </tbody>
     </table></div>`;
+  }
+
+  /* ========== سجل الرصد ========== */
+  let _allRecitationData = [];
+
+  async function loadRecitationLog() {
+    const body = document.getElementById('recitationLogBody');
+    body.innerHTML = '<p class="empty-row">جارٍ التحميل…</p>';
+
+    const [sessionsRes, roomAssignRes] = await Promise.all([
+      client.from('recitation_sessions')
+        .select('id, date, hadith_from, hadith_to, score, teacher_id, student_id, students(users(name)), teachers(id, users(name))')
+        .order('date', { ascending: false }),
+      client.from('room_assignments')
+        .select('assignee_id, audio_rooms(room_name)')
+        .eq('assignee_type', 'teacher')
+    ]);
+
+    _allRecitationData = (sessionsRes.data || []).map(s => {
+      const teacherId = s.teacher_id;
+      const rooms = (roomAssignRes.data || [])
+        .filter(r => r.assignee_id === teacherId)
+        .map(r => r.audio_rooms?.room_name)
+        .filter(Boolean);
+      return { ...s, _rooms: rooms };
+    });
+
+    // بناء قوائم الفلتر
+    const teachers = [...new Map(_allRecitationData.map(s => [s.teacher_id, s.teachers?.users?.name || '—'])).entries()];
+    const students = [...new Map(_allRecitationData.map(s => [s.student_id, s.students?.users?.name || '—'])).entries()];
+
+    const tSel = document.getElementById('rl-teacher');
+    const sSel = document.getElementById('rl-student');
+    const tVal = tSel.value, sVal = sSel.value;
+    tSel.innerHTML = '<option value="">— الكل —</option>' + teachers.map(([id, name]) => `<option value="${id}" ${tVal===id?'selected':''}>${name}</option>`).join('');
+    sSel.innerHTML = '<option value="">— الكل —</option>' + students.map(([id, name]) => `<option value="${id}" ${sVal===id?'selected':''}>${name}</option>`).join('');
+
+    applyRecitationFilters();
+  }
+
+  function applyRecitationFilters() {
+    const from    = document.getElementById('rl-from').value;
+    const to      = document.getElementById('rl-to').value;
+    const teacher = document.getElementById('rl-teacher').value;
+    const student = document.getElementById('rl-student').value;
+
+    const filtered = _allRecitationData.filter(s => {
+      if (from && s.date < from) return false;
+      if (to   && s.date > to)   return false;
+      if (teacher && s.teacher_id !== teacher) return false;
+      if (student && s.student_id !== student) return false;
+      return true;
+    });
+
+    renderRecitationLog(filtered);
+  }
+
+  function resetRecitationFilters() {
+    document.getElementById('rl-from').value = '';
+    document.getElementById('rl-to').value   = '';
+    document.getElementById('rl-teacher').value = '';
+    document.getElementById('rl-student').value = '';
+    applyRecitationFilters();
+  }
+
+  function renderRecitationLog(data) {
+    const body = document.getElementById('recitationLogBody');
+    if (!data.length) { body.innerHTML = '<p class="empty-row">لا توجد نتائج</p>'; return; }
+    body.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.83rem">
+      <thead><tr style="background:var(--bg-secondary,#f3f4f6);text-align:right">
+        <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">#</th>
+        <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">التاريخ</th>
+        <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">اسم الطالب</th>
+        <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">اسم المعلم</th>
+        <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">الغرفة الصوتية</th>
+        <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">مقدار التسميع (من–إلى)</th>
+        <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">الدرجة</th>
+      </tr></thead>
+      <tbody>
+        ${data.map((s, i) => {
+          const sc = parseFloat(s.score);
+          const scoreColor = sc >= 8.5 ? '#065f46' : sc >= 7 ? '#92400e' : '#991b1b';
+          const scoreBg    = sc >= 8.5 ? '#d1fae5' : sc >= 7 ? '#fef3c7' : '#fee2e2';
+          return `<tr style="border-bottom:1px solid var(--border-color,#e5e7eb)">
+            <td style="padding:8px 12px;color:var(--text-muted)">${i+1}</td>
+            <td style="padding:8px 12px">${s.date || '—'}</td>
+            <td style="padding:8px 12px;font-weight:600">${s.students?.users?.name || '—'}</td>
+            <td style="padding:8px 12px;font-weight:600">${s.teachers?.users?.name || '—'}</td>
+            <td style="padding:8px 12px">${s._rooms.length ? s._rooms.join('، ') : '—'}</td>
+            <td style="padding:8px 12px">${s.hadith_from ?? '—'} — ${s.hadith_to ?? '—'}</td>
+            <td style="padding:8px 12px"><span style="padding:3px 10px;border-radius:20px;font-size:.78rem;font-weight:700;background:${scoreBg};color:${scoreColor}">${isNaN(sc)?'—':sc%1===0?sc:sc.toFixed(2)} / 10</span></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>`;
+  }
+
+  function exportRecitationLog() {
+    if (!_allRecitationData.length) { showToast('لا توجد بيانات للتصدير', 'error'); return; }
+
+    const from    = document.getElementById('rl-from').value;
+    const to      = document.getElementById('rl-to').value;
+    const teacher = document.getElementById('rl-teacher').value;
+    const student = document.getElementById('rl-student').value;
+    const filtered = _allRecitationData.filter(s => {
+      if (from && s.date < from) return false;
+      if (to   && s.date > to)   return false;
+      if (teacher && s.teacher_id !== teacher) return false;
+      if (student && s.student_id !== student) return false;
+      return true;
+    });
+
+    const rows = [['#', 'التاريخ', 'اسم الطالب', 'اسم المعلم', 'الغرفة الصوتية', 'من حديث', 'إلى حديث', 'الدرجة']];
+    filtered.forEach((s, i) => {
+      const sc = parseFloat(s.score);
+      rows.push([
+        i + 1,
+        s.date || '',
+        s.students?.users?.name || '',
+        s.teachers?.users?.name || '',
+        s._rooms.join('، ') || '',
+        s.hadith_from ?? '',
+        s.hadith_to ?? '',
+        isNaN(sc) ? '' : sc
+      ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [4,12,18,18,18,12,12,10].map(w => ({ wch: w }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'سجل الرصد');
+    XLSX.writeFile(wb, `سجل_الرصد_${new Date().toISOString().slice(0,10)}.xlsx`);
   }
 
   /* ========== LOGOUT ========== */
