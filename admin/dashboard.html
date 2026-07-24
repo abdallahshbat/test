@@ -525,7 +525,7 @@
     <div class="nav-section-title">الطلاب</div>
     <div class="nav-item" onclick="showView('add-student')"><span class="nav-icon">➕</span> إضافة طالب / استيراد</div>
     <div class="nav-item" onclick="showView('student-files');loadStudentFiles()"><span class="nav-icon">📁</span> ملفات الطلاب</div>
-    <div class="nav-item" onclick="showView('top-students')"><span class="nav-icon">🏆</span> قائمة المتميزين</div>
+    <div class="nav-item" onclick="showView('top-students');loadTopStudents()"><span class="nav-icon">🏆</span> قائمة المتميزين</div>
     <div class="nav-item" onclick="showView('exams')"><span class="nav-icon">📝</span> الاختبارات المرحلية</div>
     <div class="nav-item" onclick="showView('import-plans');loadStudyPlans()"><span class="nav-icon">📋</span> الخطط العلمية</div>
   </div>
@@ -767,7 +767,15 @@
       </div>
     </div>
 
-    <div class="view" id="view-top-students"><div class="section-placeholder"><div class="ph-icon">🏆</div><h3>قائمة المتميزين</h3><p>أفضل الطلاب أداءً وحفظاً سيظهرون هنا</p></div></div>
+    <div class="view" id="view-top-students">
+      <div class="card" style="max-width:680px;margin:0 auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <h2 style="font-size:1.15rem;font-weight:800;color:var(--accent)">🏆 لوحة الشرف</h2>
+          <span id="honor-count" style="font-size:.8rem;color:var(--text-muted)"></span>
+        </div>
+        <div id="adminHonorList"><p class="empty-row">جارٍ التحميل…</p></div>
+      </div>
+    </div>
     <div class="view" id="view-exams"><div class="section-placeholder"><div class="ph-icon">📝</div><h3>الاختبارات المرحلية</h3><p>جدول الاختبارات ونتائجها ستظهر هنا</p></div></div>
     <div class="view" id="view-import-students"><div class="section-placeholder"><div class="ph-icon">📥</div><h3>استيراد طلاب (Excel)</h3><p>رفع ملف Excel لاستيراد بيانات الطلاب دفعة واحدة</p></div></div>
 
@@ -1787,6 +1795,56 @@
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'سجل الرصد');
     XLSX.writeFile(wb, `سجل_الرصد_${new Date().toISOString().slice(0,10)}.xlsx`);
+  }
+
+  /* ========== قائمة المتميزين ========== */
+  async function loadTopStudents() {
+    const list = document.getElementById('adminHonorList');
+    list.innerHTML = '<p class="empty-row">جارٍ التحميل…</p>';
+
+    const { data, error } = await client.from('recitation_sessions')
+      .select('student_id, score, students!inner(is_archived, users(name))')
+      .eq('students.is_archived', false)
+      .not('score', 'is', null)
+      .limit(5000);
+
+    if (error || !data?.length) {
+      list.innerHTML = '<p class="empty-row">لا توجد بيانات بعد</p>'; return;
+    }
+
+    const map = {};
+    data.forEach(r => {
+      const id = r.student_id;
+      if (!map[id]) map[id] = { name: r.students?.users?.name || 'طالب', scores: [] };
+      const s = parseFloat(r.score);
+      if (!isNaN(s)) map[id].scores.push(s);
+    });
+
+    const ranked = Object.entries(map)
+      .filter(([, v]) => v.scores.length)
+      .map(([id, v]) => ({
+        id, name: v.name,
+        avg: v.scores.reduce((a, b) => a + b, 0) / v.scores.length,
+        sessions: v.scores.length
+      }))
+      .sort((a, b) => b.avg - a.avg);
+
+    if (!ranked.length) { list.innerHTML = '<p class="empty-row">لا توجد بيانات بعد</p>'; return; }
+
+    document.getElementById('honor-count').textContent = `${ranked.length} طالب`;
+
+    const medals = ['🥇', '🥈', '🥉'];
+    list.innerHTML = ranked.map((s, i) => {
+      const rankIcon = medals[i] || `<span style="font-size:.9rem;font-weight:700;color:var(--text-muted)">${i + 1}</span>`;
+      const scoreColor = s.avg >= 8.5 ? '#065f46' : s.avg >= 7 ? '#92400e' : '#991b1b';
+      const scoreBg    = s.avg >= 8.5 ? '#d1fae5' : s.avg >= 7 ? '#fef3c7' : '#fee2e2';
+      return `<div style="display:flex;align-items:center;gap:12px;padding:11px 10px;border-bottom:1px solid var(--border-color,#e5e7eb)${i===0?' background:#fffbeb;border-radius:10px;':''}" >
+        <span style="font-size:1.15rem;min-width:32px;text-align:center">${rankIcon}</span>
+        <span style="flex:1;font-size:.9rem;font-weight:${i < 3 ? '800' : '600'};color:${i === 0 ? '#92400e' : 'var(--text-primary)'}">${s.name}</span>
+        <span style="font-size:.75rem;color:var(--text-muted);min-width:60px;text-align:center">${s.sessions} جلسة</span>
+        <span style="padding:3px 12px;border-radius:20px;font-size:.82rem;font-weight:800;background:${scoreBg};color:${scoreColor}">${s.avg.toFixed(2)}</span>
+      </div>`;
+    }).join('');
   }
 
   /* ========== LOGOUT ========== */
