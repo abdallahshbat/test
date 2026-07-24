@@ -907,6 +907,7 @@
 
   let allStudentsData = [];
   let allPlans = [];
+  let allTeachersData = [];
   let pendingPlanRows = [];
 
   let _addStudentLoaded = false;
@@ -1554,7 +1555,8 @@
       body.innerHTML = '<p class="empty-row">لا يوجد معلمون مسجلون بعد</p>'; return;
     }
 
-    const teachers  = teachersRes.data;
+    allTeachersData = teachersRes.data;
+    const teachers  = allTeachersData;
     const sessions  = sessionsRes.data || [];
     const allRooms  = roomsRes.data || [];
     const roomOpts  = allRooms.map(r => `<option value="${r.id}">${r.room_name}</option>`).join('');
@@ -1606,10 +1608,10 @@
           <td style="text-align:center;font-weight:600">${totalHadiths}</td>
           <td>${roomSelect}</td>
           <td><span style="padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;background:${isArchived?'#fee2e2':'#d1fae5'};color:${isArchived?'#991b1b':'#065f46'}">${isArchived?'مؤرشف':'فعال'}</span>
-            <br><button class="btn-reset" style="font-size:.72rem;margin-top:4px;padding:2px 8px" onclick="toggleArchiveTeacher('${t.id}',${!isArchived},${JSON.stringify(name)})">${isArchived?'استعادة':'أرشفة'}</button>
+            <br><button class="btn-reset" style="font-size:.72rem;margin-top:4px;padding:2px 8px" onclick="toggleArchiveTeacher('${t.id}',${!isArchived})">${isArchived?'استعادة':'أرشفة'}</button>
           </td>
-          <td><button class="btn-view" style="background:var(--accent);color:#fff" onclick="openTeacherDetail('${t.user_id}',${JSON.stringify(name)})">👤 عرض الملف</button></td>
-          <td><button class="btn-view" onclick="openTeacherLog('${t.id}',${JSON.stringify(name)})">📋 سجل الرصد</button></td>
+          <td><button class="btn-view" style="background:var(--accent);color:#fff" onclick="openTeacherDetail('${t.id}')">👤 عرض الملف</button></td>
+          <td><button class="btn-view" onclick="openTeacherLog('${t.id}')">📋 سجل الرصد</button></td>
         </tr>`;
       }).join('')}</tbody>
     </table></div>`;
@@ -1629,14 +1631,18 @@
     showToast('تم حفظ الغرف ✓', 'success');
   }
 
-  async function toggleArchiveTeacher(teacherId, archive, name) {
+  async function toggleArchiveTeacher(teacherId, archive) {
+    const t = allTeachersData.find(x => x.id === teacherId) || {};
+    const name = t.users?.name || '';
     const { error } = await client.from('teachers').update({ is_archived: archive }).eq('id', teacherId);
     if (error) { showToast('خطأ في تحديث الحالة', 'error'); return; }
     showToast(`تم ${archive ? 'أرشفة' : 'استعادة'} المعلم ${name} ✓`, 'success');
     loadTeacherFiles();
   }
 
-  async function openTeacherLog(teacherId, name) {
+  async function openTeacherLog(teacherId) {
+    const t = allTeachersData.find(x => x.id === teacherId) || {};
+    const name = t.users?.name || '—';
     document.getElementById('teacherLogTitle').textContent = `📋 سجل رصد — ${name}`;
     const body = document.getElementById('teacherLogBody');
     body.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:16px">جارٍ التحميل…</p>';
@@ -1814,7 +1820,10 @@
   }
 
   /* ========== ملف المعلم ========== */
-  async function openTeacherDetail(userId, name) {
+  async function openTeacherDetail(teacherId) {
+    const t = allTeachersData.find(x => x.id === teacherId) || {};
+    const name = t.users?.name || '—';
+    const userId = t.user_id;
     document.getElementById('teacherDetailTitle').textContent = `👤 ملف — ${name}`;
     const body = document.getElementById('teacherDetailBody');
     body.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:20px">جارٍ التحميل…</p>';
