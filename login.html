@@ -136,13 +136,20 @@
 
     <div class="field">
       <label for="password">كلمة المرور</label>
-      <input
-        type="password"
-        id="password"
-        placeholder="أدخل كلمة المرور"
-        autocomplete="current-password"
-        required
-      />
+      <div style="position:relative">
+        <input
+          type="password"
+          id="password"
+          placeholder="أدخل كلمة المرور"
+          autocomplete="current-password"
+          required
+          style="width:100%;box-sizing:border-box;padding-left:44px"
+        />
+        <button type="button" onclick="togglePassword()" tabindex="-1"
+          style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#6b7280;font-size:1.1rem;line-height:1;padding:0">
+          <span id="eye-icon">👁️</span>
+        </button>
+      </div>
     </div>
 
     <button type="submit" class="btn" id="loginBtn">دخول</button>
@@ -250,6 +257,14 @@
       setLoading(false);
     }
   });
+
+  function togglePassword() {
+    const input = document.getElementById('password');
+    const icon  = document.getElementById('eye-icon');
+    const show  = input.type === 'password';
+    input.type  = show ? 'text' : 'password';
+    icon.textContent = show ? '🙈' : '👁️';
+  }
 </script>
 
 </body>
