@@ -460,6 +460,17 @@
   </div>
 </div>
 
+<!-- MODAL: سجل رصد المعلم -->
+<div class="modal-overlay hidden" id="teacherLogModal">
+  <div class="modal" style="max-width:780px;width:95%">
+    <div class="modal-header">
+      <h3 id="teacherLogTitle">سجل الرصد</h3>
+      <button class="modal-close" onclick="document.getElementById('teacherLogModal').classList.add('hidden')">×</button>
+    </div>
+    <div class="modal-body" id="teacherLogBody" style="max-height:480px;overflow-y:auto"></div>
+  </div>
+</div>
+
 <!-- MODAL: إسناد غرف -->
 <div class="modal-overlay hidden" id="assignRoomsModal">
   <div class="modal">
@@ -1476,17 +1487,141 @@
   async function loadTeacherFiles() {
     const body = document.getElementById('teacherFilesBody');
     body.innerHTML = '<p class="empty-row">جارٍ التحميل…</p>';
-    const { data, error } = await client.from('teachers').select('id, users(name, username, phone)').order('id', { ascending: false });
-    if (error || !data?.length) { body.innerHTML = '<p class="empty-row">لا يوجد معلمون مسجلون بعد</p>'; return; }
-    body.innerHTML = `<table class="tf-table">
-      <thead><tr><th>الاسم</th><th>اسم المستخدم</th><th>الجوال</th><th>إجراء</th></tr></thead>
-      <tbody>${data.map(t => `<tr>
-        <td style="font-weight:700">${t.users?.name || '—'}</td>
-        <td style="color:var(--accent);font-weight:600">${t.users?.username || '—'}</td>
-        <td>${t.users?.phone || '—'}</td>
-        <td><button class="btn-view" style="background:var(--accent);color:#fff" onclick="openAssignRoomsModal('teacher','${t.id}',${JSON.stringify(t.users?.name||'')})">🎤 إسناد غرف</button></td>
-      </tr>`).join('')}</tbody>
-    </table>`;
+
+    const [teachersRes, sessionsRes, roomsRes] = await Promise.all([
+      client.from('teachers').select('id, is_archived, users(name, phone)').order('id', { ascending: false }),
+      client.from('recitation_sessions').select('teacher_id, hadith_from, hadith_to'),
+      client.from('audio_rooms').select('id, room_name').order('room_name')
+    ]);
+
+    if (teachersRes.error || !teachersRes.data?.length) {
+      body.innerHTML = '<p class="empty-row">لا يوجد معلمون مسجلون بعد</p>'; return;
+    }
+
+    const teachers  = teachersRes.data;
+    const sessions  = sessionsRes.data || [];
+    const allRooms  = roomsRes.data || [];
+    const roomOpts  = allRooms.map(r => `<option value="${r.id}">${r.room_name}</option>`).join('');
+
+    // Pre-fetch room assignments for all teachers
+    const teacherIds = teachers.map(t => t.id);
+    const { data: assignments } = await client.from('room_assignments')
+      .select('assignee_id, room_id')
+      .eq('assignee_type', 'teacher')
+      .in('assignee_id', teacherIds);
+    const assignMap = {};
+    (assignments || []).forEach(a => {
+      if (!assignMap[a.assignee_id]) assignMap[a.assignee_id] = new Set();
+      assignMap[a.assignee_id].add(a.room_id);
+    });
+
+    body.innerHTML = `<div style="overflow-x:auto"><table class="tf-table" style="min-width:750px">
+      <thead><tr>
+        <th>الاسم</th>
+        <th>عدد جلسات الرصد</th>
+        <th>إجمالي الأحاديث المُسمَّعة</th>
+        <th>الغرفة الصوتية</th>
+        <th>الحالة</th>
+        <th>إجراء</th>
+      </tr></thead>
+      <tbody>${teachers.map(t => {
+        const tSessions = sessions.filter(s => s.teacher_id === t.id);
+        const sessionCount = tSessions.length;
+        const totalHadiths = tSessions.reduce((sum, s) => {
+          const from = parseInt(s.hadith_from), to = parseInt(s.hadith_to);
+          return sum + ((!isNaN(from) && !isNaN(to) && to >= from) ? (to - from + 1) : 0);
+        }, 0);
+        const assignedRooms = assignMap[t.id] || new Set();
+        const name = t.users?.name || '—';
+        const isArchived = t.is_archived;
+
+        const roomSelect = allRooms.length
+          ? `<select class="form-control" style="min-width:150px;padding:4px 8px;font-size:.8rem"
+               multiple size="3"
+               onchange="saveTeacherRoomAssignment('${t.id}', this)">
+               ${allRooms.map(r => `<option value="${r.id}" ${assignedRooms.has(r.id) ? 'selected' : ''}>${r.room_name}</option>`).join('')}
+             </select>`
+          : '<span style="color:var(--text-muted);font-size:.8rem">لا توجد غرف</span>';
+
+        return `<tr>
+          <td style="font-weight:700">${name}</td>
+          <td style="text-align:center;font-weight:600">${sessionCount}</td>
+          <td style="text-align:center;font-weight:600">${totalHadiths}</td>
+          <td>${roomSelect}</td>
+          <td><span style="padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;background:${isArchived?'#fee2e2':'#d1fae5'};color:${isArchived?'#991b1b':'#065f46'}">${isArchived?'مؤرشف':'فعال'}</span>
+            <br><button class="btn-reset" style="font-size:.72rem;margin-top:4px;padding:2px 8px" onclick="toggleArchiveTeacher('${t.id}',${!isArchived},${JSON.stringify(name)})">${isArchived?'استعادة':'أرشفة'}</button>
+          </td>
+          <td><button class="btn-view" onclick="openTeacherLog('${t.id}',${JSON.stringify(name)})">📋 سجل الرصد</button></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+  }
+
+  async function saveTeacherRoomAssignment(teacherId, selectEl) {
+    const selected = new Set(Array.from(selectEl.selectedOptions).map(o => o.value));
+    const { data: existing } = await client.from('room_assignments')
+      .select('room_id').eq('assignee_type', 'teacher').eq('assignee_id', teacherId);
+    const current = new Set((existing || []).map(r => r.room_id));
+    const toAdd    = [...selected].filter(id => !current.has(id));
+    const toRemove = [...current].filter(id => !selected.has(id));
+    const ops = [];
+    if (toAdd.length) ops.push(client.from('room_assignments').insert(toAdd.map(room_id => ({ assignee_type: 'teacher', assignee_id: teacherId, room_id }))));
+    if (toRemove.length) ops.push(client.from('room_assignments').delete().eq('assignee_type','teacher').eq('assignee_id',teacherId).in('room_id', toRemove));
+    await Promise.all(ops);
+    showToast('تم حفظ الغرف ✓', 'success');
+  }
+
+  async function toggleArchiveTeacher(teacherId, archive, name) {
+    const { error } = await client.from('teachers').update({ is_archived: archive }).eq('id', teacherId);
+    if (error) { showToast('خطأ في تحديث الحالة', 'error'); return; }
+    showToast(`تم ${archive ? 'أرشفة' : 'استعادة'} المعلم ${name} ✓`, 'success');
+    loadTeacherFiles();
+  }
+
+  async function openTeacherLog(teacherId, name) {
+    document.getElementById('teacherLogTitle').textContent = `📋 سجل رصد — ${name}`;
+    const body = document.getElementById('teacherLogBody');
+    body.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:16px">جارٍ التحميل…</p>';
+    document.getElementById('teacherLogModal').classList.remove('hidden');
+
+    const { data, error } = await client.from('recitation_sessions')
+      .select('date, hadith_from, hadith_to, score, students(users(name))')
+      .eq('teacher_id', teacherId)
+      .order('date', { ascending: false });
+
+    if (error || !data?.length) {
+      body.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:16px">لا توجد جلسات رصد بعد</p>'; return;
+    }
+
+    body.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.83rem">
+      <thead><tr style="background:var(--bg-secondary,#f3f4f6);text-align:right">
+        <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">#</th>
+        <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">التاريخ</th>
+        <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">الطالب</th>
+        <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">من حديث</th>
+        <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">إلى حديث</th>
+        <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">عدد الأحاديث</th>
+        <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">التقييم</th>
+      </tr></thead>
+      <tbody>
+        ${data.map((s, i) => {
+          const sc = parseFloat(s.score);
+          const scoreColor = sc >= 8.5 ? '#065f46' : sc >= 7 ? '#92400e' : '#991b1b';
+          const scoreBg    = sc >= 8.5 ? '#d1fae5' : sc >= 7 ? '#fef3c7' : '#fee2e2';
+          const from = parseInt(s.hadith_from), to = parseInt(s.hadith_to);
+          const count = (!isNaN(from) && !isNaN(to) && to >= from) ? (to - from + 1) : '—';
+          return `<tr style="border-bottom:1px solid var(--border-color,#e5e7eb)">
+            <td style="padding:8px 12px;color:var(--text-muted)">${i+1}</td>
+            <td style="padding:8px 12px">${s.date || '—'}</td>
+            <td style="padding:8px 12px;font-weight:600">${s.students?.users?.name || '—'}</td>
+            <td style="padding:8px 12px">${s.hadith_from ?? '—'}</td>
+            <td style="padding:8px 12px">${s.hadith_to ?? '—'}</td>
+            <td style="padding:8px 12px;font-weight:600">${count}</td>
+            <td style="padding:8px 12px"><span style="padding:3px 10px;border-radius:20px;font-size:.78rem;font-weight:700;background:${scoreBg};color:${scoreColor}">${isNaN(sc)?'—':sc%1===0?sc:sc.toFixed(2)} / 10</span></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>`;
   }
 
   /* ========== LOGOUT ========== */
