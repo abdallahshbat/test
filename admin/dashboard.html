@@ -1549,7 +1549,7 @@
     const [teachersRes, sessionsRes, roomsRes] = await Promise.all([
       client.from('teachers').select('id, user_id, is_archived, users(name, phone)').order('id', { ascending: false }),
       client.from('recitation_sessions').select('teacher_id, hadith_from, hadith_to'),
-      client.from('audio_rooms').select('id, room_name').order('room_name')
+      client.from('audio_rooms').select('id, name').order('name')
     ]);
 
     if (teachersRes.error || !teachersRes.data?.length) {
@@ -1560,7 +1560,7 @@
     const teachers  = allTeachersData;
     const sessions  = sessionsRes.data || [];
     const allRooms  = roomsRes.data || [];
-    const roomOpts  = allRooms.map(r => `<option value="${r.id}">${r.room_name}</option>`).join('');
+    const roomOpts  = allRooms.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
 
     // Pre-fetch room assignments for all teachers
     const teacherIds = teachers.map(t => t.id);
@@ -1599,7 +1599,7 @@
           ? `<select class="form-control" style="min-width:150px;padding:4px 8px;font-size:.8rem"
                multiple size="3"
                onchange="saveTeacherRoomAssignment('${t.id}', this)">
-               ${allRooms.map(r => `<option value="${r.id}" ${assignedRooms.has(r.id) ? 'selected' : ''}>${r.room_name}</option>`).join('')}
+               ${allRooms.map(r => `<option value="${r.id}" ${assignedRooms.has(r.id) ? 'selected' : ''}>${r.name}</option>`).join('')}
              </select>`
           : '<span style="color:var(--text-muted);font-size:.8rem">لا توجد غرف</span>';
 
@@ -1701,14 +1701,14 @@
         .select('id, date, hadith_from, hadith_to, score, teacher_id, student_id, students(users(name)), teachers(id, users(name))')
         .order('date', { ascending: false }),
       client.from('room_assignments')
-        .select('assignee_id, audio_rooms(room_name)')
+        .select('assignee_id, audio_rooms(name)')
         .eq('assignee_type', 'student')
     ]);
 
     _allRecitationData = (sessionsRes.data || []).map(s => {
       const rooms = (roomAssignRes.data || [])
         .filter(r => r.assignee_id === s.student_id)
-        .map(r => r.audio_rooms?.room_name)
+        .map(r => r.audio_rooms?.name)
         .filter(Boolean);
       return { ...s, _rooms: rooms };
     });
