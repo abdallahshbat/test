@@ -613,88 +613,90 @@
     </div>
     <!-- ADD STUDENT VIEW -->
     <div class="view" id="view-add-student">
-
-      <!-- TABS -->
-      <div style="display:flex;gap:10px;margin-bottom:22px">
-        <button class="as-tab-btn active" id="asTabManual" onclick="switchAsTab('manual')">➕ إضافة يدوية</button>
-        <button class="as-tab-btn" id="asTabExcel" onclick="switchAsTab('excel')">📥 استيراد Excel</button>
+      <!-- Header with add button -->
+      <div class="plans-header" style="margin-bottom:20px">
+        <h2 style="font-size:1rem">👨‍🎓 قائمة الطلاب المسجلين</h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" id="sfSearch" class="form-control" placeholder="🔍 بحث بالاسم أو المستخدم…" style="width:200px;margin:0" oninput="filterStudentsList()" />
+          <button class="btn-add" onclick="openAddStudentModal()">➕ إضافة طالب</button>
+        </div>
       </div>
+      <div class="plans-table-wrap">
+        <div id="sfStudentsList"><p class="empty-row" style="padding:20px;text-align:center;color:var(--text-muted)">جارٍ التحميل…</p></div>
+      </div>
+    </div>
 
-      <!-- TAB: MANUAL ADD -->
-      <div id="asManualPane">
-        <div class="form-card">
-          <div class="form-card-header">
-            <div class="icon">👨‍🎓</div>
-            <div>
-              <h2>إضافة طالب جديد</h2>
-              <p>يسجّل الدخول باسم المستخدم — الإيميل اختياري</p>
-            </div>
+    <!-- MODAL: إضافة طالب -->
+    <div class="modal-overlay hidden" id="addStudentModal">
+      <div class="modal" style="max-width:600px;width:95%">
+        <div class="modal-header">
+          <h2>👨‍🎓 إضافة طالب جديد</h2>
+          <button class="modal-close" onclick="closeAddStudentModal()">×</button>
+        </div>
+        <div class="modal-body" style="padding-top:0">
+          <!-- TABS -->
+          <div style="display:flex;gap:10px;margin-bottom:18px;border-bottom:2px solid var(--border);padding-bottom:0">
+            <button class="as-tab-btn active" id="asTabManual" onclick="switchAsTab('manual')" style="border-bottom:2px solid transparent;border-radius:0;padding:10px 18px;margin-bottom:-2px">➕ إضافة يدوية</button>
+            <button class="as-tab-btn" id="asTabExcel" onclick="switchAsTab('excel')" style="border-bottom:2px solid transparent;border-radius:0;padding:10px 18px;margin-bottom:-2px">📥 استيراد Excel</button>
           </div>
-          <form id="addStudentForm" onsubmit="submitStudent(event)">
-            <div class="form-body">
-              <div class="form-row">
-                <div class="form-group">
-                  <label>الاسم الشخصي *</label>
-                  <input type="text" id="sf-name" class="form-control" placeholder="مثال: محمد أحمد العتيبي" required />
+          <!-- TAB: MANUAL -->
+          <div id="asManualPane">
+            <form id="addStudentForm" onsubmit="submitStudent(event)">
+              <div class="form-body" style="padding:0">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>الاسم الشخصي *</label>
+                    <input type="text" id="sf-name" class="form-control" placeholder="مثال: محمد أحمد العتيبي" required />
+                  </div>
+                  <div class="form-group">
+                    <label>اسم المستخدم *</label>
+                    <span class="hint">بلا مسافات — للدخول</span>
+                    <input type="text" id="sf-username" class="form-control" placeholder="مثال: محمد_عتيبي" required />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>رقم الجوال <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+                    <input type="tel" id="sf-phone" class="form-control" placeholder="05xxxxxxxx" />
+                  </div>
+                  <div class="form-group">
+                    <label>الإيميل <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+                    <input type="email" id="sf-email" class="form-control" placeholder="student@example.com" />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>البرنامج <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+                    <select id="sf-program" class="form-control">
+                      <option value="">— اختر البرنامج —</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>المجلد <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+                    <input type="text" id="sf-folder" class="form-control" placeholder="مثال: المجلد الأول" />
+                  </div>
                 </div>
                 <div class="form-group">
-                  <label>اسم المستخدم *</label>
-                  <span class="hint">بلا مسافات — للدخول</span>
-                  <input type="text" id="sf-username" class="form-control" placeholder="مثال: محمد_عتيبي" required />
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>رقم الجوال <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
-                  <input type="tel" id="sf-phone" class="form-control" placeholder="05xxxxxxxx" />
-                </div>
-                <div class="form-group">
-                  <label>الإيميل <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
-                  <input type="email" id="sf-email" class="form-control" placeholder="student@example.com" />
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>البرنامج <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
-                  <select id="sf-program" class="form-control">
-                    <option value="">— اختر البرنامج —</option>
+                  <label>الخطة العلمية <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+                  <select id="sf-plan" class="form-control">
+                    <option value="">— لا تُعيَّن خطة الآن —</option>
                   </select>
                 </div>
                 <div class="form-group">
-                  <label>المجلد <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
-                  <input type="text" id="sf-folder" class="form-control" placeholder="مثال: المجلد الأول" />
+                  <label>كلمة المرور *</label>
+                  <input type="password" id="sf-password" class="form-control" placeholder="6 أحرف على الأقل" minlength="6" required />
                 </div>
               </div>
-              <div class="form-group">
-                <label>الخطة العلمية <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
-                <select id="sf-plan" class="form-control">
-                  <option value="">— لا تُعيَّن خطة الآن —</option>
-                </select>
+              <div class="modal-footer" style="padding:16px 0 0">
+                <button type="button" class="btn-reset" onclick="closeAddStudentModal()">إلغاء</button>
+                <button type="button" class="btn-reset" onclick="document.getElementById('addStudentForm').reset()">مسح الحقول</button>
+                <button type="submit" class="btn-submit" id="sfSubmitBtn">حفظ الطالب</button>
               </div>
-              <div class="form-group">
-                <label>كلمة المرور *</label>
-                <input type="password" id="sf-password" class="form-control" placeholder="6 أحرف على الأقل" minlength="6" required />
-              </div>
-            </div>
-            <div class="form-footer">
-              <button type="submit" class="btn-submit" id="sfSubmitBtn">حفظ الطالب</button>
-              <button type="button" class="btn-reset" onclick="document.getElementById('addStudentForm').reset()">مسح الحقول</button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- TAB: EXCEL IMPORT -->
-      <div id="asExcelPane" style="display:none">
-        <div class="form-card">
-          <div class="form-card-header">
-            <div class="icon">📥</div>
-            <div>
-              <h2>استيراد طلاب من Excel</h2>
-              <p>الأعمدة بالترتيب: الاسم — اسم المستخدم — الجوال — الإيميل — البرنامج — المجلد — كلمة المرور</p>
-            </div>
+            </form>
           </div>
-          <div class="form-body">
+          <!-- TAB: EXCEL -->
+          <div id="asExcelPane" style="display:none">
+            <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:12px">الأعمدة بالترتيب: الاسم — اسم المستخدم — الجوال — الإيميل — البرنامج — المجلد — كلمة المرور</p>
             <div class="file-upload-area" onclick="document.getElementById('sf-excel').click()">
               <input type="file" id="sf-excel" accept=".xlsx,.xls" onchange="handleStudentExcel(this)" />
               <div class="file-upload-icon">📊</div>
@@ -702,21 +704,60 @@
               <div class="file-name-display" id="sfExcelName"></div>
             </div>
             <div id="sfExcelPreview" style="margin-top:16px;overflow-x:auto"></div>
-          </div>
-          <div class="form-footer">
-            <button class="btn-submit" id="sfImportBtn" onclick="importStudentsExcel()" style="display:none">📥 استيراد الكل</button>
+            <div class="modal-footer" style="padding:16px 0 0">
+              <button type="button" class="btn-reset" onclick="closeAddStudentModal()">إغلاق</button>
+              <button class="btn-submit" id="sfImportBtn" onclick="importStudentsExcel()" style="display:none">📥 استيراد الكل</button>
+            </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- STUDENT LIST + PASSWORD RESET -->
-      <div style="margin-top:28px">
-        <div class="plans-header">
-          <h2 style="font-size:1rem">👨‍🎓 قائمة الطلاب المسجلين</h2>
-          <input type="text" id="sfSearch" class="form-control" placeholder="🔍 بحث بالاسم أو المستخدم…" style="width:220px;margin:0" oninput="filterStudentsList()" />
+    <!-- MODAL: إضافة معلم -->
+    <div class="modal-overlay hidden" id="addTeacherModal">
+      <div class="modal" style="max-width:520px;width:95%">
+        <div class="modal-header">
+          <h2>👨‍🏫 إضافة معلم جديد</h2>
+          <button class="modal-close" onclick="closeAddTeacherModal()">×</button>
         </div>
-        <div class="plans-table-wrap">
-          <div id="sfStudentsList"><p class="empty-row" style="padding:20px;text-align:center;color:var(--text-muted)">جارٍ التحميل…</p></div>
+        <div class="modal-body">
+          <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:16px">يسجّل الدخول باسم المستخدم — الإيميل اختياري وإذا تُرك فارغاً يُنشأ تلقائياً</p>
+          <form id="teacherForm" onsubmit="submitTeacher(event)">
+            <div class="form-body" style="padding:0">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>الاسم الكامل *</label>
+                  <input type="text" id="tf-name" class="form-control" placeholder="مثال: أحمد محمد العتيبي" required />
+                </div>
+                <div class="form-group">
+                  <label>اسم المستخدم *</label>
+                  <span class="hint">سيُستخدم للدخول — بلا مسافات</span>
+                  <input type="text" id="tf-username" class="form-control" placeholder="مثال: أحمد_عتيبي" required />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>كلمة المرور *</label>
+                  <input type="password" id="tf-password" class="form-control" placeholder="6 أحرف على الأقل" minlength="6" required />
+                </div>
+                <div class="form-group">
+                  <label>الإيميل <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+                  <input type="email" id="tf-email" class="form-control" placeholder="teacher@example.com" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>رقم الجوال <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
+                  <input type="tel" id="tf-phone" class="form-control" placeholder="05xxxxxxxx" />
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer" style="padding:16px 0 0">
+              <button type="button" class="btn-reset" onclick="closeAddTeacherModal()">إلغاء</button>
+              <button type="button" class="btn-reset" onclick="resetForm()">مسح الحقول</button>
+              <button type="submit" class="btn-submit" id="submitBtn">حفظ المعلم</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -842,12 +883,13 @@
       </div>
     </div>
 
-    <!-- ADD TEACHER FORM -->
+    <!-- ADD TEACHER / MANAGE -->
     <div class="view" id="view-add-teacher">
       <!-- جدول إدارة المعلمين -->
       <div class="card" style="margin-bottom:20px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
           <h2 style="font-size:1rem;font-weight:800;color:var(--accent)">👥 إدارة المعلمين</h2>
+          <button class="btn-add" onclick="openAddTeacherModal()">➕ إضافة معلم</button>
         </div>
         <div style="overflow-x:auto">
           <table class="tf-table" id="teacherMgmtTable">
@@ -857,50 +899,6 @@
             <tbody id="teacherMgmtBody"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">جارٍ التحميل…</td></tr></tbody>
           </table>
         </div>
-      </div>
-      <div class="form-card">
-        <div class="form-card-header">
-          <div class="icon">👨‍🏫</div>
-          <div>
-            <h2>إضافة معلم جديد</h2>
-            <p>يسجّل الدخول باسم المستخدم — الإيميل اختياري وإذا تُرك فارغاً يُنشأ تلقائياً</p>
-          </div>
-        </div>
-        <form id="teacherForm" onsubmit="submitTeacher(event)">
-          <div class="form-body">
-            <div class="form-row">
-              <div class="form-group">
-                <label>الاسم الكامل *</label>
-                <input type="text" id="tf-name" class="form-control" placeholder="مثال: أحمد محمد العتيبي" required />
-              </div>
-              <div class="form-group">
-                <label>اسم المستخدم *</label>
-                <span class="hint">سيُستخدم للدخول — بلا مسافات</span>
-                <input type="text" id="tf-username" class="form-control" placeholder="مثال: أحمد_عتيبي" required />
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>كلمة المرور *</label>
-                <input type="password" id="tf-password" class="form-control" placeholder="6 أحرف على الأقل" minlength="6" required />
-              </div>
-              <div class="form-group">
-                <label>الإيميل <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
-                <input type="email" id="tf-email" class="form-control" placeholder="teacher@example.com" />
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>رقم الجوال <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
-                <input type="tel" id="tf-phone" class="form-control" placeholder="05xxxxxxxx" />
-              </div>
-            </div>
-          </div>
-          <div class="form-footer">
-            <button type="submit" class="btn-submit" id="submitBtn">حفظ المعلم</button>
-            <button type="button" class="btn-reset" onclick="resetForm()">مسح الحقول</button>
-          </div>
-        </form>
       </div>
     </div>
 
@@ -1023,7 +1021,6 @@
     document.getElementById('topbarBreadcrumb').textContent = meta.breadcrumb;
     if (id === 'add-student') {
       loadStudentsList();
-      if (!_addStudentLoaded) { _addStudentLoaded = true; loadStudentFormDropdowns(); }
     }
   }
 
@@ -2339,6 +2336,22 @@
     document.getElementById('teacherForm').reset();
   }
 
+  function openAddStudentModal() {
+    if (!_addStudentLoaded) { _addStudentLoaded = true; loadStudentFormDropdowns(); }
+    switchAsTab('manual');
+    document.getElementById('addStudentModal').classList.remove('hidden');
+  }
+  function closeAddStudentModal() {
+    document.getElementById('addStudentModal').classList.add('hidden');
+  }
+  function openAddTeacherModal() {
+    resetForm();
+    document.getElementById('addTeacherModal').classList.remove('hidden');
+  }
+  function closeAddTeacherModal() {
+    document.getElementById('addTeacherModal').classList.add('hidden');
+  }
+
   /* ═══════════════════════════════════════════════
      ADD STUDENT — tab switch
   ═══════════════════════════════════════════════ */
@@ -2386,7 +2399,7 @@
       });
       const result = await resp.json();
       if (!resp.ok || result.error) { showToast('خطأ: ' + (result.error || resp.statusText), 'error'); }
-      else { showToast('تم إضافة الطالب بنجاح ✓', 'success'); document.getElementById('addStudentForm').reset(); loadStats(); loadStudentsList(); }
+      else { showToast('تم إضافة الطالب بنجاح ✓', 'success'); document.getElementById('addStudentForm').reset(); closeAddStudentModal(); loadStats(); loadStudentsList(); }
     } catch (err) { showToast('خطأ: ' + err.message, 'error'); }
     finally { btn.disabled = false; btn.textContent = 'حفظ الطالب'; }
   }
@@ -2435,6 +2448,7 @@
       const ok = (result.results || []).filter(r => r.success).length;
       const fail = (result.results || []).filter(r => r.error).length;
       showToast(`تم استيراد ${ok} طالب${fail ? ' — فشل ' + fail : ''} ✓`, ok ? 'success' : 'error');
+      if (ok) closeAddStudentModal();
       loadStats(); loadStudentsList();
       pendingStudentRows = [];
       document.getElementById('sfExcelPreview').innerHTML = '';
@@ -2559,7 +2573,9 @@
       } else {
         showToast('تم إضافة المعلم بنجاح ✓', 'success');
         resetForm();
+        closeAddTeacherModal();
         loadStats();
+        loadTeacherMgmt();
       }
     } catch (err) {
       showToast('خطأ في الاتصال: ' + err.message, 'error');
