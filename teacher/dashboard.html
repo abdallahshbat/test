@@ -303,7 +303,17 @@ async function checkAuth() {
 }
 
 async function loadTeacher(userId) {
-  const { data, error } = await supabaseClient.from('teachers').select('id, max_students').eq('user_id', userId).single();
+  const { data, error } = await supabaseClient.from('teachers').select('id, max_students, is_archived').eq('user_id', userId).single();
+  if (!error && data?.is_archived) {
+    document.body.innerHTML = `<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3f4f6;font-family:'Segoe UI',sans-serif;direction:rtl;padding:24px">
+      <div style="background:#fff;border-radius:16px;padding:36px 32px;max-width:380px;width:100%;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.1)">
+        <div style="font-size:3rem;margin-bottom:16px">🔒</div>
+        <h2 style="font-size:1.2rem;font-weight:800;color:#1f2937;margin-bottom:8px">تم تعليق الحساب</h2>
+        <p style="font-size:.9rem;color:#6b7280;line-height:1.6">تم أرشفة حسابك مؤقتاً. للاستفسار تواصل مع المشرف.</p>
+      </div>
+    </div>`;
+    return;
+  }
   currentTeacher = (!error && data) ? data : { id: null, max_students: 0 };
   await loadStudents();
   loadTeacherRooms();

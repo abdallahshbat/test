@@ -1695,8 +1695,9 @@
   async function toggleArchiveTeacher(teacherId, archive) {
     const t = allTeachersData.find(x => x.id === teacherId) || {};
     const name = t.users?.name || '';
-    const { error } = await client.from('teachers').update({ is_archived: archive }).eq('id', teacherId);
-    if (error) { showToast('خطأ في تحديث الحالة', 'error'); return; }
+    const { data, error } = await client.from('teachers').update({ is_archived: archive }).eq('id', teacherId).select();
+    if (error) { showToast('خطأ: ' + error.message, 'error'); return; }
+    if (!data || data.length === 0) { showToast('خطأ: لا صلاحية — تأكد من تسجيل دخولك كمشرف', 'error'); return; }
     showToast(`تم ${archive ? 'أرشفة' : 'استعادة'} المعلم ${name} ✓`, 'success');
     loadTeacherFiles();
   }
@@ -2364,19 +2365,22 @@
         <td style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="btn-pw" data-uid="${s.users?.id||''}" data-name="${(s.users?.name||'').replace(/"/g,'&quot;')}" onclick="openResetPwModal(this.dataset.uid,this.dataset.name)">🔑 كلمة المرور</button>
           ${s.is_archived
-            ? `<button class="btn-pw" style="background:#d1fae5;color:#065f46;border-color:#a7f3d0" onclick="toggleArchiveStudent('${s.id}',false,${JSON.stringify(s.users?.name||'')})">↩️ استعادة</button>`
-            : `<button class="btn-pw" style="background:#fee2e2;color:#b91c1c;border-color:#fca5a5" onclick="toggleArchiveStudent('${s.id}',true,${JSON.stringify(s.users?.name||'')})">📦 أرشفة</button>`
+            ? `<button class="btn-pw" style="background:#d1fae5;color:#065f46;border-color:#a7f3d0" onclick="toggleArchiveStudent('${s.id}',false)">↩️ استعادة</button>`
+            : `<button class="btn-pw" style="background:#fee2e2;color:#b91c1c;border-color:#fca5a5" onclick="toggleArchiveStudent('${s.id}',true)">📦 أرشفة</button>`
           }
         </td>
       </tr>`).join('')}</tbody>
     </table>`;
   }
 
-  async function toggleArchiveStudent(studentId, archive, name) {
+  async function toggleArchiveStudent(studentId, archive) {
+    const s = allStudentsListData.find(x => x.id === studentId) || {};
+    const name = s.users?.name || '';
     const action = archive ? 'أرشفة' : 'استعادة';
     if (!confirm(`هل أنت متأكد من ${action} الطالب "${name}"؟`)) return;
-    const { error } = await client.from('students').update({ is_archived: archive }).eq('id', studentId);
+    const { data, error } = await client.from('students').update({ is_archived: archive }).eq('id', studentId).select();
     if (error) { showToast('خطأ: ' + error.message, 'error'); return; }
+    if (!data || data.length === 0) { showToast('خطأ: لا صلاحية — تأكد من تسجيل دخولك كمشرف', 'error'); return; }
     showToast(`تم ${action} الطالب ✓`, 'success');
     loadStudentsList();
   }
