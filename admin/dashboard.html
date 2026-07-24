@@ -283,6 +283,41 @@
     .sf-table tr:hover td { background:#f9fafb; }
     .btn-pw { padding:5px 14px; background:#fef3c7; color:#92400e; border:1px solid #fcd34d; border-radius:7px; font-size:.78rem; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap; }
     .btn-pw:hover { background:#fde68a; }
+
+    /* ── رصد جلسة التسميع ── */
+    .rs-card { background:var(--card-bg); border-radius:14px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,.06); padding:20px; margin-bottom:16px; max-width:700px; }
+    .rs-card-title { font-size:.95rem; font-weight:800; color:var(--accent); margin-bottom:14px; padding-bottom:10px; border-bottom:2px solid var(--border); }
+    .rs-search-wrap { position:relative; }
+    .rs-search-wrap input { padding-right:12px; }
+    .rs-dropdown { position:absolute; top:100%; right:0; left:0; background:#fff; border:1.5px solid var(--border); border-radius:8px; max-height:200px; overflow-y:auto; z-index:200; box-shadow:0 4px 12px rgba(0,0,0,.1); }
+    .rs-dropdown-item { padding:10px 14px; cursor:pointer; font-size:.9rem; border-bottom:1px solid var(--border); }
+    .rs-dropdown-item:last-child { border:none; }
+    .rs-dropdown-item:hover { background:#f7fafc; }
+    .rs-selected-bar { display:none; background:#e8f5e9; border-radius:10px; padding:12px 14px; margin-top:10px; }
+    .rs-selected-bar.show { display:block; }
+    .rs-selected-name { font-weight:700; font-size:1rem; color:var(--accent); }
+    .rs-selected-meta { font-size:.82rem; color:var(--text-muted); margin-top:3px; }
+    .rs-track-btns { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px; }
+    .rs-track-btn { padding:14px 10px; border:2px solid var(--border); border-radius:12px; background:#fff; font-size:.9rem; font-weight:700; cursor:pointer; font-family:inherit; color:var(--text-main); transition:all .2s; text-align:center; }
+    .rs-track-btn:hover { border-color:var(--accent); color:var(--accent); }
+    .rs-track-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .rs-error-type { background:#fff7f7; border:1.5px solid #ffd6d6; border-radius:12px; padding:14px; margin-bottom:10px; }
+    .rs-error-title { font-size:.82rem; font-weight:700; color:#e63946; margin-bottom:4px; }
+    .rs-error-sub { font-size:.75rem; color:var(--text-muted); margin-bottom:10px; line-height:1.5; }
+    .rs-counter-row { display:flex; align-items:center; gap:12px; justify-content:center; }
+    .rs-counter-btn { width:48px; height:48px; border-radius:50%; border:none; font-size:1.4rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform .1s; }
+    .rs-counter-btn:active { transform:scale(.93); }
+    .rs-btn-minus { background:#fee2e2; color:#e63946; }
+    .rs-btn-plus { background:#dcfce7; color:#16a34a; }
+    .rs-counter-val { font-size:1.5rem; font-weight:800; color:var(--text-main); min-width:36px; text-align:center; }
+    .rs-counter-penalty { font-size:.75rem; color:var(--text-muted); text-align:center; margin-top:4px; }
+    .rs-score-display { background:var(--accent); color:#fff; border-radius:12px; padding:20px; text-align:center; margin-bottom:16px; }
+    .rs-score-num { font-size:3.2rem; font-weight:900; line-height:1; }
+    .rs-score-lbl { font-size:.9rem; opacity:.85; margin-top:4px; }
+    .rs-btn-primary { width:100%; padding:13px; background:var(--accent); color:#fff; border:none; border-radius:10px; font-size:1rem; font-weight:700; cursor:pointer; font-family:inherit; transition:background .2s; }
+    .rs-btn-primary:hover { background:#1b4332; }
+    .rs-btn-primary:disabled { background:#a0aec0; cursor:not-allowed; }
+    .rs-history-wrap { overflow-x:auto; }
   </style>
 </head>
 <body>
@@ -575,7 +610,135 @@
     </div>
 
     <div class="view" id="view-attendance"><div class="section-placeholder"><div class="ph-icon">📊</div><h3>متابعة الحضور</h3><p>سيتم عرض نسبة حضور الطلاب والمعلمين هنا</p></div></div>
-    <div class="view" id="view-recitation"><div class="section-placeholder"><div class="ph-icon">🎙️</div><h3>رصد جلسة تسميع</h3><p>سيتم عرض جلسات التسميع النشطة وتفاصيلها هنا</p></div></div>
+    <div class="view" id="view-recitation">
+
+      <!-- 1. اختيار المعلم -->
+      <div class="rs-card" id="rs-teacher-card">
+        <div class="rs-card-title">👨‍🏫 اختر المعلم</div>
+        <div class="rs-search-wrap">
+          <input type="text" id="rs-teacher-search" class="form-control" placeholder="ابحث باسم المعلم…" autocomplete="off" oninput="rsFilterTeachers()" onfocus="rsShowTeacherDropdown()" onblur="rsHideTeacherDropdownDelayed()">
+          <div class="rs-dropdown" id="rs-teacher-dropdown" style="display:none"></div>
+        </div>
+        <div class="rs-selected-bar" id="rs-teacher-bar">
+          <div class="rs-selected-name" id="rs-teacher-name">—</div>
+          <div class="rs-selected-meta" id="rs-teacher-meta"></div>
+        </div>
+      </div>
+
+      <!-- 2. اختيار الطالب -->
+      <div class="rs-card hidden" id="rs-student-card">
+        <div class="rs-card-title">👨‍🎓 اختر الطالب</div>
+        <div class="rs-search-wrap">
+          <input type="text" id="rs-student-search" class="form-control" placeholder="ابحث باسم الطالب…" autocomplete="off" oninput="rsFilterStudents()" onfocus="rsShowStudentDropdown()" onblur="rsHideStudentDropdownDelayed()">
+          <div class="rs-dropdown" id="rs-student-dropdown" style="display:none"></div>
+        </div>
+        <div class="rs-selected-bar" id="rs-student-bar">
+          <div class="rs-selected-name" id="rs-student-name">—</div>
+          <div class="rs-selected-meta" id="rs-student-meta"></div>
+        </div>
+      </div>
+
+      <!-- 3. نوع الرصد -->
+      <div class="rs-card hidden" id="rs-track-card">
+        <div class="rs-card-title">نوع الرصد</div>
+        <div class="rs-track-btns">
+          <button class="rs-track-btn" id="rs-track-hafiz" onclick="rsSelectTrack('hafiz')">📖 رصد الحفظ</button>
+          <button class="rs-track-btn" id="rs-track-review" onclick="rsSelectTrack('review')">🔗 رصد الربط والمراجعة</button>
+        </div>
+      </div>
+
+      <!-- 4a. فورم الحفظ -->
+      <div class="rs-card hidden" id="rs-hafiz-card">
+        <div class="rs-card-title">تفاصيل جلسة الحفظ</div>
+        <div class="form-group">
+          <label>المجلد (الجزء)</label>
+          <input type="number" id="rs-folder" class="form-control" min="1" placeholder="رقم المجلد">
+        </div>
+        <div class="form-row" style="margin-top:12px">
+          <div class="form-group" style="margin-top:0">
+            <label>الحديث من</label>
+            <input type="number" id="rs-hadith-from" class="form-control" min="1" placeholder="من">
+          </div>
+          <div class="form-group" style="margin-top:0">
+            <label>الحديث إلى</label>
+            <input type="number" id="rs-hadith-to" class="form-control" min="1" placeholder="إلى">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:12px">
+          <label>هل كرّر المحفوظ 15 مرة؟</label>
+          <select id="rs-repetitions" class="form-control">
+            <option value="">-- اختر --</option>
+            <option value="yes">نعم</option>
+            <option value="no">لا</option>
+          </select>
+        </div>
+
+        <!-- أنواع الأخطاء -->
+        <div style="margin-top:16px">
+          <div class="rs-error-type">
+            <div class="rs-error-title">النوع الأول — خصم كامل (1−)</div>
+            <div class="rs-error-sub">خطأ في أصل المتن/الراوي &bull; التوقف الطويل &bull; الفتح</div>
+            <div class="rs-counter-row">
+              <button class="rs-counter-btn rs-btn-minus" onclick="rsAdjustError('full',-1)">−</button>
+              <div><div class="rs-counter-val" id="rs-full-val">0</div><div class="rs-counter-penalty">خصم كامل</div></div>
+              <button class="rs-counter-btn rs-btn-plus" onclick="rsAdjustError('full',1)">+</button>
+            </div>
+          </div>
+          <div class="rs-error-type">
+            <div class="rs-error-title">النوع الثاني — خصم نصفي (0.5−)</div>
+            <div class="rs-error-sub">اللحن الجلي النحوي &bull; التردد أو التلعثم</div>
+            <div class="rs-counter-row">
+              <button class="rs-counter-btn rs-btn-minus" onclick="rsAdjustError('half',-1)">−</button>
+              <div><div class="rs-counter-val" id="rs-half-val">0</div><div class="rs-counter-penalty">خصم نصف</div></div>
+              <button class="rs-counter-btn rs-btn-plus" onclick="rsAdjustError('half',1)">+</button>
+            </div>
+          </div>
+          <div class="rs-error-type">
+            <div class="rs-error-title">النوع الثالث — خصم ربع (0.25−)</div>
+            <div class="rs-error-sub">الخلط بين الأحاديث &bull; إبدال كلمة بمرادف &bull; اللحن الخفي النطقي</div>
+            <div class="rs-counter-row">
+              <button class="rs-counter-btn rs-btn-minus" onclick="rsAdjustError('quarter',-1)">−</button>
+              <div><div class="rs-counter-val" id="rs-quarter-val">0</div><div class="rs-counter-penalty">خصم ربع</div></div>
+              <button class="rs-counter-btn rs-btn-plus" onclick="rsAdjustError('quarter',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- الدرجة -->
+        <div class="rs-score-display" style="margin-top:4px">
+          <div class="rs-score-num" id="rs-score-display">10.00</div>
+          <div class="rs-score-lbl">الدرجة من 10</div>
+        </div>
+
+        <div class="form-group">
+          <label>ملاحظات (اختياري)</label>
+          <textarea id="rs-notes" class="form-control" rows="3" placeholder="ملاحظات إضافية…"></textarea>
+        </div>
+        <div style="margin-top:16px">
+          <button class="rs-btn-primary" id="rs-hafiz-submit" onclick="rsSubmitHafiz()">رصد الجلسة</button>
+        </div>
+      </div>
+
+      <!-- 4b. فورم الربط والمراجعة -->
+      <div class="rs-card hidden" id="rs-review-card">
+        <div class="rs-card-title">رصد الربط والمراجعة</div>
+        <div id="rs-review-inner"></div>
+      </div>
+
+      <!-- 5. آخر ما رُصد -->
+      <div class="rs-card hidden" id="rs-history-card">
+        <div class="rs-card-title">📋 آخر ما رُصد</div>
+        <div class="rs-history-wrap">
+          <table class="data-table" style="min-width:480px">
+            <thead><tr>
+              <th>التاريخ</th><th>النوع</th><th>التفاصيل</th><th>الدرجة</th>
+            </tr></thead>
+            <tbody id="rs-history-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
 
     <!-- سجل الرصد -->
     <div class="view" id="view-recitation-log">
@@ -1021,6 +1184,9 @@
     document.getElementById('topbarBreadcrumb').textContent = meta.breadcrumb;
     if (id === 'add-student') {
       loadStudentsList();
+    }
+    if (id === 'recitation') {
+      initRecitationView();
     }
   }
 
@@ -1905,6 +2071,240 @@
           : `<button class="btn-pw" style="background:#fee2e2;color:#b91c1c;border-color:#fca5a5" onclick="toggleArchiveTeacher('${t.id}',true)">📦 أرشفة</button>`
         }</td>
       </tr>`;
+    }).join('');
+  }
+
+  /* ========== رصد جلسة التسميع (المشرف) ========== */
+  let rsAllTeachers = [], rsAllStudents = [];
+  let rsSelectedTeacher = null, rsSelectedStudent = null;
+  let rsTrack = null;
+  let rsErrors = { full: 0, half: 0, quarter: 0 };
+  let _rsLoaded = false;
+
+  async function initRecitationView() {
+    if (_rsLoaded) return;
+    _rsLoaded = true;
+    const [tRes, sRes] = await Promise.all([
+      client.from('teachers').select('id, users(name)').eq('is_archived', false),
+      client.from('students').select('id, teacher_id, current_plan_id, users(name), teachers(id, users(name))').eq('is_archived', false)
+    ]);
+    rsAllTeachers = (tRes.data || []).map(t => ({ id: t.id, name: t.users?.name || '—' }));
+    rsAllStudents = (sRes.data || []).map(s => ({
+      id: s.id, teacher_id: s.teacher_id,
+      name: s.users?.name || '—',
+      teacherName: s.teachers?.users?.name || '—',
+      plan_id: s.current_plan_id
+    }));
+    rsRenderTeacherDropdown('');
+  }
+
+  // ── المعلم ──
+  function rsRenderTeacherDropdown(q) {
+    const dd = document.getElementById('rs-teacher-dropdown');
+    const filtered = rsAllTeachers.filter(t => t.name.includes(q));
+    if (!filtered.length) { dd.style.display = 'none'; return; }
+    dd.innerHTML = filtered.map(t => `<div class="rs-dropdown-item" onmousedown="rsSelectTeacher('${t.id}')">${t.name}</div>`).join('');
+    dd.style.display = '';
+  }
+  function rsFilterTeachers() {
+    rsRenderTeacherDropdown(document.getElementById('rs-teacher-search').value.trim());
+  }
+  function rsShowTeacherDropdown() { rsRenderTeacherDropdown(document.getElementById('rs-teacher-search').value.trim()); }
+  function rsHideTeacherDropdownDelayed() { setTimeout(() => { document.getElementById('rs-teacher-dropdown').style.display = 'none'; }, 200); }
+
+  function rsSelectTeacher(id) {
+    rsSelectedTeacher = rsAllTeachers.find(t => t.id === id);
+    if (!rsSelectedTeacher) return;
+    document.getElementById('rs-teacher-search').value = rsSelectedTeacher.name;
+    document.getElementById('rs-teacher-dropdown').style.display = 'none';
+    document.getElementById('rs-teacher-name').textContent = rsSelectedTeacher.name;
+    document.getElementById('rs-teacher-bar').classList.add('show');
+    // reset student selection
+    rsSelectedStudent = null;
+    document.getElementById('rs-student-search').value = '';
+    document.getElementById('rs-student-bar').classList.remove('show');
+    document.getElementById('rs-track-card').classList.add('hidden');
+    document.getElementById('rs-hafiz-card').classList.add('hidden');
+    document.getElementById('rs-review-card').classList.add('hidden');
+    document.getElementById('rs-history-card').classList.add('hidden');
+    document.getElementById('rs-student-card').classList.remove('hidden');
+  }
+
+  // ── الطالب ──
+  function rsRenderStudentDropdown(q) {
+    const dd = document.getElementById('rs-student-dropdown');
+    const filtered = rsAllStudents.filter(s =>
+      (!rsSelectedTeacher || s.teacher_id === rsSelectedTeacher.id) &&
+      s.name.includes(q)
+    );
+    if (!filtered.length) { dd.style.display = 'none'; return; }
+    dd.innerHTML = filtered.map(s => `<div class="rs-dropdown-item" onmousedown="rsSelectStudent('${s.id}')">${s.name}</div>`).join('');
+    dd.style.display = '';
+  }
+  function rsFilterStudents() { rsRenderStudentDropdown(document.getElementById('rs-student-search').value.trim()); }
+  function rsShowStudentDropdown() { rsRenderStudentDropdown(document.getElementById('rs-student-search').value.trim()); }
+  function rsHideStudentDropdownDelayed() { setTimeout(() => { document.getElementById('rs-student-dropdown').style.display = 'none'; }, 200); }
+
+  function rsSelectStudent(id) {
+    rsSelectedStudent = rsAllStudents.find(s => s.id === id);
+    if (!rsSelectedStudent) return;
+    document.getElementById('rs-student-search').value = rsSelectedStudent.name;
+    document.getElementById('rs-student-dropdown').style.display = 'none';
+    document.getElementById('rs-student-name').textContent = rsSelectedStudent.name;
+    document.getElementById('rs-student-meta').textContent = 'المعلم: ' + (rsSelectedStudent.teacherName || '—');
+    document.getElementById('rs-student-bar').classList.add('show');
+    document.getElementById('rs-track-card').classList.remove('hidden');
+    document.getElementById('rs-hafiz-card').classList.add('hidden');
+    document.getElementById('rs-review-card').classList.add('hidden');
+    rsLoadHistory();
+  }
+
+  // ── نوع الرصد ──
+  function rsSelectTrack(track) {
+    rsTrack = track;
+    document.getElementById('rs-track-hafiz').classList.toggle('active', track === 'hafiz');
+    document.getElementById('rs-track-review').classList.toggle('active', track === 'review');
+    if (track === 'hafiz') {
+      document.getElementById('rs-hafiz-card').classList.remove('hidden');
+      document.getElementById('rs-review-card').classList.add('hidden');
+      rsResetHafizForm();
+    } else {
+      document.getElementById('rs-review-card').classList.remove('hidden');
+      document.getElementById('rs-hafiz-card').classList.add('hidden');
+      rsLoadReviewForm();
+    }
+  }
+
+  // ── فورم الحفظ ──
+  function rsResetHafizForm() {
+    ['rs-folder','rs-hadith-from','rs-hadith-to','rs-notes'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    document.getElementById('rs-repetitions').value = '';
+    rsErrors = { full: 0, half: 0, quarter: 0 };
+    ['full','half','quarter'].forEach(t => { document.getElementById(`rs-${t}-val`).textContent = '0'; });
+    document.getElementById('rs-score-display').textContent = '10.00';
+    const btn = document.getElementById('rs-hafiz-submit');
+    if (btn) { btn.disabled = false; btn.textContent = 'رصد الجلسة'; }
+  }
+
+  function rsAdjustError(type, delta) {
+    rsErrors[type] = Math.max(0, rsErrors[type] + delta);
+    document.getElementById(`rs-${type}-val`).textContent = rsErrors[type];
+    const score = Math.max(0, 10 - rsErrors.full * 1 - rsErrors.half * 0.5 - rsErrors.quarter * 0.25);
+    document.getElementById('rs-score-display').textContent = score.toFixed(2);
+  }
+
+  async function rsSubmitHafiz() {
+    if (!rsSelectedStudent || !rsSelectedTeacher) { showToast('اختر المعلم والطالب أولاً', 'error'); return; }
+    const folder = parseInt(document.getElementById('rs-folder').value) || null;
+    const hadithFrom = parseInt(document.getElementById('rs-hadith-from').value) || null;
+    const hadithTo = parseInt(document.getElementById('rs-hadith-to').value) || null;
+    const repVal = document.getElementById('rs-repetitions').value;
+    const repetitions = repVal === 'yes' ? 15 : (repVal === 'no' ? 0 : null);
+    const notes = document.getElementById('rs-notes').value.trim() || null;
+    const score = Math.max(0, 10 - rsErrors.full - rsErrors.half * 0.5 - rsErrors.quarter * 0.25);
+    const today = new Date().toISOString().slice(0, 10);
+
+    const payload = {
+      student_id: rsSelectedStudent.id,
+      teacher_id: rsSelectedTeacher.id,
+      date: today, folder, hadith_from: hadithFrom, hadith_to: hadithTo,
+      repetitions, full_mark_errors: rsErrors.full, half_mark_errors: rsErrors.half,
+      quarter_mark_errors: rsErrors.quarter, score, notes
+    };
+
+    const btn = document.getElementById('rs-hafiz-submit');
+    btn.disabled = true; btn.textContent = 'جارٍ الحفظ…';
+    const { error } = await client.from('recitation_sessions').insert(payload);
+    btn.disabled = false; btn.textContent = 'رصد الجلسة';
+    if (error) { showToast('خطأ: ' + error.message, 'error'); return; }
+    showToast('تم رصد الجلسة ✓', 'success');
+    rsResetHafizForm();
+    rsLoadHistory();
+  }
+
+  // ── فورم الربط والمراجعة ──
+  async function rsLoadReviewForm() {
+    const inner = document.getElementById('rs-review-inner');
+    inner.innerHTML = '<div style="color:var(--text-muted);padding:12px">جارٍ التحميل…</div>';
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: dr } = await client.from('daily_reviews')
+      .select('id, student_submitted, link_from, link_to, review_range_from, review_range_to')
+      .eq('student_id', rsSelectedStudent.id).eq('date', today).maybeSingle();
+
+    const submitted = dr?.student_submitted || false;
+    inner.innerHTML = `
+      <div class="form-row">
+        <div class="form-group" style="margin-top:0"><label>الربط من حديث</label><input type="number" id="rs-link-from" class="form-control" min="1" placeholder="من"></div>
+        <div class="form-group" style="margin-top:0"><label>الربط إلى حديث</label><input type="number" id="rs-link-to" class="form-control" min="1" placeholder="إلى"></div>
+      </div>
+      <div class="form-row" style="margin-top:12px">
+        <div class="form-group" style="margin-top:0"><label>المراجعة من حديث</label><input type="number" id="rs-review-from" class="form-control" min="1" placeholder="من"></div>
+        <div class="form-group" style="margin-top:0"><label>المراجعة إلى حديث</label><input type="number" id="rs-review-to" class="form-control" min="1" placeholder="إلى"></div>
+      </div>
+      ${submitted
+        ? `<div style="margin-top:12px;text-align:center;font-size:.85rem;color:#2d6a4f;font-weight:700">🔒 الطالب اعتمد — للعرض فقط</div>`
+        : `<div style="margin-top:16px"><button class="rs-btn-primary" id="rs-review-submit" onclick="rsSubmitReview()">رصد الربط والمراجعة</button></div>`
+      }`;
+    const fieldMap = [
+      { id: 'rs-link-from', val: dr?.link_from },
+      { id: 'rs-link-to',   val: dr?.link_to },
+      { id: 'rs-review-from', val: dr?.review_range_from },
+      { id: 'rs-review-to',   val: dr?.review_range_to },
+    ];
+    fieldMap.forEach(f => {
+      const el = document.getElementById(f.id); if (!el) return;
+      if (f.val) el.value = f.val;
+      if (submitted || f.val) el.disabled = true;
+    });
+  }
+
+  async function rsSubmitReview() {
+    if (!rsSelectedStudent || !rsSelectedTeacher) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const payload = {
+      student_id: rsSelectedStudent.id, date: today,
+      link_from: document.getElementById('rs-link-from')?.value || null,
+      link_to: document.getElementById('rs-link-to')?.value || null,
+      review_range_from: document.getElementById('rs-review-from')?.value || null,
+      review_range_to: document.getElementById('rs-review-to')?.value || null,
+      student_submitted: false
+    };
+    const btn = document.getElementById('rs-review-submit');
+    if (btn) { btn.disabled = true; btn.textContent = 'جارٍ الحفظ…'; }
+    const { error } = await client.from('daily_reviews').upsert(payload, { onConflict: 'student_id,date' });
+    if (error) { showToast('خطأ: ' + error.message, 'error'); if (btn) { btn.disabled = false; btn.textContent = 'رصد الربط والمراجعة'; } return; }
+    showToast('تم رصد الربط والمراجعة ✓', 'success');
+    rsLoadHistory();
+    rsLoadReviewForm();
+  }
+
+  // ── السجل ──
+  async function rsLoadHistory() {
+    const hCard = document.getElementById('rs-history-card');
+    const body = document.getElementById('rs-history-body');
+    hCard.classList.remove('hidden');
+    body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:16px">جارٍ التحميل…</td></tr>';
+    const [sessRes, drRes] = await Promise.all([
+      client.from('recitation_sessions').select('id, date, hadith_from, hadith_to, score, folder, full_mark_errors, half_mark_errors, quarter_mark_errors')
+        .eq('student_id', rsSelectedStudent.id).order('date', { ascending: false }).limit(10),
+      client.from('daily_reviews').select('id, date, link_from, link_to, review_range_from, review_range_to')
+        .eq('student_id', rsSelectedStudent.id).order('date', { ascending: false }).limit(10)
+    ]);
+    const rows = [];
+    (sessRes.data || []).forEach(s => rows.push({ date: s.date, type: 'hafiz', s }));
+    (drRes.data || []).forEach(d => rows.push({ date: d.date, type: 'review', d }));
+    rows.sort((a, b) => b.date.localeCompare(a.date));
+    if (!rows.length) { body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px">لا توجد سجلات بعد</td></tr>'; return; }
+    body.innerHTML = rows.slice(0, 15).map(r => {
+      if (r.type === 'hafiz') {
+        const s = r.s;
+        const detail = `${s.folder ? 'مجلد ' + s.folder + ' — ' : ''}${s.hadith_from ? 'حديث ' + s.hadith_from + ' – ' + s.hadith_to : '—'}`;
+        return `<tr><td>${s.date}</td><td><span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:10px;font-size:.75rem;font-weight:700">حفظ</span></td><td style="font-size:.85rem">${detail}</td><td style="font-weight:700;color:var(--accent)">${s.score != null ? Number(s.score).toFixed(2) : '—'}</td></tr>`;
+      } else {
+        const d = r.d;
+        const detail = `ربط: ${d.link_from || '—'} – ${d.link_to || '—'} | مراجعة: ${d.review_range_from || '—'} – ${d.review_range_to || '—'}`;
+        return `<tr><td>${d.date}</td><td><span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;font-size:.75rem;font-weight:700">ربط</span></td><td style="font-size:.85rem">${detail}</td><td>—</td></tr>`;
+      }
     }).join('');
   }
 
