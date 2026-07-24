@@ -1471,11 +1471,15 @@
     const btn = document.getElementById('room-save');
     btn.disabled = true; btn.textContent = 'جارٍ الحفظ…';
     const payload = { name, meet_url: meetUrl, days, start_time: start, end_time: end, outside_behavior: behavior };
-    const { error } = editingRoomId
-      ? await client.from('audio_rooms').update(payload).eq('id', editingRoomId)
-      : await client.from('audio_rooms').insert(payload);
+    let error, data;
+    if (editingRoomId) {
+      ({ data, error } = await client.from('audio_rooms').update(payload).eq('id', editingRoomId).select());
+    } else {
+      ({ data, error } = await client.from('audio_rooms').insert(payload).select());
+    }
     btn.disabled = false; btn.textContent = 'حفظ الغرفة';
     if (error) { showToast('خطأ: ' + error.message, 'error'); return; }
+    if (!data || data.length === 0) { showToast('خطأ: لا صلاحية للتعديل — تأكد من تسجيل دخولك كمشرف', 'error'); return; }
     showToast(editingRoomId ? 'تم تعديل الغرفة ✓' : 'تمت إضافة الغرفة ✓', 'success');
     closeRoomModal();
     loadAudioRooms();
