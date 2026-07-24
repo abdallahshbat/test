@@ -1671,13 +1671,12 @@
         .order('date', { ascending: false }),
       client.from('room_assignments')
         .select('assignee_id, audio_rooms(room_name)')
-        .eq('assignee_type', 'teacher')
+        .eq('assignee_type', 'student')
     ]);
 
     _allRecitationData = (sessionsRes.data || []).map(s => {
-      const teacherId = s.teacher_id;
       const rooms = (roomAssignRes.data || [])
-        .filter(r => r.assignee_id === teacherId)
+        .filter(r => r.assignee_id === s.student_id)
         .map(r => r.audio_rooms?.room_name)
         .filter(Boolean);
       return { ...s, _rooms: rooms };
