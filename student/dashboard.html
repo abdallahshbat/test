@@ -1002,6 +1002,19 @@ async function loadStudentData() {
     }
     studentData = data;
     studentData.teacherName = data.teachers?.users?.name || 'المعلم';
+    // جلب تاريخ إسناد الخطة الحالية لتصفية الجلسات والإحصائيات
+    if (data.current_plan_id) {
+      const { data: spa } = await client.from('student_plan_assignments')
+        .select('assigned_at')
+        .eq('student_id', data.id)
+        .eq('plan_id', data.current_plan_id)
+        .order('assigned_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      studentData.planAssignedAt = spa?.assigned_at || null;
+    } else {
+      studentData.planAssignedAt = null;
+    }
   }
 }
 
@@ -1410,15 +1423,17 @@ async function loadStats() {
   const grid = document.getElementById('statsGrid');
   if (!studentData) { grid.innerHTML = '<div class="empty" style="grid-column:span 2">لا توجد بيانات</div>'; return; }
 
-  const [sessRes, drRes] = await Promise.all([
-    client.from('recitation_sessions')
-      .select('hadith_to, hadith_from, score, linking_to, linking_from, review_from, review_to, date')
-      .eq('student_id', studentData.id)
-      .order('date', { ascending: false }),
-    client.from('daily_reviews')
-      .select('link_from, link_to, review_range_from, review_range_to, student_submitted')
-      .eq('student_id', studentData.id)
-  ]);
+  const assignedFrom = studentData.planAssignedAt?.slice(0, 10) || null;
+  let statssessQ = client.from('recitation_sessions')
+    .select('hadith_to, hadith_from, score, linking_to, linking_from, review_from, review_to, date')
+    .eq('student_id', studentData.id)
+    .order('date', { ascending: false });
+  if (assignedFrom) statssessQ = statssessQ.gte('date', assignedFrom);
+  let statsdrQ = client.from('daily_reviews')
+    .select('link_from, link_to, review_range_from, review_range_to, student_submitted')
+    .eq('student_id', studentData.id);
+  if (assignedFrom) statsdrQ = statsdrQ.gte('date', assignedFrom);
+  const [sessRes, drRes] = await Promise.all([statssessQ, statsdrQ]);
 
   const arr = sessRes.data || [];
   const drArr = (drRes.data || []).filter(r => r.student_submitted);
@@ -1570,10 +1585,12 @@ async function submitReview() {
 async function loadSessions() {
   const list = document.getElementById('sessionsList');
   if (!studentData) { list.innerHTML = '<div class="empty">لا توجد بيانات</div>'; return; }
-  const { data, error } = await client.from('recitation_sessions')
+  let sessQuery = client.from('recitation_sessions')
     .select('id, date, hadith_from, hadith_to, score, notes')
     .eq('student_id', studentData.id)
     .order('date', { ascending: false });
+  if (studentData.planAssignedAt) sessQuery = sessQuery.gte('date', studentData.planAssignedAt.slice(0, 10));
+  const { data, error } = await sessQuery;
   if (error || !data || !data.length) { list.innerHTML = '<div class="empty-state"><span class="empty-icon">🎙️</span><div class="empty-text">لا توجد جلسات بعد</div></div>'; return; }
   list.innerHTML = data.map(s => {
     const score = parseFloat(s.score);

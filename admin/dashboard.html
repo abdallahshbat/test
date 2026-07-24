@@ -483,6 +483,26 @@
   </div>
 </div>
 
+<!-- MODAL: سجل الطالب في خطة معينة -->
+<div class="modal-overlay hidden" id="studentPlanRecordModal">
+  <div class="modal" style="max-width:860px;width:96%">
+    <div class="modal-header">
+      <h3 id="sprTitle">سجل الطالب</h3>
+      <button class="modal-close" onclick="document.getElementById('studentPlanRecordModal').classList.add('hidden')">×</button>
+    </div>
+    <div class="modal-body" style="max-height:75vh;overflow-y:auto">
+      <div id="sprSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px"></div>
+      <div style="font-weight:700;font-size:.92rem;margin-bottom:10px;color:var(--accent)">🎙️ جلسات التسميع مع المعلمين</div>
+      <div id="sprSessionsWrap" style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>التاريخ</th><th>المعلم</th><th>الحفظ (من–إلى)</th><th>الربط</th><th>المراجعة</th><th>الدرجة</th><th>ملاحظات</th></tr></thead>
+          <tbody id="sprSessionsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: إسناد غرف -->
 <div class="modal-overlay hidden" id="assignRoomsModal">
   <div class="modal">
@@ -537,6 +557,7 @@
     <div class="nav-section-title">الطلاب</div>
     <div class="nav-item" onclick="showView('add-student')"><span class="nav-icon">➕</span> إضافة طالب / استيراد</div>
     <div class="nav-item" onclick="showView('student-files');loadStudentFiles()"><span class="nav-icon">📁</span> ملفات الطلاب</div>
+    <div class="nav-item" onclick="showView('student-history');loadStudentHistory()"><span class="nav-icon">📜</span> سجل الطلاب</div>
     <div class="nav-item" onclick="showView('top-students');loadTopStudents()"><span class="nav-icon">🏆</span> قائمة المتميزين</div>
     <div class="nav-item" onclick="showView('exams')"><span class="nav-icon">📝</span> الاختبارات المرحلية</div>
     <div class="nav-item" onclick="showView('import-plans');loadStudyPlans()"><span class="nav-icon">📋</span> الخطط العلمية</div>
@@ -759,6 +780,29 @@
       </div>
     </div>
 
+    <!-- STUDENT HISTORY -->
+    <div class="view" id="view-student-history">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div style="font-weight:700;font-size:1.05rem">📜 سجل الطلاب — جميع الخطط</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <input id="sh-filter-student" class="form-control" style="width:180px;padding:6px 10px;font-size:.85rem" placeholder="بحث باسم الطالب" oninput="renderStudentHistory()">
+            <select id="sh-filter-plan" class="form-control" style="width:180px;padding:6px 10px;font-size:.85rem" onchange="renderStudentHistory()">
+              <option value="">— كل الخطط —</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table" id="sh-table">
+            <thead><tr>
+              <th>#</th><th>اسم الطالب</th><th>الخطة</th><th>تاريخ الإسناد</th><th>الإنجاز</th><th>سجل الرصد</th>
+            </tr></thead>
+            <tbody id="sh-body"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">جارٍ التحميل…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- STUDENT FILES -->
     <div class="view" id="view-student-files">
       <div class="students-table-wrap">
@@ -893,6 +937,7 @@
     'attendance':       { title: 'متابعة الحضور',          breadcrumb: 'التشغيل اليومي › متابعة الحضور' },
     'recitation':       { title: 'رصد جلسة تسميع',         breadcrumb: 'التشغيل اليومي › رصد جلسة تسميع' },
     'add-student':      { title: 'إضافة طالب',             breadcrumb: 'الطلاب › إضافة طالب' },
+    'student-history':  { title: 'سجل الطلاب',             breadcrumb: 'الطلاب › سجل الطلاب' },
     'student-files':    { title: 'ملفات الطلاب',           breadcrumb: 'الطلاب › ملفات الطلاب' },
     'student-detail':   { title: 'ملف الطالب',             breadcrumb: 'الطلاب › ملفات الطلاب › ملف الطالب' },
     'top-students':     { title: 'قائمة المتميزين',         breadcrumb: 'الطلاب › قائمة المتميزين' },
@@ -1017,6 +1062,9 @@
       .update({ current_plan_id: planId || null })
       .eq('id', studentId);
     if (error) { showToast('خطأ في تعيين الخطة', 'error'); return; }
+    if (planId) {
+      await client.from('student_plan_assignments').insert({ student_id: studentId, plan_id: planId });
+    }
     showToast('تم تعيين الخطة بنجاح ✓', 'success');
   }
 
@@ -1929,6 +1977,190 @@
         <span style="font-size:.75rem;color:var(--text-muted);min-width:60px;text-align:center">${s.sessions} جلسة</span>
         <span style="padding:3px 12px;border-radius:20px;font-size:.82rem;font-weight:800;background:${scoreBg};color:${scoreColor}">${s.avg.toFixed(2)}</span>
       </div>`;
+    }).join('');
+  }
+
+  /* ========== سجل الطلاب ========== */
+  let allStudentHistory = []; // [{student_id, student_name, plan_id, plan_name, assigned_at, progress_done, progress_total}]
+
+  async function loadStudentHistory() {
+    const body = document.getElementById('sh-body');
+    body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">جارٍ التحميل…</td></tr>';
+
+    // جلب كل الإسنادات
+    const [assignRes, plansRes, daysRes, progressRes, studentsRes] = await Promise.all([
+      client.from('student_plan_assignments')
+        .select('id, student_id, plan_id, assigned_at, students(is_archived, users(name))')
+        .order('assigned_at', { ascending: false }),
+      client.from('study_plans').select('id, plan_name'),
+      client.from('study_plan_days').select('id, plan_id'),
+      client.from('student_plan_progress').select('student_id, plan_day_id').eq('completed', true),
+      client.from('students').select('id')
+    ]);
+
+    const plans   = plansRes.data  || [];
+    const days    = daysRes.data   || [];
+    const prog    = progressRes.data || [];
+    const assigns = assignRes.data  || [];
+
+    // بناء فهرس الأيام لكل خطة
+    const planDayMap = {};
+    days.forEach(d => {
+      if (!planDayMap[d.plan_id]) planDayMap[d.plan_id] = new Set();
+      planDayMap[d.plan_id].add(d.id);
+    });
+
+    // تعبئة قائمة الخطط في الفلتر
+    const planSel = document.getElementById('sh-filter-plan');
+    planSel.innerHTML = '<option value="">— كل الخطط —</option>' +
+      plans.map(p => `<option value="${p.id}">${p.plan_name}</option>`).join('');
+
+    allStudentHistory = assigns.map(a => {
+      const planName  = plans.find(p => p.id === a.plan_id)?.plan_name || '—';
+      const dayIds    = planDayMap[a.plan_id] || new Set();
+      const progDone  = new Set(
+        prog.filter(pp => pp.student_id === a.student_id && dayIds.has(pp.plan_day_id))
+            .map(pp => pp.plan_day_id)
+      ).size;
+      return {
+        assignment_id: a.id,
+        student_id:   a.student_id,
+        student_name: a.students?.users?.name || '—',
+        is_archived:  a.students?.is_archived,
+        plan_id:      a.plan_id,
+        plan_name:    planName,
+        assigned_at:  a.assigned_at,
+        progress_done: progDone,
+        progress_total: dayIds.size
+      };
+    });
+
+    renderStudentHistory();
+  }
+
+  function renderStudentHistory() {
+    const body        = document.getElementById('sh-body');
+    const filterName  = (document.getElementById('sh-filter-student')?.value || '').trim().toLowerCase();
+    const filterPlan  = document.getElementById('sh-filter-plan')?.value || '';
+
+    let rows = allStudentHistory.filter(r => {
+      if (filterName && !r.student_name.toLowerCase().includes(filterName)) return false;
+      if (filterPlan && r.plan_id !== filterPlan) return false;
+      return true;
+    });
+
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">لا توجد بيانات</td></tr>';
+      return;
+    }
+
+    body.innerHTML = rows.map((r, i) => {
+      const pct    = r.progress_total > 0 ? Math.round((r.progress_done / r.progress_total) * 100) : 0;
+      const color  = pct >= 80 ? '#065f46' : pct >= 40 ? '#92400e' : '#991b1b';
+      const dateStr = r.assigned_at ? new Date(r.assigned_at).toLocaleDateString('ar-SA') : '—';
+      const progressHtml = r.progress_total > 0
+        ? `<div style="min-width:110px"><div style="font-size:.72rem;color:var(--text-muted);margin-bottom:3px">${r.progress_done}/${r.progress_total} يوم</div><div style="background:#e5e7eb;border-radius:6px;height:6px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${color};border-radius:6px"></div></div><div style="font-size:.7rem;font-weight:700;color:${color};margin-top:2px">${pct}%</div></div>`
+        : '<span style="color:var(--text-muted);font-size:.8rem">لا يوجد</span>';
+      return `<tr>
+        <td>${i + 1}</td>
+        <td style="font-weight:600">${r.student_name}${r.is_archived ? ' <span style="font-size:.7rem;color:#6b7280">(مؤرشف)</span>' : ''}</td>
+        <td>${r.plan_name}</td>
+        <td style="font-size:.82rem;color:var(--text-muted)">${dateStr}</td>
+        <td>${progressHtml}</td>
+        <td><button class="btn-view" style="font-size:.78rem;padding:4px 10px" onclick="openStudentPlanRecord('${r.student_id}','${r.plan_id}','${r.assignment_id}')">📋 سجل الرصد</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function openStudentPlanRecord(studentId, planId, assignmentId) {
+    const modal = document.getElementById('studentPlanRecordModal');
+    const title = document.getElementById('sprTitle');
+    const summaryDiv = document.getElementById('sprSummary');
+    const sessBody   = document.getElementById('sprSessionsBody');
+
+    const rec = allStudentHistory.find(r => r.student_id === studentId && r.plan_id === planId && r.assignment_id === assignmentId);
+    title.textContent = `سجل: ${rec?.student_name || '—'} — ${rec?.plan_name || '—'}`;
+    summaryDiv.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem">جارٍ التحميل…</p>';
+    sessBody.innerHTML   = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted)">جارٍ التحميل…</td></tr>';
+    modal.classList.remove('hidden');
+
+    const assignedAt = rec?.assigned_at || '1970-01-01';
+    // تحديد تاريخ الإسناد التالي لنفس الطالب ونفس الخطة (لتحديد نهاية الفترة)
+    const nextAssign = allStudentHistory
+      .filter(r => r.student_id === studentId && r.assigned_at > assignedAt)
+      .sort((a, b) => a.assigned_at > b.assigned_at ? 1 : -1)[0];
+    const assignedUntil = nextAssign?.assigned_at || null;
+
+    // جلب بيانات الخطة
+    const [daysRes, progressRes, sessRes] = await Promise.all([
+      client.from('study_plan_days')
+        .select('id, day_number, memo_from, memo_to, link_from, link_to, review_from, review_to')
+        .eq('plan_id', planId)
+        .order('day_number'),
+      client.from('student_plan_progress')
+        .select('plan_day_id, task_key, completed_at')
+        .eq('student_id', studentId)
+        .eq('completed', true),
+      (() => {
+        let q = client.from('recitation_sessions')
+          .select('date, hadith_from, hadith_to, linking_from, linking_to, review_from, review_to, score, notes, folder, teachers(users(name))')
+          .eq('student_id', studentId)
+          .gte('date', assignedAt.slice(0, 10))
+          .order('date', { ascending: false });
+        if (assignedUntil) q = q.lt('date', assignedUntil.slice(0, 10));
+        return q;
+      })()
+    ]);
+
+    const planDays = daysRes.data || [];
+    const progress = progressRes.data || [];
+    const sessions = sessRes.data || [];
+
+    const planDayIds = new Set(planDays.map(d => d.id));
+    const doneIds = new Set(progress.filter(p => planDayIds.has(p.plan_day_id)).map(p => p.plan_day_id));
+    const daysDone = doneIds.size;
+    const daysTotal = planDays.length;
+
+    // حساب ملخص الحفظ والربط والمراجعة من التقدم
+    const taskMap = {};
+    progress.filter(p => planDayIds.has(p.plan_day_id)).forEach(p => {
+      taskMap[p.task_key] = (taskMap[p.task_key] || 0) + 1;
+    });
+
+    // إحصاءات الجلسات
+    const sessionCount = sessions.length;
+    const avgScore = sessions.filter(s => s.score != null).reduce((acc, s, _, arr) => acc + parseFloat(s.score) / arr.length, 0);
+
+    const statCard = (label, val, color='#1a3c2e') =>
+      `<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;text-align:center">
+        <div style="font-size:1.4rem;font-weight:800;color:${color}">${val}</div>
+        <div style="font-size:.75rem;color:var(--text-muted);margin-top:2px">${label}</div>
+      </div>`;
+
+    summaryDiv.innerHTML =
+      statCard('أيام الخطة المنجزة', `${daysDone} / ${daysTotal}`) +
+      statCard('جلسات التسميع', sessionCount) +
+      statCard('متوسط الدرجات', sessionCount ? avgScore.toFixed(2) + '/10' : '—', sessionCount >= 8.5 ? '#065f46' : '#92400e') +
+      statCard('مهام حفظ مكتملة', taskMap['memo'] || 0) +
+      statCard('مهام ربط مكتملة', taskMap['link'] || 0) +
+      statCard('مهام مراجعة مكتملة', taskMap['review'] || 0);
+
+    if (!sessions.length) {
+      sessBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted)">لا توجد جلسات في هذه الفترة</td></tr>';
+      return;
+    }
+
+    sessBody.innerHTML = sessions.map(s => {
+      const scoreColor = s.score >= 8.5 ? '#065f46' : s.score >= 7 ? '#92400e' : '#991b1b';
+      return `<tr>
+        <td>${s.date || '—'}</td>
+        <td>${s.teachers?.users?.name || '—'}</td>
+        <td>${s.hadith_from != null ? `${s.hadith_from} – ${s.hadith_to}` : '—'}</td>
+        <td>${s.linking_from != null ? `${s.linking_from} – ${s.linking_to}` : '—'}</td>
+        <td>${s.review_from || s.review_to ? `${s.review_from || ''} – ${s.review_to || ''}` : '—'}</td>
+        <td style="font-weight:700;color:${scoreColor}">${s.score != null ? s.score : '—'}</td>
+        <td style="font-size:.8rem;color:var(--text-muted)">${s.notes || ''}</td>
+      </tr>`;
     }).join('');
   }
 
