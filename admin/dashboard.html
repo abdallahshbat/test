@@ -460,6 +460,17 @@
   </div>
 </div>
 
+<!-- MODAL: ملف المعلم -->
+<div class="modal-overlay hidden" id="teacherDetailModal">
+  <div class="modal" style="max-width:640px;width:95%">
+    <div class="modal-header">
+      <h3 id="teacherDetailTitle">ملف المعلم</h3>
+      <button class="modal-close" onclick="document.getElementById('teacherDetailModal').classList.add('hidden')">×</button>
+    </div>
+    <div class="modal-body" id="teacherDetailBody" style="max-height:520px;overflow-y:auto"></div>
+  </div>
+</div>
+
 <!-- MODAL: سجل رصد المعلم -->
 <div class="modal-overlay hidden" id="teacherLogModal">
   <div class="modal" style="max-width:780px;width:95%">
@@ -1085,7 +1096,9 @@
 
     content.innerHTML = `
       <div class="detail-header">
-        <div class="detail-avatar">${initial}</div>
+        ${profile.avatar_url
+          ? `<img src="${profile.avatar_url}" class="detail-avatar" style="object-fit:cover" onerror="this.outerHTML='<div class=detail-avatar>${initial}</div>'">`
+          : `<div class="detail-avatar">${initial}</div>`}
         <div>
           <div class="detail-name">${name}</div>
           <div class="detail-sub">${user.username || ''}</div>
@@ -1531,7 +1544,7 @@
     body.innerHTML = '<p class="empty-row">جارٍ التحميل…</p>';
 
     const [teachersRes, sessionsRes, roomsRes] = await Promise.all([
-      client.from('teachers').select('id, is_archived, users(name, phone)').order('id', { ascending: false }),
+      client.from('teachers').select('id, user_id, is_archived, users(name, phone)').order('id', { ascending: false }),
       client.from('recitation_sessions').select('teacher_id, hadith_from, hadith_to'),
       client.from('audio_rooms').select('id, room_name').order('room_name')
     ]);
@@ -1564,6 +1577,7 @@
         <th>إجمالي الأحاديث المُسمَّعة</th>
         <th>الغرفة الصوتية</th>
         <th>الحالة</th>
+        <th>عرض الملف</th>
         <th>إجراء</th>
       </tr></thead>
       <tbody>${teachers.map(t => {
@@ -1593,6 +1607,7 @@
           <td><span style="padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;background:${isArchived?'#fee2e2':'#d1fae5'};color:${isArchived?'#991b1b':'#065f46'}">${isArchived?'مؤرشف':'فعال'}</span>
             <br><button class="btn-reset" style="font-size:.72rem;margin-top:4px;padding:2px 8px" onclick="toggleArchiveTeacher('${t.id}',${!isArchived},${JSON.stringify(name)})">${isArchived?'استعادة':'أرشفة'}</button>
           </td>
+          <td><button class="btn-view" style="background:var(--accent);color:#fff" onclick="openTeacherDetail('${t.user_id}',${JSON.stringify(name)})">👤 عرض الملف</button></td>
           <td><button class="btn-view" onclick="openTeacherLog('${t.id}',${JSON.stringify(name)})">📋 سجل الرصد</button></td>
         </tr>`;
       }).join('')}</tbody>
@@ -1795,6 +1810,61 @@
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'سجل الرصد');
     XLSX.writeFile(wb, `سجل_الرصد_${new Date().toISOString().slice(0,10)}.xlsx`);
+  }
+
+  /* ========== ملف المعلم ========== */
+  async function openTeacherDetail(userId, name) {
+    document.getElementById('teacherDetailTitle').textContent = `👤 ملف — ${name}`;
+    const body = document.getElementById('teacherDetailBody');
+    body.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:20px">جارٍ التحميل…</p>';
+    document.getElementById('teacherDetailModal').classList.remove('hidden');
+
+    const [userRes, profileRes] = await Promise.all([
+      client.from('users').select('name, username, created_at').eq('id', userId).maybeSingle(),
+      client.from('user_profiles').select('*').eq('id', userId).maybeSingle()
+    ]);
+
+    const user    = userRes.data    || {};
+    const profile = profileRes.data || {};
+    const initial = name.charAt(0);
+    const genderLabel = { male: 'ذكر', female: 'أنثى' };
+    const createdAt = user.created_at
+      ? new Date(user.created_at).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })
+      : '—';
+
+    const avatarHTML = profile.avatar_url
+      ? `<img src="${profile.avatar_url}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #d1fae5;flex-shrink:0" onerror="this.outerHTML='<div style=width:80px;height:80px;border-radius:50%;background:var(--accent);color:#fff;font-size:1.8rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0>${initial}</div>'">`
+      : `<div style="width:80px;height:80px;border-radius:50%;background:var(--accent);color:#fff;font-size:1.8rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${initial}</div>`;
+
+    const field = (label, val) => val
+      ? `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color,#e5e7eb);font-size:.88rem">
+           <span style="color:var(--text-muted);font-weight:600">${label}</span>
+           <span style="font-weight:700;color:var(--text-primary)">${val}</span>
+         </div>`
+      : '';
+
+    body.innerHTML = `
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--border-color,#e5e7eb)">
+        ${avatarHTML}
+        <div>
+          <div style="font-size:1.1rem;font-weight:800;color:var(--accent)">${name}</div>
+          <div style="font-size:.82rem;color:var(--text-muted);margin-top:2px">${user.username || ''}</div>
+        </div>
+      </div>
+      <div>
+        ${field('اسم المستخدم', user.username)}
+        ${field('تاريخ التسجيل', createdAt)}
+        ${field('تاريخ الميلاد', profile.birth_date)}
+        ${field('الجنس', genderLabel[profile.gender])}
+        ${field('الجنسية', profile.nationality)}
+        ${field('المدينة', profile.city)}
+        ${field('جهة العمل', profile.workplace)}
+        ${field('المؤهلات', profile.qualifications)}
+        ${field('حفظ القرآن', profile.quran_memorization)}
+        ${field('المهارات', profile.skills)}
+      </div>
+      ${!Object.values(profile).some(v => v && v !== userId) ? '<p style="color:var(--text-muted);font-size:.85rem;text-align:center;margin-top:12px">لم يُعبّأ الملف الشخصي بعد</p>' : ''}
+    `;
   }
 
   /* ========== قائمة المتميزين ========== */
