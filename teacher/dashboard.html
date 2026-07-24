@@ -739,9 +739,11 @@ async function loadTeacherRooms() {
     if (!r) return '';
     const active = isActive(r);
     let btn = '';
-    if (active) {
+    if (active || r.outside_behavior === 'always_visible') {
       btn = `<a href="${r.meet_url}" target="_blank" rel="noopener" class="btn-primary" style="display:inline-block;text-align:center;text-decoration:none;background:#2d6a4f;color:#fff;border-radius:8px;padding:8px 18px;font-size:.85rem;font-weight:700;margin-top:8px">📹 ادخل الغرفة</a>`;
-    } else if (r.outside_behavior !== 'hidden') {
+    } else if (r.outside_behavior === 'hidden') {
+      btn = '';
+    } else {
       btn = `<button class="btn-primary" style="margin-top:8px;opacity:.5;cursor:not-allowed;background:#aaa;border:none;color:#fff;border-radius:8px;padding:8px 18px;font-size:.85rem;font-weight:700" disabled>📹 ادخل الغرفة</button>`;
     }
     return `<div style="border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">

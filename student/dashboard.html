@@ -1710,7 +1710,7 @@ async function loadRooms() {
     if (!r) return '';
     const active = isRoomActive(r);
     let btn = '';
-    if (active) {
+    if (active || r.outside_behavior === 'always_visible') {
       btn = `<a href="${r.meet_url}" target="_blank" rel="noopener" class="btn-primary btn-green" style="display:inline-block;text-align:center;text-decoration:none;margin-top:10px">📹 ادخل الغرفة</a>`;
     } else if (r.outside_behavior === 'hidden') {
       btn = '';
