@@ -3237,7 +3237,7 @@
     const cutoff = new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10);
 
     // جلب كل البيانات دفعة واحدة
-    const [studRes, teachRes, sessRes, progRes] = await Promise.all([
+    const [studRes, teachRes, sessRes, progRes, drRes] = await Promise.all([
       client.from('students')
         .select('id, memorized_hadiths, program_id, teacher_id, programs(total_hadiths), teachers(users(name))')
         .eq('is_archived', false),
@@ -3248,26 +3248,57 @@
         .select('student_id, teacher_id, date, hadith_from, hadith_to, linking_from, linking_to, review_from, review_to, score, teachers(users(name))'),
       client.from('student_plan_progress')
         .select('student_id, completed_at')
-        .eq('completed', true)
+        .eq('completed', true),
+      client.from('daily_reviews')
+        .select('student_id, link_from, link_to, review_range_from, review_range_to')
+        .eq('student_submitted', true)
     ]);
 
     const students = studRes.data  || [];
     const teachers = teachRes.data || [];
     const sessions = sessRes.data  || [];
     const progress = progRes.data  || [];
+    const dailyRevs = drRes.data   || [];
 
     // ── البطاقات الإجمالية ──
     const totalMemorized = students.reduce((s, st) => s + (st.memorized_hadiths || 0), 0);
 
-    let totalRecited = 0, totalLinking = 0, totalReview = 0, totalScore = 0, scoreCount = 0;
+    // أحاديث مسمّعة: per طالب max(hadith_to) - min(hadith_from) + 1 (نفس معادلة صفحة الطالب)
+    const sessByStudent = {};
     sessions.forEach(s => {
-      if (s.hadith_from != null && s.hadith_to != null)
-        totalRecited += Math.max(0, s.hadith_to - s.hadith_from + 1);
-      if (s.linking_from != null && s.linking_to != null)
-        totalLinking += Math.max(0, s.linking_to - s.linking_from + 1);
+      if (!sessByStudent[s.student_id]) sessByStudent[s.student_id] = [];
+      sessByStudent[s.student_id].push(s);
+    });
+    let totalRecited = 0;
+    Object.values(sessByStudent).forEach(arr => {
+      const valid = arr.filter(r => r.hadith_from && r.hadith_to);
+      if (valid.length)
+        totalRecited += Math.max(...valid.map(r => parseInt(r.hadith_to))) - Math.min(...valid.map(r => parseInt(r.hadith_from))) + 1;
+    });
+
+    // ربط: جلسات المعلم + daily_reviews (نفس المصدرين تبع صفحة الطالب)
+    let totalLinking = 0;
+    sessions.forEach(s => {
+      totalLinking += Math.max(0, (s.linking_to || 0) - (s.linking_from || 0) + 1) * (s.linking_from != null && s.linking_to != null ? 1 : 0);
+    });
+    dailyRevs.forEach(r => {
+      const f = parseInt(r.link_from), t = parseInt(r.link_to);
+      if (!isNaN(f) && !isNaN(t)) totalLinking += Math.max(0, t - f + 1);
+    });
+
+    // مراجعة: جلسات المعلم + daily_reviews
+    let totalReview = 0;
+    sessions.forEach(s => {
       const rf = parseInt(s.review_from), rt = parseInt(s.review_to);
-      if (!isNaN(rf) && !isNaN(rt))
-        totalReview += Math.max(0, rt - rf + 1);
+      if (!isNaN(rf) && !isNaN(rt)) totalReview += Math.max(0, rt - rf + 1);
+    });
+    dailyRevs.forEach(r => {
+      const f = parseInt(r.review_range_from), t = parseInt(r.review_range_to);
+      if (!isNaN(f) && !isNaN(t)) totalReview += Math.max(0, t - f + 1);
+    });
+
+    let totalScore = 0, scoreCount = 0;
+    sessions.forEach(s => {
       if (s.score != null) { totalScore += parseFloat(s.score); scoreCount++; }
     });
     const avgScore = scoreCount ? (totalScore / scoreCount).toFixed(1) : '—';
