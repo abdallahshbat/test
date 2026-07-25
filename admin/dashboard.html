@@ -123,6 +123,24 @@
     .welcome-text p { font-size: 0.9rem; color: rgba(255,255,255,0.75); }
     .welcome-emoji { font-size: 3rem; }
 
+    /* ── المتابعة اليومية ── */
+    .att-stat-card { background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:12px 16px;text-align:center }
+    .att-stat-val { font-size:1.6rem;font-weight:900;color:var(--accent);line-height:1 }
+    .att-stat-lbl { font-size:.72rem;color:var(--text-muted);margin-top:4px;font-weight:600 }
+    .att-table { width:100%;border-collapse:collapse;font-size:.83rem }
+    .att-table th { background:#f9fafb;padding:10px 12px;text-align:right;font-weight:700;color:var(--text-muted);border-bottom:2px solid var(--border);white-space:nowrap;font-size:.78rem }
+    .att-table td { padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap }
+    .att-table tr.att-green td { background:#f0fdf4 }
+    .att-table tr.att-yellow td { background:#fefce8 }
+    .att-table tr.att-orange td { background:#fff7ed }
+    .att-table tr.att-red td { background:#fef2f2 }
+    .att-table tr.att-gray td { background:#f9fafb }
+    .att-table tr:hover td { filter:brightness(.97) }
+    .att-check { color:#16a34a;font-size:1rem;font-weight:700 }
+    .att-cross { color:#dc2626;font-size:1rem;font-weight:700 }
+    .att-status-line { display:flex;align-items:center;gap:4px;font-size:.75rem;white-space:nowrap }
+    .att-btn-detail { font-size:.75rem;padding:3px 10px;background:#e0f2fe;color:#0369a1;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600 }
+
     .section-placeholder {
       background: var(--card-bg); border-radius: 14px;
       border: 2px dashed var(--border); padding: 60px 40px; text-align: center;
@@ -547,7 +565,7 @@
   <div class="nav-section">
     <div class="nav-section-title">التشغيل اليومي</div>
     <div class="nav-item active" onclick="showView('home')"><span class="nav-icon"><i data-lucide="home" style="width:16px;height:16px"></i></span> الرئيسية</div>
-    <div class="nav-item" onclick="showView('attendance')"><span class="nav-icon"><i data-lucide="bar-chart-2" style="width:16px;height:16px"></i></span> متابعة الحضور</div>
+    <div class="nav-item" onclick="showView('attendance');loadAttendance()"><span class="nav-icon"><i data-lucide="bar-chart-2" style="width:16px;height:16px"></i></span> المتابعة اليومية</div>
     <div class="nav-item" onclick="showView('recitation')"><span class="nav-icon"><i data-lucide="mic" style="width:16px;height:16px"></i></span> رصد جلسة تسميع</div>
     <div class="nav-item" onclick="showView('recitation-log');loadRecitationLog()"><span class="nav-icon"><i data-lucide="clipboard-list" style="width:16px;height:16px"></i></span> سجل الرصد</div>
   </div>
@@ -611,7 +629,110 @@
       </div>
     </div>
 
-    <div class="view" id="view-attendance"><div class="section-placeholder"><div class="ph-icon"><i data-lucide="bar-chart-2" style="width:32px;height:32px"></i></div><h3>متابعة الحضور</h3><p>سيتم عرض نسبة حضور الطلاب والمعلمين هنا</p></div></div>
+    <div class="view" id="view-attendance">
+
+      <!-- ── فلاتر المتابعة اليومية ── -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+
+          <!-- نوع التاريخ -->
+          <div style="min-width:180px">
+            <label style="font-size:.78rem;font-weight:700;display:block;margin-bottom:4px;color:var(--text-muted)">نوع العرض</label>
+            <select id="att-mode" class="form-control" style="padding:7px 10px;font-size:.85rem" onchange="attModeChange()">
+              <option value="day">يوم واحد محدد</option>
+              <option value="range">نطاق زمني</option>
+            </select>
+          </div>
+
+          <!-- يوم واحد -->
+          <div id="att-day-wrap" style="min-width:160px">
+            <label style="font-size:.78rem;font-weight:700;display:block;margin-bottom:4px;color:var(--text-muted)">التاريخ</label>
+            <input type="date" id="att-date" class="form-control" style="padding:7px 10px;font-size:.85rem">
+          </div>
+
+          <!-- نطاق زمني -->
+          <div id="att-range-wrap" style="display:none;gap:8px;flex-wrap:wrap">
+            <div style="min-width:140px">
+              <label style="font-size:.78rem;font-weight:700;display:block;margin-bottom:4px;color:var(--text-muted)">من تاريخ</label>
+              <input type="date" id="att-from" class="form-control" style="padding:7px 10px;font-size:.85rem">
+            </div>
+            <div style="min-width:140px">
+              <label style="font-size:.78rem;font-weight:700;display:block;margin-bottom:4px;color:var(--text-muted)">إلى تاريخ</label>
+              <input type="date" id="att-to" class="form-control" style="padding:7px 10px;font-size:.85rem">
+            </div>
+          </div>
+
+          <!-- فلتر الخطة -->
+          <div style="min-width:160px">
+            <label style="font-size:.78rem;font-weight:700;display:block;margin-bottom:4px;color:var(--text-muted)">الخطة</label>
+            <select id="att-plan" class="form-control" style="padding:7px 10px;font-size:.85rem">
+              <option value="">كل الخطط</option>
+            </select>
+          </div>
+
+          <!-- فلتر المعلم -->
+          <div style="min-width:160px">
+            <label style="font-size:.78rem;font-weight:700;display:block;margin-bottom:4px;color:var(--text-muted)">المعلم</label>
+            <select id="att-teacher" class="form-control" style="padding:7px 10px;font-size:.85rem">
+              <option value="">كل المعلمين</option>
+            </select>
+          </div>
+
+          <!-- فلتر الإتمام -->
+          <div style="min-width:150px">
+            <label style="font-size:.78rem;font-weight:700;display:block;margin-bottom:4px;color:var(--text-muted)">الإتمام</label>
+            <select id="att-completion" class="form-control" style="padding:7px 10px;font-size:.85rem">
+              <option value="">الكل</option>
+              <option value="done">منجز</option>
+              <option value="partial">منجز جزئياً</option>
+              <option value="none">لم يُنجز</option>
+            </select>
+          </div>
+
+          <!-- فلتر التسميع -->
+          <div style="min-width:150px">
+            <label style="font-size:.78rem;font-weight:700;display:block;margin-bottom:4px;color:var(--text-muted)">التسميع</label>
+            <select id="att-recitation" class="form-control" style="padding:7px 10px;font-size:.85rem">
+              <option value="">الكل</option>
+              <option value="yes">سُمِّع</option>
+              <option value="no">لم يُسمَّع</option>
+            </select>
+          </div>
+
+          <div style="display:flex;gap:8px;align-self:flex-end">
+            <button class="btn-submit" onclick="runAttendance()" style="padding:8px 22px;font-size:.88rem">عرض</button>
+            <button class="btn-submit" onclick="exportAttendanceExcel()" style="padding:8px 16px;font-size:.88rem;background:#065f46" title="تصدير Excel"><i data-lucide="download" style="width:15px;height:15px;vertical-align:middle"></i> Excel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── بطاقات الملخص ── -->
+      <div id="att-summary-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px;display:none"></div>
+
+      <!-- ── الجدول ── -->
+      <div class="card" style="overflow:hidden">
+        <div id="att-table-wrap"><p class="empty-row" style="padding:24px;text-align:center;color:var(--text-muted)">اختر التاريخ ثم اضغط «عرض»</p></div>
+      </div>
+
+      <!-- ── مودال تقرير الطالب المفصل ── -->
+      <div class="modal-overlay hidden" id="attDetailModal">
+        <div class="modal" style="max-width:900px;width:97%">
+          <div class="modal-header">
+            <h2 id="attDetailTitle">تقرير الطالب</h2>
+            <button class="modal-close" onclick="document.getElementById('attDetailModal').classList.add('hidden')">×</button>
+          </div>
+          <div class="modal-body" style="padding:0">
+            <div style="overflow-x:auto">
+              <table class="data-table" id="attDetailTable" style="min-width:700px">
+                <thead id="attDetailHead"></thead>
+                <tbody id="attDetailBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
     <div class="view" id="view-recitation">
 
       <!-- 1. اختيار المعلم -->
@@ -1149,7 +1270,7 @@
 
   const viewMeta = {
     'home':             { title: 'الرئيسية',              breadcrumb: 'منصة رواد سنن › لوحة المشرف' },
-    'attendance':       { title: 'متابعة الحضور',          breadcrumb: 'التشغيل اليومي › متابعة الحضور' },
+    'attendance':       { title: 'المتابعة اليومية',         breadcrumb: 'التشغيل اليومي › المتابعة اليومية' },
     'recitation':       { title: 'رصد جلسة تسميع',         breadcrumb: 'التشغيل اليومي › رصد جلسة تسميع' },
     'add-student':      { title: 'إضافة طالب',             breadcrumb: 'الطلاب › إضافة طالب' },
     'student-history':       { title: 'سجل الطلاب',             breadcrumb: 'الطلاب › سجل الطلاب' },
@@ -3012,6 +3133,559 @@
     }
   })();
   lucide.createIcons();
-</script>
+
+  /* ════════════════════════════════════════════════════
+     المتابعة اليومية
+  ════════════════════════════════════════════════════ */
+
+  let attData = null; // cached result of last query
+
+  async function loadAttendance() {
+    // تحميل قوائم الفلاتر عند أول فتح
+    if (document.getElementById('att-plan').options.length > 1) return;
+
+    const [plansRes, teachersRes] = await Promise.all([
+      client.from('study_plans').select('id, plan_name').order('plan_name'),
+      client.from('teachers').select('id, users(name)').eq('is_archived', false)
+        .order('id')
+    ]);
+
+    const planSel    = document.getElementById('att-plan');
+    const teacherSel = document.getElementById('att-teacher');
+
+    (plansRes.data || []).forEach(p => {
+      planSel.innerHTML += `<option value="${p.id}">${p.plan_name}</option>`;
+    });
+    (teachersRes.data || []).forEach(t => {
+      const name = t.users?.name || '—';
+      teacherSel.innerHTML += `<option value="${t.id}">${name}</option>`;
+    });
+
+    // افتراضي: اليوم
+    document.getElementById('att-date').value = new Date().toISOString().slice(0, 10);
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById('att-from').value = today;
+    document.getElementById('att-to').value   = today;
+  }
+
+  function attModeChange() {
+    const mode = document.getElementById('att-mode').value;
+    document.getElementById('att-day-wrap').style.display   = mode === 'day'   ? '' : 'none';
+    document.getElementById('att-range-wrap').style.display = mode === 'range' ? 'flex' : 'none';
+  }
+
+  async function runAttendance() {
+    const mode       = document.getElementById('att-mode').value;
+    const filterPlan = document.getElementById('att-plan').value;
+    const filterTeach= document.getElementById('att-teacher').value;
+    const filterComp = document.getElementById('att-completion').value;
+    const filterRec  = document.getElementById('att-recitation').value;
+
+    let dateFrom, dateTo;
+    if (mode === 'day') {
+      const d = document.getElementById('att-date').value;
+      if (!d) { showToast('اختر تاريخاً', 'error'); return; }
+      dateFrom = dateTo = d;
+    } else {
+      dateFrom = document.getElementById('att-from').value;
+      dateTo   = document.getElementById('att-to').value;
+      if (!dateFrom || !dateTo) { showToast('اختر نطاقاً زمنياً', 'error'); return; }
+      if (dateFrom > dateTo)    { showToast('تاريخ البداية بعد النهاية', 'error'); return; }
+    }
+
+    const wrap = document.getElementById('att-table-wrap');
+    wrap.innerHTML = '<p style="padding:24px;text-align:center;color:var(--text-muted)">جارٍ التحميل…</p>';
+    document.getElementById('att-summary-cards').style.display = 'none';
+
+    // جلب الطلاب
+    let studQ = client.from('students')
+      .select('id, memorized_hadiths, current_plan_id, teacher_id, is_archived, users(name), teachers(id, users(name)), student_plan_assignments(id, plan_id, assigned_at)')
+      .eq('is_archived', false);
+    if (filterTeach) studQ = studQ.eq('teacher_id', filterTeach);
+    const { data: students, error: sErr } = await studQ;
+    if (sErr) { wrap.innerHTML = `<p class="empty-row" style="padding:24px;color:var(--danger)">${sErr.message}</p>`; return; }
+
+    let allStudents = students || [];
+    if (filterPlan) allStudents = allStudents.filter(s => s.current_plan_id === filterPlan);
+
+    const studentIds = allStudents.map(s => s.id);
+    if (!studentIds.length) {
+      wrap.innerHTML = '<p class="empty-row" style="padding:24px;text-align:center;color:var(--text-muted)">لا يوجد طلاب بهذه الفلاتر</p>';
+      return;
+    }
+
+    // جلب البيانات
+    const [plansRes, daysRes, progressRes, sessRes] = await Promise.all([
+      client.from('study_plans').select('id, plan_name'),
+      client.from('study_plan_days').select('id, plan_id, day_number, memo_from, memo_to').order('day_number'),
+      client.from('student_plan_progress')
+        .select('student_id, plan_day_id, task_key, completed_at')
+        .eq('completed', true)
+        .in('student_id', studentIds),
+      client.from('recitation_sessions')
+        .select('student_id, date, hadith_from, hadith_to, score, teacher_id, teachers(users(name))')
+        .in('student_id', studentIds)
+        .gte('date', dateFrom)
+        .lte('date', dateTo)
+    ]);
+
+    const plans    = plansRes.data  || [];
+    const allDays  = daysRes.data   || [];
+    const progress = progressRes.data || [];
+    const sessions = sessRes.data   || [];
+
+    // فهارس
+    const dayById     = {};  allDays.forEach(d => { dayById[d.id] = d; });
+    const planById    = {};  plans.forEach(p => { planById[p.id] = p; });
+    // progress مجمّع: student_id → plan_day_id → task_key → completed_at
+    const progMap = {};
+    progress.forEach(p => {
+      if (!progMap[p.student_id]) progMap[p.student_id] = {};
+      if (!progMap[p.student_id][p.plan_day_id]) progMap[p.student_id][p.plan_day_id] = {};
+      progMap[p.student_id][p.plan_day_id][p.task_key] = p.completed_at;
+    });
+
+    // sessions مجمّع: student_id → date → [sessions]
+    const sessMap = {};
+    sessions.forEach(s => {
+      if (!sessMap[s.student_id]) sessMap[s.student_id] = {};
+      if (!sessMap[s.student_id][s.date]) sessMap[s.student_id][s.date] = [];
+      sessMap[s.student_id][s.date].push(s);
+    });
+
+    // لكل طالب — حساب البيانات
+    const rows = [];
+    for (const st of allStudents) {
+      const spa = (st.student_plan_assignments || []).find(a => a.plan_id === st.current_plan_id);
+      const assignedAt = spa?.assigned_at ? spa.assigned_at.slice(0, 10) : null;
+      const plan = planById[st.current_plan_id];
+      const planDays = allDays.filter(d => d.plan_id === st.current_plan_id);
+
+      if (mode === 'day') {
+        rows.push(buildDayRow(st, dateFrom, planDays, assignedAt, progMap, sessMap));
+      } else {
+        rows.push(buildRangeRow(st, dateFrom, dateTo, planDays, assignedAt, progMap, sessMap));
+      }
+    }
+
+    // تطبيق فلاتر الإتمام والتسميع
+    const filtered = rows.filter(r => {
+      if (filterComp === 'done'    && r._comp !== 'done')    return false;
+      if (filterComp === 'partial' && r._comp !== 'partial') return false;
+      if (filterComp === 'none'    && r._comp !== 'none')    return false;
+      if (filterRec === 'yes' && !r._recited) return false;
+      if (filterRec === 'no'  && r._recited)  return false;
+      return true;
+    });
+
+    attData = { mode, filtered, dateFrom, dateTo };
+    renderAttSummary(filtered, mode);
+    renderAttTable(filtered, mode);
+  }
+
+  function getDateForDay(assignedAt, dayNum) {
+    if (!assignedAt) return null;
+    const d = new Date(assignedAt);
+    d.setDate(d.getDate() + dayNum - 1);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function buildDayRow(st, date, planDays, assignedAt, progMap, sessMap) {
+    const stProg  = progMap[st.id] || {};
+    const stSess  = sessMap[st.id] || {};
+    const daySess = stSess[date] || [];
+
+    // أيّ يوم من الخطة يقابل هذا التاريخ
+    let matchDay = null;
+    if (assignedAt) {
+      const start = new Date(assignedAt);
+      const target = new Date(date);
+      const diff = Math.round((target - start) / 86400000) + 1;
+      matchDay = planDays.find(d => d.day_number === diff) || null;
+    }
+
+    // مهام اليوم
+    let listen = false, memo = false, link = false, review = false;
+    if (matchDay) {
+      const dp = stProg[matchDay.id] || {};
+      listen = !!dp['listen'];
+      memo   = !!dp['memo'];
+      link   = !!dp['link'];
+      review = !!dp['review'];
+    }
+
+    const tasksCount = [listen, memo, link, review].filter(Boolean).length;
+    const hasPlanDay = !!matchDay;
+    const comp = hasPlanDay ? (tasksCount === 4 ? 'done' : tasksCount > 0 ? 'partial' : 'none') : 'none';
+
+    // تسميع
+    const hasSession = daySess.length > 0;
+    const lastSess   = daySess[daySess.length - 1];
+    const teacher    = lastSess?.teachers?.users?.name || st.teachers?.users?.name || '—';
+
+    // انقطاع الخطة (من آخر يوم أنجز فيه شيء حتى هذا التاريخ)
+    const planGap = calcPlanGap(st.id, date, planDays, assignedAt, progMap);
+    // انقطاع التسميع
+    const recGap  = calcRecGap(st.id, date, sessMap);
+
+    // حالة مركبة
+    const planStatus  = planGapLabel(planGap);
+    const recStatus   = recGapLabel(recGap);
+    const rowColor    = getRowColor(comp, planGap, recGap);
+
+    // فرق التسميع عن المحفوظ
+    const lastHadithTo = daySess.length ? Math.max(...daySess.map(s => s.hadith_to || 0)) : null;
+    const memorized    = st.memorized_hadiths || 0;
+    const diff         = lastHadithTo !== null ? memorized - lastHadithTo : null;
+
+    return {
+      _id: st.id, _name: st.users?.name || '—',
+      _teacher: teacher, _plan: planById[st.current_plan_id]?.plan_name || '—',
+      _comp: comp, _recited: hasSession,
+      _planGap: planGap, _recGap: recGap,
+      _color: rowColor,
+      // day-specific
+      listen, memo, link, review,
+      hasSession,
+      recFrom: lastSess?.hadith_from ?? null,
+      recTo:   lastSess?.hadith_to   ?? null,
+      score:   lastSess?.score       ?? null,
+      diff,
+      planStatus, recStatus,
+      _planDays: planDays, _assignedAt: assignedAt, _sessMap: sessMap[st.id] || {}, _progMap: progMap[st.id] || {}
+    };
+  }
+
+  function buildRangeRow(st, dateFrom, dateTo, planDays, assignedAt, progMap, sessMap) {
+    const stProg = progMap[st.id] || {};
+    const stSess = sessMap[st.id] || {};
+
+    // حساب الأيام المنجزة (كل الواجبات الأربعة)
+    let doneDays = 0;
+    if (assignedAt) {
+      const start  = new Date(assignedAt);
+      const from   = new Date(dateFrom);
+      const to     = new Date(dateTo);
+      planDays.forEach(d => {
+        const dayDate = new Date(start);
+        dayDate.setDate(dayDate.getDate() + d.day_number - 1);
+        if (dayDate < from || dayDate > to) return;
+        const dp = stProg[d.id] || {};
+        if (dp['listen'] && dp['memo'] && dp['link'] && dp['review']) doneDays++;
+      });
+    }
+
+    // جلسات التسميع في النطاق
+    const rangeSessionsAll = Object.entries(stSess)
+      .filter(([d]) => d >= dateFrom && d <= dateTo)
+      .flatMap(([, s]) => s);
+    const sessionCount = rangeSessionsAll.length;
+    const avgScore = sessionCount
+      ? (rangeSessionsAll.reduce((s, x) => s + (parseFloat(x.score) || 0), 0) / sessionCount).toFixed(2)
+      : null;
+    const totalRecited = sessionCount ? Math.max(...rangeSessionsAll.map(s => s.hadith_to || 0)) : 0;
+
+    // مجموع الأحاديث المحفوظة (من خطة الطالب حتى آخر يوم في النطاق)
+    let totalMemo = 0;
+    if (assignedAt) {
+      const start = new Date(assignedAt);
+      const to    = new Date(dateTo);
+      planDays.forEach(d => {
+        const dayDate = new Date(start);
+        dayDate.setDate(dayDate.getDate() + d.day_number - 1);
+        if (dayDate > to) return;
+        const dp = stProg[d.id] || {};
+        if (dp['memo'] && d.memo_to) totalMemo = Math.max(totalMemo, parseInt(d.memo_to) || 0);
+      });
+    }
+
+    // نسبة الإنجاز = أيام منجزة / إجمالي أيام الخطة في النطاق
+    let planDaysInRange = 0;
+    if (assignedAt) {
+      const start = new Date(assignedAt);
+      const from  = new Date(dateFrom);
+      const to    = new Date(dateTo);
+      planDays.forEach(d => {
+        const dayDate = new Date(start);
+        dayDate.setDate(dayDate.getDate() + d.day_number - 1);
+        if (dayDate >= from && dayDate <= to) planDaysInRange++;
+      });
+    }
+    const completionPct = planDaysInRange > 0 ? Math.round(doneDays / planDaysInRange * 100) : null;
+
+    // انقطاع (نحسبه حتى dateTo)
+    const planGap = calcPlanGap(st.id, dateTo, planDays, assignedAt, progMap);
+    const recGap  = calcRecGap(st.id, dateTo, sessMap);
+    const comp    = doneDays === planDaysInRange && planDaysInRange > 0 ? 'done' : doneDays > 0 ? 'partial' : 'none';
+
+    return {
+      _id: st.id, _name: st.users?.name || '—',
+      _teacher: st.teachers?.users?.name || '—',
+      _plan: planById[st.current_plan_id]?.plan_name || '—',
+      _comp: comp, _recited: sessionCount > 0,
+      _planGap: planGap, _recGap: recGap,
+      _color: getRowColor(comp, planGap, recGap),
+      // range-specific
+      doneDays, sessionCount, totalMemo, totalRecited,
+      avgScore, completionPct,
+      planStatus: planGapLabel(planGap), recStatus: recGapLabel(recGap),
+      _planDays: planDays, _assignedAt: assignedAt, _sessMap: sessMap[st.id] || {}, _progMap: progMap[st.id] || {}
+    };
+  }
+
+  function calcPlanGap(studentId, refDate, planDays, assignedAt, progMap) {
+    if (!assignedAt) return null;
+    const stProg = progMap[studentId] || {};
+    const ref    = new Date(refDate);
+    const start  = new Date(assignedAt);
+    // آخر يوم أنجز فيه شيء
+    let lastDone = null;
+    planDays.forEach(d => {
+      const dayDate = new Date(start);
+      dayDate.setDate(dayDate.getDate() + d.day_number - 1);
+      if (dayDate > ref) return;
+      const dp = stProg[d.id] || {};
+      if (dp['listen'] || dp['memo'] || dp['link'] || dp['review']) {
+        if (!lastDone || dayDate > lastDone) lastDone = new Date(dayDate);
+      }
+    });
+    if (!lastDone) return null;
+    return Math.round((ref - lastDone) / 86400000);
+  }
+
+  function calcRecGap(studentId, refDate, sessMap) {
+    const stSess = sessMap[studentId] || {};
+    const dates  = Object.keys(stSess).filter(d => d <= refDate).sort();
+    if (!dates.length) return null;
+    const lastDate = dates[dates.length - 1];
+    const ref      = new Date(refDate);
+    const last     = new Date(lastDate);
+    return Math.round((ref - last) / 86400000);
+  }
+
+  function planGapLabel(gap) {
+    if (gap === null) return { icon: '—', text: '—', ok: null };
+    if (gap === 0) return { icon: '✓', text: 'منتظم في الخطة', ok: true };
+    if (gap === 1) return { icon: '⚠️', text: 'لم ينفذ الواجب يوم', ok: false };
+    if (gap === 2) return { icon: '⚠️', text: 'لم ينفذ الواجب يومين', ok: false };
+    if (gap === 3) return { icon: '🔴', text: 'لم ينفذ الواجب 3 أيام', ok: false };
+    return { icon: '🔴', text: `لم ينفذ الواجب ${gap} يوم`, ok: false };
+  }
+
+  function recGapLabel(gap) {
+    if (gap === null) return { icon: '—', text: '—', ok: null };
+    if (gap === 0) return { icon: '✓', text: 'منتظم في التسميع', ok: true };
+    if (gap === 1) return { icon: '⚠️', text: 'منقطع عن التسميع يوم', ok: false };
+    if (gap === 2) return { icon: '⚠️', text: 'منقطع عن التسميع يومين', ok: false };
+    if (gap === 3) return { icon: '🔴', text: 'منقطع عن التسميع 3 أيام', ok: false };
+    return { icon: '🔴', text: `منقطع عن التسميع ${gap} يوم`, ok: false };
+  }
+
+  function getRowColor(comp, planGap, recGap) {
+    const pg = planGap ?? 0;
+    const rg = recGap  ?? 0;
+    if (pg > 3 || rg > 3) return 'att-red';
+    if (pg >= 1 && pg <= 2) return 'att-orange';
+    if (comp === 'done' && rg >= 1) return 'att-yellow';
+    if (comp === 'done' && rg === 0) return 'att-green';
+    if (comp === 'none' && pg === null && rg === null) return 'att-gray';
+    return 'att-orange';
+  }
+
+  function chk(v) {
+    return v ? '<span class="att-check">✓</span>' : '<span class="att-cross">✗</span>';
+  }
+
+  function renderAttSummary(rows, mode) {
+    const cards = document.getElementById('att-summary-cards');
+    const totalStudents   = rows.length;
+    const doneToday       = rows.filter(r => r._comp === 'done').length;
+    const recitedToday    = rows.filter(r => r._recited).length;
+    const notRecited      = rows.filter(r => !r._recited).length;
+    const totalMemo       = rows.reduce((s, r) => s + (r.totalMemo || r._memorized || 0), 0);
+    const scores          = rows.filter(r => r.avgScore || r.score).map(r => parseFloat(r.avgScore || r.score) || 0).filter(x => x > 0);
+    const avgScore        = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : '—';
+    const totalSessions   = mode === 'day'
+      ? rows.filter(r => r.hasSession).length
+      : rows.reduce((s, r) => s + (r.sessionCount || 0), 0);
+    const totalRecitedH   = mode === 'range'
+      ? rows.reduce((s, r) => s + (r.totalRecited || 0), 0) : '—';
+
+    const cardData = [
+      { val: totalStudents, lbl: 'إجمالي الطلاب' },
+      { val: doneToday,     lbl: 'منجزون' },
+      { val: totalSessions, lbl: 'جلسات التسميع' },
+      { val: recitedToday,  lbl: 'سُمِّعوا' },
+      { val: notRecited,    lbl: 'لم يُسمَّعوا' },
+      { val: mode === 'range' ? totalRecitedH : '—', lbl: 'أحاديث مسمَّعة' },
+      { val: avgScore,      lbl: 'متوسط التقييم' },
+    ];
+    cards.innerHTML = cardData.map(c => `
+      <div class="att-stat-card">
+        <div class="att-stat-val">${c.val}</div>
+        <div class="att-stat-lbl">${c.lbl}</div>
+      </div>`).join('');
+    cards.style.display = 'grid';
+  }
+
+  function renderAttTable(rows, mode) {
+    const wrap = document.getElementById('att-table-wrap');
+    if (!rows.length) {
+      wrap.innerHTML = '<p class="empty-row" style="padding:24px;text-align:center;color:var(--text-muted)">لا توجد بيانات بهذه الفلاتر</p>';
+      return;
+    }
+
+    let thead, buildRow;
+    if (mode === 'day') {
+      thead = `<tr>
+        <th>الطالب</th><th>المعلم</th><th>سماع</th><th>حفظ</th><th>ربط</th><th>مراجعة</th>
+        <th>تسميع</th><th>نطاق التسميع</th><th>الدرجة</th><th>فرق التسميع</th>
+        <th>حالة الخطة</th><th>حالة التسميع</th><th></th>
+      </tr>`;
+      buildRow = r => {
+        const scoreStr = r.score != null ? parseFloat(r.score).toFixed(1) + ' / 10' : '—';
+        const diffStr  = r.diff  != null ? (r.diff >= 0 ? '+' : '') + r.diff : '—';
+        const recRange = r.recFrom != null ? `${r.recFrom} ← ${r.recTo}` : '—';
+        return `<tr class="${r._color}" onclick_noop>
+          <td style="font-weight:700">${r._name}</td>
+          <td>${r._teacher}</td>
+          <td>${chk(r.listen)}</td>
+          <td>${chk(r.memo)}</td>
+          <td>${chk(r.link)}</td>
+          <td>${chk(r.review)}</td>
+          <td>${chk(r.hasSession)}</td>
+          <td>${recRange}</td>
+          <td>${scoreStr}</td>
+          <td style="color:${r.diff < 0 ? '#dc2626' : '#16a34a'};font-weight:700">${diffStr}</td>
+          <td><div class="att-status-line">${r.planStatus.icon} ${r.planStatus.text}</div></td>
+          <td><div class="att-status-line">${r.recStatus.icon} ${r.recStatus.text}</div></td>
+          <td><button class="att-btn-detail" onclick="openAttDetail('${r._id}')">تفاصيل</button></td>
+        </tr>`;
+      };
+    } else {
+      thead = `<tr>
+        <th>الطالب</th><th>المعلم</th><th>الخطة</th><th>أيام منجزة</th>
+        <th>جلسات التسميع</th><th>أحاديث محفوظة</th><th>أحاديث مسمَّعة</th>
+        <th>متوسط الدرجة</th><th>نسبة الإنجاز</th>
+        <th>حالة الخطة</th><th>حالة التسميع</th><th></th>
+      </tr>`;
+      buildRow = r => `<tr class="${r._color}">
+        <td style="font-weight:700">${r._name}</td>
+        <td>${r._teacher}</td>
+        <td>${r._plan}</td>
+        <td>${r.doneDays}</td>
+        <td>${r.sessionCount}</td>
+        <td>${r.totalMemo || '—'}</td>
+        <td>${r.totalRecited || '—'}</td>
+        <td>${r.avgScore ?? '—'}</td>
+        <td>${r.completionPct != null ? r.completionPct + '%' : '—'}</td>
+        <td><div class="att-status-line">${r.planStatus.icon} ${r.planStatus.text}</div></td>
+        <td><div class="att-status-line">${r.recStatus.icon} ${r.recStatus.text}</div></td>
+        <td><button class="att-btn-detail" onclick="openAttDetail('${r._id}')">تفاصيل</button></td>
+      </tr>`;
+    }
+
+    wrap.innerHTML = `<div style="overflow-x:auto">
+      <table class="att-table">
+        <thead>${thead}</thead>
+        <tbody>${rows.map(buildRow).join('')}</tbody>
+      </table>
+    </div>`;
+  }
+
+  function openAttDetail(studentId) {
+    if (!attData) return;
+    const row = attData.filtered.find(r => r._id === studentId);
+    if (!row) return;
+
+    const modal = document.getElementById('attDetailModal');
+    document.getElementById('attDetailTitle').textContent = `تقرير مفصل — ${row._name}`;
+
+    const planDays  = (row._planDays || []).sort((a, b) => a.day_number - b.day_number);
+    const assignedAt = row._assignedAt;
+    const stProg    = row._progMap || {};
+    const stSess    = row._sessMap || {};
+
+    const TASKS = ['listen','memo','link','review'];
+    const LABELS = { listen:'سماع', memo:'حفظ', link:'ربط', review:'مراجعة' };
+
+    const head = document.getElementById('attDetailHead');
+    const body = document.getElementById('attDetailBody');
+
+    head.innerHTML = `<tr>
+      <th>اليوم</th><th>التاريخ</th><th>سماع</th><th>حفظ</th><th>ربط</th><th>مراجعة</th>
+      <th>تسميع</th><th>نطاق التسميع</th><th>المعلم</th><th>الدرجة</th>
+    </tr>`;
+
+    let rowsHtml = '';
+    planDays.forEach(d => {
+      const dayDate = assignedAt ? (() => {
+        const dt = new Date(assignedAt);
+        dt.setDate(dt.getDate() + d.day_number - 1);
+        return dt.toISOString().slice(0, 10);
+      })() : null;
+
+      // فلتر النطاق الزمني
+      if (attData.mode === 'range' && dayDate) {
+        if (dayDate < attData.dateFrom || dayDate > attData.dateTo) return;
+      }
+
+      const dp  = stProg[d.id] || {};
+      const listen = !!dp['listen'], memo = !!dp['memo'], link = !!dp['link'], review = !!dp['review'];
+
+      const daySess = dayDate ? (stSess[dayDate] || []) : [];
+      const hasSess = daySess.length > 0;
+      const lastS   = daySess[daySess.length - 1];
+
+      const color = (listen && memo && link && review) ? '#f0fdf4'
+        : (!listen && !memo && !link && !review) ? '#f9fafb'
+        : '#fff7ed';
+
+      rowsHtml += `<tr style="background:${color}">
+        <td style="font-weight:700">${d.day_number}</td>
+        <td>${dayDate || '—'}</td>
+        <td>${chk(listen)}</td><td>${chk(memo)}</td><td>${chk(link)}</td><td>${chk(review)}</td>
+        <td>${chk(hasSess)}</td>
+        <td>${hasSess ? `${lastS.hadith_from} ← ${lastS.hadith_to}` : '—'}</td>
+        <td>${hasSess ? (lastS.teachers?.users?.name || '—') : '—'}</td>
+        <td>${hasSess ? (parseFloat(lastS.score).toFixed(1) + ' / 10') : '—'}</td>
+      </tr>`;
+    });
+
+    body.innerHTML = rowsHtml || '<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text-muted)">لا توجد بيانات</td></tr>';
+    modal.classList.remove('hidden');
+  }
+
+  function exportAttendanceExcel() {
+    if (!attData || !attData.filtered.length) { showToast('لا توجد بيانات للتصدير', 'error'); return; }
+    const mode = attData.mode;
+    const rows = attData.filtered;
+
+    let headers, dataRows;
+    if (mode === 'day') {
+      headers = ['الطالب','المعلم','الخطة','سماع','حفظ','ربط','مراجعة','تسميع','من حديث','إلى حديث','الدرجة','فرق التسميع','حالة الخطة','حالة التسميع'];
+      dataRows = rows.map(r => [
+        r._name, r._teacher, r._plan,
+        r.listen?'✓':'✗', r.memo?'✓':'✗', r.link?'✓':'✗', r.review?'✓':'✗',
+        r.hasSession?'✓':'✗', r.recFrom??'', r.recTo??'', r.score??'',
+        r.diff??'', r.planStatus.text, r.recStatus.text
+      ]);
+    } else {
+      headers = ['الطالب','المعلم','الخطة','أيام منجزة','جلسات التسميع','أحاديث محفوظة','أحاديث مسمَّعة','متوسط الدرجة','نسبة الإنجاز','حالة الخطة','حالة التسميع'];
+      dataRows = rows.map(r => [
+        r._name, r._teacher, r._plan,
+        r.doneDays, r.sessionCount, r.totalMemo??'', r.totalRecited??'',
+        r.avgScore??'', r.completionPct!=null?r.completionPct+'%':'',
+        r.planStatus.text, r.recStatus.text
+      ]);
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'المتابعة اليومية');
+    XLSX.writeFile(wb, `المتابعة-${attData.dateFrom}${mode==='range'?'_إلى_'+attData.dateTo:''}.xlsx`);
+  }
+
+
 </body>
 </html>
