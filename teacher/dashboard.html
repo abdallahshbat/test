@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحة المعلم - حفّاظ</title>
+<title>لوحة المعلم — رواد سنن</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f0f4f8;color:#1a202c;min-height:100vh;direction:rtl}
+body{font-family:'Noto Naskh Arabic',serif;background:#f0f4f8;color:#1a202c;min-height:100vh;direction:rtl}
 :root{--primary:#2d6a4f;--primary-light:#52b788;--accent:#f4a261;--danger:#e63946;--bg:#f0f4f8;--card:#fff;--text:#1a202c;--muted:#718096;--border:#e2e8f0;--radius:12px;--shadow:0 2px 8px rgba(0,0,0,.08)}
 
 /* TOP BAR */
@@ -119,9 +121,9 @@ tr:hover td{background:#f7fafc}
 
 <!-- TOP BAR -->
 <div class="topbar">
-  <h1>حفّاظ</h1>
+  <h1>رواد سنن</h1>
   <span class="teacher-name" id="teacherNameTop"></span>
-  <a class="btn-logout" href="../profile.html" style="text-decoration:none;margin-left:6px">👤 ملفي</a>
+  <a class="btn-logout" href="../profile.html" style="text-decoration:none;margin-left:6px;display:inline-flex;align-items:center;gap:4px"><i data-lucide="user" style="width:14px;height:14px"></i> ملفي</a>
   <button class="btn-logout" onclick="logout()">خروج</button>
 </div>
 
@@ -150,8 +152,8 @@ tr:hover td{background:#f7fafc}
   <div class="card hidden" id="trackCard">
     <div class="card-title">نوع الرصد</div>
     <div class="track-btns">
-      <button class="track-btn" id="trackBtnHafiz" onclick="selectTrack('hafiz')">📖 رصد الحفظ</button>
-      <button class="track-btn" id="trackBtnReview" onclick="selectTrack('review')">🔗 رصد الربط والمراجعة</button>
+      <button class="track-btn" id="trackBtnHafiz" onclick="selectTrack('hafiz')" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="book-open" style="width:15px;height:15px"></i> رصد الحفظ</button>
+      <button class="track-btn" id="trackBtnReview" onclick="selectTrack('review')" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="link-2" style="width:15px;height:15px"></i> رصد الربط والمراجعة</button>
     </div>
   </div>
 
@@ -260,11 +262,13 @@ tr:hover td{background:#f7fafc}
 
   <!-- جلساتي -->
   <div class="card" id="teacherRoomsCard" style="display:none">
-    <div class="card-title">📅 جلساتي</div>
+    <div class="card-title" style="display:flex;align-items:center;gap:6px"><i data-lucide="calendar" style="width:16px;height:16px"></i> جلساتي</div>
     <div id="teacherRoomsList"></div>
   </div>
 
 </div><!-- /main-content -->
+
+<footer style="text-align:center;padding:14px 16px 20px;font-size:.75rem;color:#9ca3af">صُنع بإتقان عبر <span style="color:#2d6a4f;font-weight:600">منصة أثر</span></footer>
 
 <script>
 const SUPABASE_URL = 'https://aeonokdakdvqgiisfhwv.supabase.co';
@@ -750,16 +754,16 @@ async function loadTeacherRooms() {
     const active = isActive(r);
     let btn = '';
     if (active || r.outside_behavior === 'always_visible') {
-      btn = `<a href="${r.meet_url}" target="_blank" rel="noopener" class="btn-primary" style="display:inline-block;text-align:center;text-decoration:none;background:#2d6a4f;color:#fff;border-radius:8px;padding:8px 18px;font-size:.85rem;font-weight:700;margin-top:8px">📹 ادخل الغرفة</a>`;
+      btn = `<a href="${r.meet_url}" target="_blank" rel="noopener" class="btn-primary" style="display:inline-block;text-align:center;text-decoration:none;background:#2d6a4f;color:#fff;border-radius:8px;padding:8px 18px;font-size:.85rem;font-weight:700;margin-top:8px">ادخل الغرفة</a>`;
     } else if (r.outside_behavior === 'hidden') {
       btn = '';
     } else {
-      btn = `<button class="btn-primary" style="margin-top:8px;opacity:.5;cursor:not-allowed;background:#aaa;border:none;color:#fff;border-radius:8px;padding:8px 18px;font-size:.85rem;font-weight:700" disabled>📹 ادخل الغرفة</button>`;
+      btn = `<button class="btn-primary" style="margin-top:8px;opacity:.5;cursor:not-allowed;background:#aaa;border:none;color:#fff;border-radius:8px;padding:8px 18px;font-size:.85rem;font-weight:700" disabled>ادخل الغرفة</button>`;
     }
     return `<div style="border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
-      <div style="font-size:.95rem;font-weight:800;color:var(--primary);margin-bottom:4px">🎤 ${r.name}</div>
-      <div style="font-size:.82rem;color:var(--muted)">📅 ${r.days.join(' · ')}</div>
-      <div style="font-size:.82rem;color:var(--muted)">🕐 ${r.start_time.slice(0,5)} – ${r.end_time.slice(0,5)}</div>
+      <div style="font-size:.95rem;font-weight:800;color:var(--primary);margin-bottom:4px">${r.name}</div>
+      <div style="font-size:.82rem;color:var(--muted)">${r.days.join(' · ')}</div>
+      <div style="font-size:.82rem;color:var(--muted)">${r.start_time.slice(0,5)} – ${r.end_time.slice(0,5)}</div>
       ${btn}
     </div>`;
   }).join('');
@@ -784,6 +788,7 @@ function showToast(msg, type) {
 
 // START
 checkAuth();
+document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
 </script>
 </body>
 </html>

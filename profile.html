@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الملف الشخصي — منصة حفّاظ</title>
+<title>الملف الشخصي — منصة رواد سنن</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f3f4f6;color:#1f2937;min-height:100vh;direction:rtl}
+body{font-family:'Noto Naskh Arabic',serif;background:#f3f4f6;color:#1f2937;min-height:100vh;direction:rtl}
 :root{--primary:#2d6a4f;--accent:#52b788;--danger:#dc2626;--border:#e5e7eb;--card:#fff;--muted:#6b7280;--radius:14px;--shadow:0 2px 8px rgba(0,0,0,.07)}
 
 .topbar{position:fixed;top:0;right:0;left:0;height:56px;background:var(--primary);color:#fff;display:flex;align-items:center;padding:0 16px;z-index:100;gap:12px}
@@ -89,7 +91,7 @@ select.form-control{appearance:none;-webkit-appearance:none;background-image:url
   <!-- AVATAR -->
   <div class="card">
     <div class="card-header">
-      <div class="icon">👤</div>
+      <div class="icon"><i data-lucide="user" style="width:20px;height:20px;color:#2d6a4f"></i></div>
       <h2>الصورة الشخصية</h2>
     </div>
     <div class="card-body">
@@ -100,7 +102,7 @@ select.form-control{appearance:none;-webkit-appearance:none;background-image:url
           <h3 id="profileName">…</h3>
           <p id="profileRole">…</p>
           <div class="btn-upload-wrap">
-            <label class="btn-upload" for="avatarFile">📷 تغيير الصورة</label>
+            <label class="btn-upload" for="avatarFile" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="camera" style="width:14px;height:14px"></i> تغيير الصورة</label>
             <input type="file" id="avatarFile" accept="image/jpeg,image/png,image/webp,image/gif" onchange="uploadAvatar(this)">
           </div>
         </div>
@@ -111,7 +113,7 @@ select.form-control{appearance:none;-webkit-appearance:none;background-image:url
   <!-- STATIC INFO -->
   <div class="card">
     <div class="card-header">
-      <div class="icon">ℹ️</div>
+      <div class="icon"><i data-lucide="info" style="width:20px;height:20px;color:#2d6a4f"></i></div>
       <h2>المعلومات الأساسية</h2>
     </div>
     <div class="card-body">
@@ -127,7 +129,7 @@ select.form-control{appearance:none;-webkit-appearance:none;background-image:url
   <!-- PERSONAL INFO -->
   <div class="card">
     <div class="card-header">
-      <div class="icon">📋</div>
+      <div class="icon"><i data-lucide="clipboard-list" style="width:20px;height:20px;color:#2d6a4f"></i></div>
       <h2>المعلومات الشخصية</h2>
     </div>
     <div class="card-body">
@@ -184,7 +186,7 @@ select.form-control{appearance:none;-webkit-appearance:none;background-image:url
   <!-- PASSWORD CHANGE -->
   <div class="card">
     <div class="card-header">
-      <div class="icon">🔒</div>
+      <div class="icon"><i data-lucide="lock" style="width:20px;height:20px;color:#2d6a4f"></i></div>
       <h2>تغيير كلمة المرور</h2>
     </div>
     <div class="card-body">
@@ -202,6 +204,8 @@ select.form-control{appearance:none;-webkit-appearance:none;background-image:url
   </div>
 
 </div>
+
+<footer style="text-align:center;padding:14px 16px 20px;font-size:.75rem;color:#9ca3af">صُنع بإتقان عبر <span style="color:#6366f1;font-weight:600">منصة أثر</span></footer>
 
 <script>
 const SUPABASE_URL = 'https://aeonokdakdvqgiisfhwv.supabase.co';
@@ -352,6 +356,7 @@ function showToast(msg, type) {
 }
 
 init();
+document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
 </script>
 </body>
 </html>

@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>لوحة المشرف — منصة حفّاظ</title>
+  <title>لوحة المشرف — منصة رواد سنن</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -24,7 +26,7 @@
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, sans-serif;
+      font-family: 'Noto Naskh Arabic', serif;
       background: var(--bg);
       color: var(--text-main);
       min-height: 100vh;
@@ -355,7 +357,7 @@
         <label>ملف Excel</label>
         <div class="file-upload-area" onclick="document.getElementById('pm-file').click()">
           <input type="file" id="pm-file" accept=".xlsx,.xls" onchange="handlePlanFile(this)" />
-          <div class="file-upload-icon">📊</div>
+          <div class="file-upload-icon"><i data-lucide="file-spreadsheet" style="width:32px;height:32px"></i></div>
           <div class="file-upload-text">اضغط لرفع ملف Excel (.xlsx / .xls)</div>
           <div class="file-name-display" id="pm-filename">لم يُختر ملف</div>
         </div>
@@ -424,7 +426,7 @@
         <label>رفع ملف Excel جديد <span style="color:var(--text-muted);font-weight:400">(اختياري — يستبدل الأيام الحالية)</span></label>
         <div class="file-upload-area" onclick="document.getElementById('edit-pm-file').click()">
           <input type="file" id="edit-pm-file" accept=".xlsx,.xls" onchange="handleEditPlanFile(this)" />
-          <div class="file-upload-icon">📊</div>
+          <div class="file-upload-icon"><i data-lucide="file-spreadsheet" style="width:32px;height:32px"></i></div>
           <div class="file-upload-text">اضغط لرفع ملف Excel (.xlsx / .xls)</div>
           <div class="file-name-display" id="edit-pm-filename">لم يُختر ملف — الأيام الحالية تبقى كما هي</div>
         </div>
@@ -534,7 +536,7 @@
 
 <nav id="sidebar">
   <div class="sidebar-header">
-    <div class="sidebar-logo">منصة حفّاظ</div>
+    <div class="sidebar-logo">منصة رواد سنن</div>
     <div class="sidebar-role">لوحة المشرف</div>
   </div>
   <div class="sidebar-user">
@@ -544,38 +546,38 @@
 
   <div class="nav-section">
     <div class="nav-section-title">التشغيل اليومي</div>
-    <div class="nav-item active" onclick="showView('home')"><span class="nav-icon">🏠</span> الرئيسية</div>
-    <div class="nav-item" onclick="showView('attendance')"><span class="nav-icon">📊</span> متابعة الحضور</div>
-    <div class="nav-item" onclick="showView('recitation')"><span class="nav-icon">🎙️</span> رصد جلسة تسميع</div>
-    <div class="nav-item" onclick="showView('recitation-log');loadRecitationLog()"><span class="nav-icon">📋</span> سجل الرصد</div>
+    <div class="nav-item active" onclick="showView('home')"><span class="nav-icon"><i data-lucide="home" style="width:16px;height:16px"></i></span> الرئيسية</div>
+    <div class="nav-item" onclick="showView('attendance')"><span class="nav-icon"><i data-lucide="bar-chart-2" style="width:16px;height:16px"></i></span> متابعة الحضور</div>
+    <div class="nav-item" onclick="showView('recitation')"><span class="nav-icon"><i data-lucide="mic" style="width:16px;height:16px"></i></span> رصد جلسة تسميع</div>
+    <div class="nav-item" onclick="showView('recitation-log');loadRecitationLog()"><span class="nav-icon"><i data-lucide="clipboard-list" style="width:16px;height:16px"></i></span> سجل الرصد</div>
   </div>
 
   <div class="nav-section">
     <div class="nav-section-title">الطلاب</div>
-    <div class="nav-item" onclick="showView('add-student')"><span class="nav-icon">➕</span> إضافة طالب / استيراد</div>
-    <div class="nav-item" onclick="showView('student-files');loadStudentFiles()"><span class="nav-icon">📁</span> ملفات الطلاب</div>
-    <div class="nav-item" onclick="showView('student-history');loadStudentHistory()"><span class="nav-icon">📜</span> سجل الطلاب</div>
-    <div class="nav-item" onclick="showView('top-students');loadTopStudents()"><span class="nav-icon">🏆</span> قائمة المتميزين</div>
-    <div class="nav-item" onclick="showView('exams')"><span class="nav-icon">📝</span> الاختبارات المرحلية</div>
-    <div class="nav-item" onclick="showView('import-plans');loadStudyPlans()"><span class="nav-icon">📋</span> الخطط العلمية</div>
+    <div class="nav-item" onclick="showView('add-student')"><span class="nav-icon"><i data-lucide="plus" style="width:16px;height:16px"></i></span> إضافة طالب / استيراد</div>
+    <div class="nav-item" onclick="showView('student-files');loadStudentFiles()"><span class="nav-icon"><i data-lucide="folder" style="width:16px;height:16px"></i></span> ملفات الطلاب</div>
+    <div class="nav-item" onclick="showView('student-history');loadStudentHistory()"><span class="nav-icon"><i data-lucide="scroll" style="width:16px;height:16px"></i></span> سجل الطلاب</div>
+    <div class="nav-item" onclick="showView('top-students');loadTopStudents()"><span class="nav-icon"><i data-lucide="trophy" style="width:16px;height:16px"></i></span> قائمة المتميزين</div>
+    <div class="nav-item" onclick="showView('exams')"><span class="nav-icon"><i data-lucide="pencil-line" style="width:16px;height:16px"></i></span> الاختبارات المرحلية</div>
+    <div class="nav-item" onclick="showView('import-plans');loadStudyPlans()"><span class="nav-icon"><i data-lucide="clipboard-list" style="width:16px;height:16px"></i></span> الخطط العلمية</div>
   </div>
 
   <div class="nav-section">
     <div class="nav-section-title">المعلمون</div>
-    <div class="nav-item" onclick="showView('add-teacher');loadTeacherMgmt()"><span class="nav-icon">➕</span> إضافة معلم / استيراد</div>
-    <div class="nav-item" onclick="showView('teacher-files');loadTeacherFiles()"><span class="nav-icon">📁</span> ملفات المعلمين</div>
+    <div class="nav-item" onclick="showView('add-teacher');loadTeacherMgmt()"><span class="nav-icon"><i data-lucide="plus" style="width:16px;height:16px"></i></span> إضافة معلم / استيراد</div>
+    <div class="nav-item" onclick="showView('teacher-files');loadTeacherFiles()"><span class="nav-icon"><i data-lucide="folder" style="width:16px;height:16px"></i></span> ملفات المعلمين</div>
   </div>
 
   <div class="nav-section">
     <div class="nav-section-title">الغرف الصوتية</div>
-    <div class="nav-item" onclick="showView('audio-rooms');loadAudioRooms()"><span class="nav-icon">🎤</span> الغرف الصوتية</div>
+    <div class="nav-item" onclick="showView('audio-rooms');loadAudioRooms()"><span class="nav-icon"><i data-lucide="mic-2" style="width:16px;height:16px"></i></span> الغرف الصوتية</div>
   </div>
 
   <div class="nav-section">
     <div class="nav-section-title">الإعدادات</div>
 
-    <div class="nav-item" onclick="showView('settings')"><span class="nav-icon">⚙️</span> الإعدادات العامة</div>
-    <div class="nav-item" onclick="window.location.href='../profile.html'"><span class="nav-icon">👤</span> ملفي الشخصي</div>
+    <div class="nav-item" onclick="showView('settings')"><span class="nav-icon"><i data-lucide="settings" style="width:16px;height:16px"></i></span> الإعدادات العامة</div>
+    <div class="nav-item" onclick="window.location.href='../profile.html'"><span class="nav-icon"><i data-lucide="user" style="width:16px;height:16px"></i></span> ملفي الشخصي</div>
   </div>
 
   <div class="sidebar-footer">
@@ -587,7 +589,7 @@
   <div class="topbar">
     <div>
       <div class="topbar-title" id="topbarTitle">الرئيسية</div>
-      <div class="topbar-breadcrumb" id="topbarBreadcrumb">منصة حفّاظ › لوحة المشرف</div>
+      <div class="topbar-breadcrumb" id="topbarBreadcrumb">منصة رواد سنن › لوحة المشرف</div>
     </div>
   </div>
 
@@ -597,24 +599,24 @@
       <div class="welcome-card">
         <div class="welcome-text">
           <h2>أهلاً بك، <span id="welcomeName">…</span></h2>
-          <p>لوحة تحكم منصة حفّاظ — نظرة عامة على اليوم</p>
+          <p>لوحة تحكم منصة رواد سنن — نظرة عامة على اليوم</p>
         </div>
-        <div class="welcome-emoji">🕌</div>
+        <div class="welcome-emoji"><i data-lucide="building-2" style="width:32px;height:32px;color:#fff"></i></div>
       </div>
       <div class="stats-grid">
-        <div class="stat-card"><div class="stat-icon green">👨‍🎓</div><div><div class="stat-value" id="statStudents">—</div><div class="stat-label">إجمالي الطلاب</div></div></div>
-        <div class="stat-card"><div class="stat-icon blue">👨‍🏫</div><div><div class="stat-value" id="statTeachers">—</div><div class="stat-label">إجمالي المعلمين</div></div></div>
-        <div class="stat-card"><div class="stat-icon amber">🎙️</div><div><div class="stat-value" id="statSessions">—</div><div class="stat-label">جلسات اليوم</div></div></div>
-        <div class="stat-card"><div class="stat-icon purple">📅</div><div><div class="stat-value" id="statDate">—</div><div class="stat-label">تاريخ اليوم</div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><i data-lucide="graduation-cap" style="width:20px;height:20px"></i></div><div><div class="stat-value" id="statStudents">—</div><div class="stat-label">إجمالي الطلاب</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue"><i data-lucide="user-check" style="width:20px;height:20px"></i></div><div><div class="stat-value" id="statTeachers">—</div><div class="stat-label">إجمالي المعلمين</div></div></div>
+        <div class="stat-card"><div class="stat-icon amber"><i data-lucide="mic" style="width:20px;height:20px"></i></div><div><div class="stat-value" id="statSessions">—</div><div class="stat-label">جلسات اليوم</div></div></div>
+        <div class="stat-card"><div class="stat-icon purple"><i data-lucide="calendar" style="width:20px;height:20px"></i></div><div><div class="stat-value" id="statDate">—</div><div class="stat-label">تاريخ اليوم</div></div></div>
       </div>
     </div>
 
-    <div class="view" id="view-attendance"><div class="section-placeholder"><div class="ph-icon">📊</div><h3>متابعة الحضور</h3><p>سيتم عرض نسبة حضور الطلاب والمعلمين هنا</p></div></div>
+    <div class="view" id="view-attendance"><div class="section-placeholder"><div class="ph-icon"><i data-lucide="bar-chart-2" style="width:32px;height:32px"></i></div><h3>متابعة الحضور</h3><p>سيتم عرض نسبة حضور الطلاب والمعلمين هنا</p></div></div>
     <div class="view" id="view-recitation">
 
       <!-- 1. اختيار المعلم -->
       <div class="rs-card" id="rs-teacher-card">
-        <div class="rs-card-title">👨‍🏫 اختر المعلم</div>
+        <div class="rs-card-title"><i data-lucide="user-check" style="width:16px;height:16px;vertical-align:middle"></i> اختر المعلم</div>
         <div class="rs-search-wrap">
           <input type="text" id="rs-teacher-search" class="form-control" placeholder="ابحث باسم المعلم…" autocomplete="off" oninput="rsFilterTeachers()" onfocus="rsShowTeacherDropdown()" onblur="rsHideTeacherDropdownDelayed()">
           <div class="rs-dropdown" id="rs-teacher-dropdown" style="display:none"></div>
@@ -627,7 +629,7 @@
 
       <!-- 2. اختيار الطالب -->
       <div class="rs-card hidden" id="rs-student-card">
-        <div class="rs-card-title">👨‍🎓 اختر الطالب</div>
+        <div class="rs-card-title"><i data-lucide="graduation-cap" style="width:16px;height:16px;vertical-align:middle"></i> اختر الطالب</div>
         <div class="rs-search-wrap">
           <input type="text" id="rs-student-search" class="form-control" placeholder="ابحث باسم الطالب…" autocomplete="off" oninput="rsFilterStudents()" onfocus="rsShowStudentDropdown()" onblur="rsHideStudentDropdownDelayed()">
           <div class="rs-dropdown" id="rs-student-dropdown" style="display:none"></div>
@@ -642,8 +644,8 @@
       <div class="rs-card hidden" id="rs-track-card">
         <div class="rs-card-title">نوع الرصد</div>
         <div class="rs-track-btns">
-          <button class="rs-track-btn" id="rs-track-hafiz" onclick="rsSelectTrack('hafiz')">📖 رصد الحفظ</button>
-          <button class="rs-track-btn" id="rs-track-review" onclick="rsSelectTrack('review')">🔗 رصد الربط والمراجعة</button>
+          <button class="rs-track-btn" id="rs-track-hafiz" onclick="rsSelectTrack('hafiz')"><i data-lucide="book-open" style="width:15px;height:15px;vertical-align:middle"></i> رصد الحفظ</button>
+          <button class="rs-track-btn" id="rs-track-review" onclick="rsSelectTrack('review')"><i data-lucide="link-2" style="width:15px;height:15px;vertical-align:middle"></i> رصد الربط والمراجعة</button>
         </div>
       </div>
 
@@ -727,7 +729,7 @@
 
       <!-- 5. آخر ما رُصد -->
       <div class="rs-card hidden" id="rs-history-card">
-        <div class="rs-card-title">📋 آخر ما رُصد</div>
+        <div class="rs-card-title"><i data-lucide="clipboard-list" style="width:16px;height:16px;vertical-align:middle"></i> آخر ما رُصد</div>
         <div class="rs-history-wrap">
           <table class="data-table" style="min-width:480px">
             <thead><tr>
@@ -744,8 +746,8 @@
     <div class="view" id="view-recitation-log">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-          <h2 style="font-size:1.1rem;font-weight:800;color:var(--accent)">📋 سجل الرصد</h2>
-          <button class="btn-submit" onclick="exportRecitationLog()" style="font-size:.82rem;padding:6px 14px">⬇️ تصدير Excel</button>
+          <h2 style="font-size:1.1rem;font-weight:800;color:var(--accent)"><i data-lucide="clipboard-list" style="width:16px;height:16px;vertical-align:middle"></i> سجل الرصد</h2>
+          <button class="btn-submit" onclick="exportRecitationLog()" style="font-size:.82rem;padding:6px 14px"><i data-lucide="download" style="width:14px;height:14px;vertical-align:middle"></i> تصدير Excel</button>
         </div>
         <!-- فلاتر -->
         <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;align-items:flex-end">
@@ -778,10 +780,10 @@
     <div class="view" id="view-add-student">
       <!-- Header with add button -->
       <div class="plans-header" style="margin-bottom:20px">
-        <h2 style="font-size:1rem">👨‍🎓 قائمة الطلاب المسجلين</h2>
+        <h2 style="font-size:1rem"><i data-lucide="graduation-cap" style="width:16px;height:16px;vertical-align:middle"></i> قائمة الطلاب المسجلين</h2>
         <div style="display:flex;gap:8px;align-items:center">
-          <input type="text" id="sfSearch" class="form-control" placeholder="🔍 بحث بالاسم أو المستخدم…" style="width:200px;margin:0" oninput="filterStudentsList()" />
-          <button class="btn-add" onclick="openAddStudentModal()">➕ إضافة طالب</button>
+          <input type="text" id="sfSearch" class="form-control" placeholder="بحث بالاسم أو المستخدم…" style="width:200px;margin:0" oninput="filterStudentsList()" />
+          <button class="btn-add" onclick="openAddStudentModal()"><i data-lucide="plus" style="width:14px;height:14px;vertical-align:middle"></i> إضافة طالب</button>
         </div>
       </div>
       <div class="plans-table-wrap">
@@ -793,14 +795,14 @@
     <div class="modal-overlay hidden" id="addStudentModal">
       <div class="modal" style="max-width:600px;width:95%">
         <div class="modal-header">
-          <h2>👨‍🎓 إضافة طالب جديد</h2>
+          <h2><i data-lucide="graduation-cap" style="width:18px;height:18px;vertical-align:middle"></i> إضافة طالب جديد</h2>
           <button class="modal-close" onclick="closeAddStudentModal()">×</button>
         </div>
         <div class="modal-body" style="padding-top:0">
           <!-- TABS -->
           <div style="display:flex;gap:10px;margin-bottom:18px;border-bottom:2px solid var(--border);padding-bottom:0">
-            <button class="as-tab-btn active" id="asTabManual" onclick="switchAsTab('manual')" style="border-bottom:2px solid transparent;border-radius:0;padding:10px 18px;margin-bottom:-2px">➕ إضافة يدوية</button>
-            <button class="as-tab-btn" id="asTabExcel" onclick="switchAsTab('excel')" style="border-bottom:2px solid transparent;border-radius:0;padding:10px 18px;margin-bottom:-2px">📥 استيراد Excel</button>
+            <button class="as-tab-btn active" id="asTabManual" onclick="switchAsTab('manual')" style="border-bottom:2px solid transparent;border-radius:0;padding:10px 18px;margin-bottom:-2px"><i data-lucide="plus" style="width:14px;height:14px;vertical-align:middle"></i> إضافة يدوية</button>
+            <button class="as-tab-btn" id="asTabExcel" onclick="switchAsTab('excel')" style="border-bottom:2px solid transparent;border-radius:0;padding:10px 18px;margin-bottom:-2px"><i data-lucide="upload" style="width:14px;height:14px;vertical-align:middle"></i> استيراد Excel</button>
           </div>
           <!-- TAB: MANUAL -->
           <div id="asManualPane">
@@ -862,14 +864,14 @@
             <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:12px">الأعمدة بالترتيب: الاسم — اسم المستخدم — الجوال — الإيميل — البرنامج — المجلد — كلمة المرور</p>
             <div class="file-upload-area" onclick="document.getElementById('sf-excel').click()">
               <input type="file" id="sf-excel" accept=".xlsx,.xls" onchange="handleStudentExcel(this)" />
-              <div class="file-upload-icon">📊</div>
+              <div class="file-upload-icon"><i data-lucide="file-spreadsheet" style="width:32px;height:32px"></i></div>
               <div class="file-upload-text">انقر لاختيار ملف Excel أو اسحبه هنا</div>
               <div class="file-name-display" id="sfExcelName"></div>
             </div>
             <div id="sfExcelPreview" style="margin-top:16px;overflow-x:auto"></div>
             <div class="modal-footer" style="padding:16px 0 0">
               <button type="button" class="btn-reset" onclick="closeAddStudentModal()">إغلاق</button>
-              <button class="btn-submit" id="sfImportBtn" onclick="importStudentsExcel()" style="display:none">📥 استيراد الكل</button>
+              <button class="btn-submit" id="sfImportBtn" onclick="importStudentsExcel()" style="display:none"><i data-lucide="upload" style="width:14px;height:14px;vertical-align:middle"></i> استيراد الكل</button>
             </div>
           </div>
         </div>
@@ -880,7 +882,7 @@
     <div class="modal-overlay hidden" id="addTeacherModal">
       <div class="modal" style="max-width:520px;width:95%">
         <div class="modal-header">
-          <h2>👨‍🏫 إضافة معلم جديد</h2>
+          <h2><i data-lucide="user-check" style="width:18px;height:18px;vertical-align:middle"></i> إضافة معلم جديد</h2>
           <button class="modal-close" onclick="closeAddTeacherModal()">×</button>
         </div>
         <div class="modal-body">
@@ -929,7 +931,7 @@
     <div class="modal-overlay hidden" id="resetPwModal">
       <div class="modal" style="max-width:400px">
         <div class="modal-header">
-          <h2>🔑 تغيير كلمة المرور</h2>
+          <h2><i data-lucide="key" style="width:18px;height:18px;vertical-align:middle"></i> تغيير كلمة المرور</h2>
           <button class="modal-close" onclick="closeResetPwModal()">×</button>
         </div>
         <div class="modal-body">
@@ -980,11 +982,11 @@
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px">
           <div id="sprTitle" style="font-weight:800;font-size:1.1rem;color:var(--text-main)">سجل الطالب</div>
           <button class="btn-submit" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px" onclick="exportStudentPlanRecord()">
-            📥 تصدير Excel
+            <i data-lucide="download" style="width:14px;height:14px"></i> تصدير Excel
           </button>
         </div>
         <div id="sprSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px"></div>
-        <div style="font-weight:700;font-size:.92rem;margin-bottom:10px;color:var(--accent)">🎙️ جلسات التسميع مع المعلمين</div>
+        <div style="font-weight:700;font-size:.92rem;margin-bottom:10px;color:var(--accent)"><i data-lucide="mic" style="width:15px;height:15px;vertical-align:middle"></i> جلسات التسميع مع المعلمين</div>
         <div id="sprSessionsWrap" style="overflow-x:auto">
           <table class="data-table">
             <thead><tr>
@@ -1019,20 +1021,20 @@
     <div class="view" id="view-top-students">
       <div class="card" style="max-width:680px;margin:0 auto">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-          <h2 style="font-size:1.15rem;font-weight:800;color:var(--accent)">🏆 لوحة الشرف</h2>
+          <h2 style="font-size:1.15rem;font-weight:800;color:var(--accent)"><i data-lucide="trophy" style="width:18px;height:18px;vertical-align:middle"></i> لوحة الشرف</h2>
           <span id="honor-count" style="font-size:.8rem;color:var(--text-muted)"></span>
         </div>
         <div id="adminHonorList"><p class="empty-row">جارٍ التحميل…</p></div>
       </div>
     </div>
-    <div class="view" id="view-exams"><div class="section-placeholder"><div class="ph-icon">📝</div><h3>الاختبارات المرحلية</h3><p>جدول الاختبارات ونتائجها ستظهر هنا</p></div></div>
+    <div class="view" id="view-exams"><div class="section-placeholder"><div class="ph-icon"><i data-lucide="pencil-line" style="width:32px;height:32px"></i></div><h3>الاختبارات المرحلية</h3><p>جدول الاختبارات ونتائجها ستظهر هنا</p></div></div>
     <div class="view" id="view-import-students"><div class="section-placeholder"><div class="ph-icon">📥</div><h3>استيراد طلاب (Excel)</h3><p>رفع ملف Excel لاستيراد بيانات الطلاب دفعة واحدة</p></div></div>
 
     <!-- STUDY PLANS -->
     <div class="view" id="view-import-plans">
       <div class="plans-header">
-        <h2>📋 الخطط العلمية</h2>
-        <button class="btn-add" onclick="openPlanModal()">➕ إضافة خطة</button>
+        <h2><i data-lucide="clipboard-list" style="width:18px;height:18px;vertical-align:middle"></i> الخطط العلمية</h2>
+        <button class="btn-add" onclick="openPlanModal()"><i data-lucide="plus" style="width:14px;height:14px;vertical-align:middle"></i> إضافة خطة</button>
       </div>
       <div class="plans-table-wrap">
         <div id="plansTableBody"><p class="empty-row">جارٍ التحميل…</p></div>
@@ -1051,8 +1053,8 @@
       <!-- جدول إدارة المعلمين -->
       <div class="card" style="margin-bottom:20px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-          <h2 style="font-size:1rem;font-weight:800;color:var(--accent)">👥 إدارة المعلمين</h2>
-          <button class="btn-add" onclick="openAddTeacherModal()">➕ إضافة معلم</button>
+          <h2 style="font-size:1rem;font-weight:800;color:var(--accent)"><i data-lucide="users" style="width:16px;height:16px;vertical-align:middle"></i> إدارة المعلمين</h2>
+          <button class="btn-add" onclick="openAddTeacherModal()"><i data-lucide="plus" style="width:14px;height:14px;vertical-align:middle"></i> إضافة معلم</button>
         </div>
         <div style="overflow-x:auto">
           <table class="tf-table" id="teacherMgmtTable">
@@ -1125,15 +1127,16 @@
     <div class="view" id="view-audio-rooms">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-          <h2 style="font-size:1.1rem;font-weight:800;color:var(--accent)">🎤 الغرف الصوتية</h2>
+          <h2 style="font-size:1.1rem;font-weight:800;color:var(--accent)"><i data-lucide="mic-2" style="width:18px;height:18px;vertical-align:middle"></i> الغرف الصوتية</h2>
           <button class="btn-submit" onclick="openRoomModal()">+ إضافة غرفة</button>
         </div>
         <div id="audioRoomsBody"><p class="empty-row">جارٍ التحميل…</p></div>
       </div>
     </div>
 
-    <div class="view" id="view-settings"><div class="section-placeholder"><div class="ph-icon">⚙️</div><h3>الإعدادات العامة</h3><p>إعدادات المنصة العامة ستكون هنا</p></div></div>
+    <div class="view" id="view-settings"><div class="section-placeholder"><div class="ph-icon"><i data-lucide="settings" style="width:32px;height:32px"></i></div><h3>الإعدادات العامة</h3><p>إعدادات المنصة العامة ستكون هنا</p></div></div>
 
+  <footer style="text-align:center;padding:14px 16px 20px;font-size:.75rem;color:#9ca3af">صُنع بإتقان عبر <span style="color:#2d7a57;font-weight:600">منصة أثر</span></footer>
   </div>
 </div>
 
@@ -1145,7 +1148,7 @@
   });
 
   const viewMeta = {
-    'home':             { title: 'الرئيسية',              breadcrumb: 'منصة حفّاظ › لوحة المشرف' },
+    'home':             { title: 'الرئيسية',              breadcrumb: 'منصة رواد سنن › لوحة المشرف' },
     'attendance':       { title: 'متابعة الحضور',          breadcrumb: 'التشغيل اليومي › متابعة الحضور' },
     'recitation':       { title: 'رصد جلسة تسميع',         breadcrumb: 'التشغيل اليومي › رصد جلسة تسميع' },
     'add-student':      { title: 'إضافة طالب',             breadcrumb: 'الطلاب › إضافة طالب' },
@@ -3008,6 +3011,7 @@
       document.getElementById('loading-screen').style.display = 'none';
     }
   })();
+  document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
 </script>
 </body>
 </html>
