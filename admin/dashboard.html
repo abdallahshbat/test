@@ -141,6 +141,47 @@
     .att-status-line { display:flex;align-items:center;gap:4px;font-size:.75rem;white-space:nowrap }
     .att-btn-detail { font-size:.75rem;padding:3px 10px;background:#e0f2fe;color:#0369a1;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600 }
 
+    /* ── لوحة الرئيسية ── */
+    .home-stats-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px }
+    .home-stat-card { background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 3px rgba(0,0,0,.04) }
+    .home-stat-icon { width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0 }
+    .home-stat-icon.green  { background:#d1fae5;color:#16a34a }
+    .home-stat-icon.blue   { background:#dbeafe;color:#2563eb }
+    .home-stat-icon.amber  { background:#fef3c7;color:#d97706 }
+    .home-stat-icon.purple { background:#ede9fe;color:#7c3aed }
+    .home-stat-icon.rose   { background:#ffe4e6;color:#e11d48 }
+    .home-stat-icon.teal   { background:#ccfbf1;color:#0d9488 }
+    .home-stat-icon.indigo { background:#e0e7ff;color:#4338ca }
+    .home-stat-icon.orange { background:#ffedd5;color:#ea580c }
+    .home-stat-val  { font-size:1.65rem;font-weight:900;color:var(--text-main);line-height:1 }
+    .home-stat-lbl  { font-size:.78rem;color:var(--text-muted);margin-top:3px }
+    .home-panels    { display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px }
+    @media(max-width:720px){ .home-panels { grid-template-columns:1fr } }
+    .home-panel-card { background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:20px 22px }
+    .home-panel-title { font-size:.92rem;font-weight:800;color:var(--text-main);margin-bottom:14px;display:flex;align-items:center;gap:7px }
+    .home-rank-row { display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border) }
+    .home-rank-row:last-child { border-bottom:none }
+    .home-rank-num { font-size:.78rem;font-weight:800;color:var(--text-muted);width:20px;text-align:center;flex-shrink:0 }
+    .home-rank-name { flex:1;font-size:.85rem;font-weight:600;color:var(--text-main) }
+    .home-rank-bar-wrap { width:90px;background:var(--border);border-radius:6px;height:7px;overflow:hidden;flex-shrink:0 }
+    .home-rank-bar { height:100%;background:var(--accent);border-radius:6px }
+    .home-rank-pct { font-size:.78rem;font-weight:700;color:var(--accent);min-width:32px;text-align:left }
+    .home-teacher-row { display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:.84rem }
+    .home-teacher-row:last-child { border-bottom:none }
+    .home-teacher-sessions { font-weight:800;color:var(--accent) }
+    .home-alerts-grid { display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px }
+    @media(max-width:600px){ .home-alerts-grid { grid-template-columns:1fr } }
+    .home-alert-card { border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:12px }
+    .home-alert-card.danger { background:#fef2f2;border:1px solid #fca5a5 }
+    .home-alert-card.warning { background:#fefce8;border:1px solid #fde047 }
+    .home-alert-icon { width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0 }
+    .home-alert-card.danger .home-alert-icon { background:#fecaca;color:#dc2626 }
+    .home-alert-card.warning .home-alert-icon { background:#fef08a;color:#ca8a04 }
+    .home-alert-num { font-size:1.5rem;font-weight:900;line-height:1 }
+    .home-alert-card.danger .home-alert-num { color:#dc2626 }
+    .home-alert-card.warning .home-alert-num { color:#ca8a04 }
+    .home-alert-lbl { font-size:.78rem;color:var(--text-muted);margin-top:2px }
+
     .section-placeholder {
       background: var(--card-bg); border-radius: 14px;
       border: 2px dashed var(--border); padding: 60px 40px; text-align: center;
@@ -617,15 +658,45 @@
       <div class="welcome-card">
         <div class="welcome-text">
           <h2>أهلاً بك، <span id="welcomeName">…</span></h2>
-          <p>لوحة تحكم منصة رواد سنن — نظرة عامة على اليوم</p>
+          <p>لوحة تحكم منصة رواد سنن — نظرة عامة شاملة</p>
         </div>
         <div class="welcome-emoji"><i data-lucide="building-2" style="width:32px;height:32px;color:#fff"></i></div>
       </div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-icon green"><i data-lucide="graduation-cap" style="width:20px;height:20px"></i></div><div><div class="stat-value" id="statStudents">—</div><div class="stat-label">إجمالي الطلاب</div></div></div>
-        <div class="stat-card"><div class="stat-icon blue"><i data-lucide="user-check" style="width:20px;height:20px"></i></div><div><div class="stat-value" id="statTeachers">—</div><div class="stat-label">إجمالي المعلمين</div></div></div>
-        <div class="stat-card"><div class="stat-icon amber"><i data-lucide="mic" style="width:20px;height:20px"></i></div><div><div class="stat-value" id="statSessions">—</div><div class="stat-label">جلسات اليوم</div></div></div>
-        <div class="stat-card"><div class="stat-icon purple"><i data-lucide="calendar" style="width:20px;height:20px"></i></div><div><div class="stat-value" id="statDate">—</div><div class="stat-label">تاريخ اليوم</div></div></div>
+
+      <!-- بطاقات الإحصاءات الإجمالية -->
+      <div class="home-stats-grid" id="homeStatsGrid">
+        <div class="home-stat-card"><div class="home-stat-icon green"><i data-lucide="graduation-cap" style="width:20px;height:20px"></i></div><div><div class="home-stat-val" id="hst-students">—</div><div class="home-stat-lbl">عدد الطلاب</div></div></div>
+        <div class="home-stat-card"><div class="home-stat-icon blue"><i data-lucide="user-check" style="width:20px;height:20px"></i></div><div><div class="home-stat-val" id="hst-teachers">—</div><div class="home-stat-lbl">عدد المعلمين</div></div></div>
+        <div class="home-stat-card"><div class="home-stat-icon amber"><i data-lucide="book-open" style="width:20px;height:20px"></i></div><div><div class="home-stat-val" id="hst-memorized">—</div><div class="home-stat-lbl">إجمالي الأحاديث المحفوظة</div></div></div>
+        <div class="home-stat-card"><div class="home-stat-icon teal"><i data-lucide="mic" style="width:20px;height:20px"></i></div><div><div class="home-stat-val" id="hst-sessions">—</div><div class="home-stat-lbl">إجمالي جلسات التسميع</div></div></div>
+        <div class="home-stat-card"><div class="home-stat-icon purple"><i data-lucide="headphones" style="width:20px;height:20px"></i></div><div><div class="home-stat-val" id="hst-recited">—</div><div class="home-stat-lbl">إجمالي الأحاديث المسمَّعة</div></div></div>
+        <div class="home-stat-card"><div class="home-stat-icon indigo"><i data-lucide="link-2" style="width:20px;height:20px"></i></div><div><div class="home-stat-val" id="hst-linking">—</div><div class="home-stat-lbl">إجمالي أوجه الربط</div></div></div>
+        <div class="home-stat-card"><div class="home-stat-icon orange"><i data-lucide="refresh-cw" style="width:20px;height:20px"></i></div><div><div class="home-stat-val" id="hst-review">—</div><div class="home-stat-lbl">إجمالي أوجه المراجعة</div></div></div>
+        <div class="home-stat-card"><div class="home-stat-icon rose"><i data-lucide="star" style="width:20px;height:20px"></i></div><div><div class="home-stat-val" id="hst-score">—</div><div class="home-stat-lbl">متوسط التقييم العام</div></div></div>
+      </div>
+
+      <!-- تنبيهات الانقطاع -->
+      <div class="home-alerts-grid">
+        <div class="home-alert-card danger">
+          <div class="home-alert-icon"><i data-lucide="mic-off" style="width:18px;height:18px"></i></div>
+          <div><div class="home-alert-num" id="halt-rec">—</div><div class="home-alert-lbl">طالب منقطع عن التسميع أكثر من 5 أيام</div></div>
+        </div>
+        <div class="home-alert-card warning">
+          <div class="home-alert-icon"><i data-lucide="book-x" style="width:18px;height:18px"></i></div>
+          <div><div class="home-alert-num" id="halt-plan">—</div><div class="home-alert-lbl">طالب منقطع عن الخطة أكثر من 5 أيام</div></div>
+        </div>
+      </div>
+
+      <!-- أعلى الطلاب + نشاط المعلمين -->
+      <div class="home-panels">
+        <div class="home-panel-card">
+          <div class="home-panel-title"><i data-lucide="trophy" style="width:16px;height:16px;color:#d97706"></i> أعلى 5 طلاب إنجازاً</div>
+          <div id="homeTopStudents"><p style="color:var(--text-muted);font-size:.85rem">جارٍ التحميل…</p></div>
+        </div>
+        <div class="home-panel-card">
+          <div class="home-panel-title"><i data-lucide="users" style="width:16px;height:16px;color:#2563eb"></i> نشاط المعلمين</div>
+          <div id="homeTeacherActivity"><p style="color:var(--text-muted);font-size:.85rem">جارٍ التحميل…</p></div>
+        </div>
       </div>
     </div>
 
@@ -1310,12 +1381,9 @@
     const meta = viewMeta[id] || { title: id, breadcrumb: '' };
     document.getElementById('topbarTitle').textContent = meta.title;
     document.getElementById('topbarBreadcrumb').textContent = meta.breadcrumb;
-    if (id === 'add-student') {
-      loadStudentsList();
-    }
-    if (id === 'recitation') {
-      initRecitationView();
-    }
+    if (id === 'home') loadHomeDashboard();
+    if (id === 'add-student') loadStudentsList();
+    if (id === 'recitation') initRecitationView();
   }
 
   /* ========== STUDENT FILES ========== */
@@ -2835,22 +2903,10 @@
     window.location.href = '../login.html';
   }
 
-  function setDate() {
-    const d = new Date();
-    document.getElementById('statDate').textContent = d.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  }
+  function setDate() { /* no-op: date shown elsewhere */ }
 
   async function loadStats() {
-    const [s, t, r] = await Promise.all([
-      client.from('students').select('id', { count: 'exact', head: true }),
-      client.from('teachers').select('id', { count: 'exact', head: true }),
-      client.from('recitation_sessions').select('id', { count: 'exact', head: true })
-        .gte('session_date', new Date().toISOString().split('T')[0])
-        .lt('session_date', new Date(Date.now() + 86400000).toISOString().split('T')[0])
-    ]);
-    document.getElementById('statStudents').textContent = s.count ?? '—';
-    document.getElementById('statTeachers').textContent = t.count ?? '—';
-    document.getElementById('statSessions').textContent = r.count ?? '—';
+    await loadHomeDashboard();
   }
 
   function showToast(msg, type = 'success') {
@@ -3170,6 +3226,131 @@
     const today = new Date().toISOString().slice(0, 10);
     document.getElementById('att-from').value = today;
     document.getElementById('att-to').value   = today;
+  }
+
+  /* ========== HOME DASHBOARD ========== */
+  let homeDashboardLoaded = false;
+  async function loadHomeDashboard() {
+    if (homeDashboardLoaded) return;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const cutoff = new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10);
+
+    // جلب كل البيانات دفعة واحدة
+    const [studRes, teachRes, sessRes, progRes] = await Promise.all([
+      client.from('students')
+        .select('id, memorized_hadiths, program_id, teacher_id, programs(total_hadiths), teachers(users(name))')
+        .eq('is_archived', false),
+      client.from('teachers')
+        .select('id, users(name)')
+        .eq('is_archived', false),
+      client.from('recitation_sessions')
+        .select('student_id, teacher_id, date, hadith_from, hadith_to, linking_from, linking_to, review_from, review_to, score, teachers(users(name))'),
+      client.from('student_plan_progress')
+        .select('student_id, completed_at')
+        .eq('completed', true)
+    ]);
+
+    const students = studRes.data  || [];
+    const teachers = teachRes.data || [];
+    const sessions = sessRes.data  || [];
+    const progress = progRes.data  || [];
+
+    // ── البطاقات الإجمالية ──
+    const totalMemorized = students.reduce((s, st) => s + (st.memorized_hadiths || 0), 0);
+
+    let totalRecited = 0, totalLinking = 0, totalReview = 0, totalScore = 0, scoreCount = 0;
+    sessions.forEach(s => {
+      if (s.hadith_from != null && s.hadith_to != null)
+        totalRecited += Math.max(0, s.hadith_to - s.hadith_from + 1);
+      if (s.linking_from != null && s.linking_to != null)
+        totalLinking += Math.max(0, s.linking_to - s.linking_from + 1);
+      const rf = parseInt(s.review_from), rt = parseInt(s.review_to);
+      if (!isNaN(rf) && !isNaN(rt))
+        totalReview += Math.max(0, rt - rf + 1);
+      if (s.score != null) { totalScore += parseFloat(s.score); scoreCount++; }
+    });
+    const avgScore = scoreCount ? (totalScore / scoreCount).toFixed(1) : '—';
+
+    const fmt = n => n >= 1000 ? (n / 1000).toFixed(1) + 'K' : n;
+    document.getElementById('hst-students').textContent  = students.length;
+    document.getElementById('hst-teachers').textContent  = teachers.length;
+    document.getElementById('hst-memorized').textContent = fmt(totalMemorized);
+    document.getElementById('hst-sessions').textContent  = fmt(sessions.length);
+    document.getElementById('hst-recited').textContent   = fmt(totalRecited);
+    document.getElementById('hst-linking').textContent   = fmt(totalLinking);
+    document.getElementById('hst-review').textContent    = fmt(totalReview);
+    document.getElementById('hst-score').textContent     = avgScore;
+
+    // ── تنبيهات الانقطاع ──
+    // آخر جلسة تسميع لكل طالب
+    const lastRec = {};
+    sessions.forEach(s => {
+      if (!lastRec[s.student_id] || s.date > lastRec[s.student_id]) lastRec[s.student_id] = s.date;
+    });
+    const absentRec = students.filter(st => {
+      const last = lastRec[st.id];
+      return !last || last < cutoff;
+    }).length;
+
+    // آخر إنجاز خطة لكل طالب
+    const lastPlan = {};
+    progress.forEach(p => {
+      if (!p.completed_at) return;
+      const d = p.completed_at.slice(0, 10);
+      if (!lastPlan[p.student_id] || d > lastPlan[p.student_id]) lastPlan[p.student_id] = d;
+    });
+    const absentPlan = students.filter(st => {
+      const last = lastPlan[st.id];
+      return !last || last < cutoff;
+    }).length;
+
+    document.getElementById('halt-rec').textContent  = absentRec;
+    document.getElementById('halt-plan').textContent = absentPlan;
+
+    // ── أعلى 5 طلاب ──
+    const ranked = students
+      .map(st => {
+        const total = st.programs?.total_hadiths || 0;
+        const done  = st.memorized_hadiths || 0;
+        const pct   = total > 0 ? Math.round(done / total * 100) : 0;
+        return { name: st.users?.name || st.id, done, total, pct };
+      })
+      .filter(s => s.total > 0)
+      .sort((a, b) => b.pct - a.pct)
+      .slice(0, 5);
+
+    if (ranked.length) {
+      document.getElementById('homeTopStudents').innerHTML = ranked.map((s, i) => `
+        <div class="home-rank-row">
+          <div class="home-rank-num">${i + 1}</div>
+          <div class="home-rank-name">${s.name}</div>
+          <div class="home-rank-bar-wrap"><div class="home-rank-bar" style="width:${s.pct}%"></div></div>
+          <div class="home-rank-pct">${s.pct}%</div>
+        </div>`).join('');
+    } else {
+      document.getElementById('homeTopStudents').innerHTML = '<p style="color:var(--text-muted);font-size:.84rem">لا توجد بيانات</p>';
+    }
+
+    // ── نشاط المعلمين ──
+    const teacherSessions = {};
+    sessions.forEach(s => {
+      const name = s.teachers?.users?.name || s.teacher_id || '—';
+      teacherSessions[name] = (teacherSessions[name] || 0) + 1;
+    });
+    const teacherRows = Object.entries(teacherSessions).sort((a, b) => b[1] - a[1]);
+
+    if (teacherRows.length) {
+      document.getElementById('homeTeacherActivity').innerHTML = teacherRows.map(([name, count]) => `
+        <div class="home-teacher-row">
+          <span>${name}</span>
+          <span class="home-teacher-sessions">${count} جلسة</span>
+        </div>`).join('');
+    } else {
+      document.getElementById('homeTeacherActivity').innerHTML = '<p style="color:var(--text-muted);font-size:.84rem">لا توجد بيانات</p>';
+    }
+
+    homeDashboardLoaded = true;
   }
 
   function attShiftDay(delta) {
