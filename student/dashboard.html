@@ -1686,7 +1686,7 @@ const _origToggleTheme = toggleTheme;
 // eslint-disable-next-line no-global-assign
 window.toggleTheme = function() { _origToggleTheme(); syncThemeColorMeta(); };
 syncThemeColorMeta();
-document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+lucide.createIcons();
 </script>
 </body>
 </html>
