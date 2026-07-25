@@ -647,7 +647,11 @@
           <!-- يوم واحد -->
           <div id="att-day-wrap" style="min-width:160px">
             <label style="font-size:.78rem;font-weight:700;display:block;margin-bottom:4px;color:var(--text-muted)">التاريخ</label>
-            <input type="date" id="att-date" class="form-control" style="padding:7px 10px;font-size:.85rem">
+            <div style="display:flex;align-items:center;gap:6px">
+              <button type="button" onclick="attShiftDay(-1)" title="اليوم السابق" style="padding:6px 10px;background:var(--card-bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;display:flex;align-items:center;color:var(--text)"><i data-lucide="chevron-right" style="width:16px;height:16px"></i></button>
+              <input type="date" id="att-date" class="form-control" style="padding:7px 10px;font-size:.85rem;flex:1">
+              <button type="button" onclick="attShiftDay(1)" title="اليوم التالي" style="padding:6px 10px;background:var(--card-bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;display:flex;align-items:center;color:var(--text)"><i data-lucide="chevron-left" style="width:16px;height:16px"></i></button>
+            </div>
           </div>
 
           <!-- نطاق زمني -->
@@ -3166,6 +3170,15 @@
     const today = new Date().toISOString().slice(0, 10);
     document.getElementById('att-from').value = today;
     document.getElementById('att-to').value   = today;
+  }
+
+  function attShiftDay(delta) {
+    const input = document.getElementById('att-date');
+    if (!input.value) return;
+    const d = new Date(input.value);
+    d.setDate(d.getDate() + delta);
+    input.value = d.toISOString().slice(0, 10);
+    runAttendance();
   }
 
   function attModeChange() {
