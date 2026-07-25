@@ -3219,7 +3219,7 @@
       client.from('study_plans').select('id, plan_name'),
       client.from('study_plan_days').select('id, plan_id, day_number, memo_from, memo_to').order('day_number'),
       client.from('student_plan_progress')
-        .select('student_id, plan_day_id, task_key, completed_at')
+        .select('student_id, plan_day_id, task_key, completed')
         .eq('completed', true)
         .in('student_id', studentIds),
       client.from('recitation_sessions')
@@ -3237,12 +3237,12 @@
     // فهارس
     const dayById     = {};  allDays.forEach(d => { dayById[d.id] = d; });
     const planById    = {};  plans.forEach(p => { planById[p.id] = p; });
-    // progress مجمّع: student_id → plan_day_id → task_key → completed_at
+    // progress مجمّع: student_id → plan_day_id → task_key → true
     const progMap = {};
     progress.forEach(p => {
       if (!progMap[p.student_id]) progMap[p.student_id] = {};
       if (!progMap[p.student_id][p.plan_day_id]) progMap[p.student_id][p.plan_day_id] = {};
-      progMap[p.student_id][p.plan_day_id][p.task_key] = p.completed_at;
+      progMap[p.student_id][p.plan_day_id][p.task_key] = true;
     });
 
     // sessions مجمّع: student_id → date → [sessions]
@@ -3262,9 +3262,9 @@
       const planDays = allDays.filter(d => d.plan_id === st.current_plan_id);
 
       if (mode === 'day') {
-        rows.push(buildDayRow(st, dateFrom, planDays, assignedAt, progMap, sessMap));
+        rows.push(buildDayRow(st, dateFrom, planDays, assignedAt, progMap, sessMap, planById));
       } else {
-        rows.push(buildRangeRow(st, dateFrom, dateTo, planDays, assignedAt, progMap, sessMap));
+        rows.push(buildRangeRow(st, dateFrom, dateTo, planDays, assignedAt, progMap, sessMap, planById));
       }
     }
 
@@ -3290,7 +3290,7 @@
     return d.toISOString().slice(0, 10);
   }
 
-  function buildDayRow(st, date, planDays, assignedAt, progMap, sessMap) {
+  function buildDayRow(st, date, planDays, assignedAt, progMap, sessMap, planById) {
     const stProg  = progMap[st.id] || {};
     const stSess  = sessMap[st.id] || {};
     const daySess = stSess[date] || [];
@@ -3356,7 +3356,7 @@
     };
   }
 
-  function buildRangeRow(st, dateFrom, dateTo, planDays, assignedAt, progMap, sessMap) {
+  function buildRangeRow(st, dateFrom, dateTo, planDays, assignedAt, progMap, sessMap, planById) {
     const stProg = progMap[st.id] || {};
     const stSess = sessMap[st.id] || {};
 
