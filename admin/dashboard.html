@@ -3237,9 +3237,9 @@
     const cutoff = new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10);
 
     // جلب كل البيانات دفعة واحدة
-    const [studRes, teachRes, sessRes, progRes, drRes] = await Promise.all([
+    const [studRes, teachRes, sessRes, progRes, drRes, planDaysRes, memoProgRes] = await Promise.all([
       client.from('students')
-        .select('id, memorized_hadiths, program_id, teacher_id, programs(total_hadiths), teachers(users(name))')
+        .select('id, current_plan_id, program_id, teacher_id, programs(total_hadiths), teachers(users(name))')
         .eq('is_archived', false),
       client.from('teachers')
         .select('id, users(name)')
@@ -3251,19 +3251,58 @@
         .eq('completed', true),
       client.from('daily_reviews')
         .select('student_id, link_from, link_to, review_range_from, review_range_to')
-        .eq('student_submitted', true)
+        .eq('student_submitted', true),
+      client.from('study_plan_days')
+        .select('id, plan_id, day_number, memo_from, memo_to')
+        .order('day_number'),
+      client.from('student_plan_progress')
+        .select('student_id, plan_day_id')
+        .eq('completed', true)
+        .eq('task_key', 'memo')
     ]);
 
-    const students = studRes.data  || [];
-    const teachers = teachRes.data || [];
-    const sessions = sessRes.data  || [];
-    const progress = progRes.data  || [];
-    const dailyRevs = drRes.data   || [];
+    const students  = studRes.data    || [];
+    const teachers  = teachRes.data   || [];
+    const sessions  = sessRes.data    || [];
+    const progress  = progRes.data    || [];
+    const dailyRevs = drRes.data      || [];
+    const planDays  = planDaysRes.data || [];
+    const memoProg  = memoProgRes.data || [];
 
-    // ── البطاقات الإجمالية ──
-    const totalMemorized = students.reduce((s, st) => s + (st.memorized_hadiths || 0), 0);
+    // ── فهارس الخطة ──
+    const planDaysMap = {}; // plan_id → days[]
+    planDays.forEach(d => {
+      if (!planDaysMap[d.plan_id]) planDaysMap[d.plan_id] = [];
+      planDaysMap[d.plan_id].push(d);
+    });
+    const completedMemoByStudent = {}; // student_id → Set(plan_day_id)
+    memoProg.forEach(p => {
+      if (!completedMemoByStudent[p.student_id]) completedMemoByStudent[p.student_id] = new Set();
+      completedMemoByStudent[p.student_id].add(p.plan_day_id);
+    });
 
-    // أحاديث مسمّعة: per طالب max(hadith_to) - min(hadith_from) + 1 (نفس معادلة صفحة الطالب)
+    // ── أحاديث محفوظة: نفس معادلة صفحة الطالب (maxMemoTo - firstMemoFrom + 1) ──
+    let totalMemorized = 0;
+    students.forEach(st => {
+      const days = planDaysMap[st.current_plan_id] || [];
+      if (!days.length) return;
+      const sorted = [...days].sort((a, b) => a.day_number - b.day_number);
+      const firstDay = sorted.find(d => d.memo_from);
+      if (!firstDay) return;
+      const firstMemoFrom = parseInt(firstDay.memo_from);
+      if (isNaN(firstMemoFrom)) return;
+      const completed = completedMemoByStudent[st.id] || new Set();
+      let maxMemoTo = 0;
+      days.forEach(d => {
+        if (completed.has(d.id) && d.memo_to) {
+          const v = parseInt(d.memo_to);
+          if (!isNaN(v) && v > maxMemoTo) maxMemoTo = v;
+        }
+      });
+      if (maxMemoTo) totalMemorized += Math.max(0, maxMemoTo - firstMemoFrom + 1);
+    });
+
+    // ── أحاديث مسمّعة: per طالب max(hadith_to) - min(hadith_from) + 1 ──
     const sessByStudent = {};
     sessions.forEach(s => {
       if (!sessByStudent[s.student_id]) sessByStudent[s.student_id] = [];
@@ -3276,17 +3315,18 @@
         totalRecited += Math.max(...valid.map(r => parseInt(r.hadith_to))) - Math.min(...valid.map(r => parseInt(r.hadith_from))) + 1;
     });
 
-    // ربط: جلسات المعلم + daily_reviews (نفس المصدرين تبع صفحة الطالب)
+    // ── ربط: جلسات المعلم + daily_reviews ──
     let totalLinking = 0;
     sessions.forEach(s => {
-      totalLinking += Math.max(0, (s.linking_to || 0) - (s.linking_from || 0) + 1) * (s.linking_from != null && s.linking_to != null ? 1 : 0);
+      if (s.linking_from != null && s.linking_to != null)
+        totalLinking += Math.max(0, s.linking_to - s.linking_from + 1);
     });
     dailyRevs.forEach(r => {
       const f = parseInt(r.link_from), t = parseInt(r.link_to);
       if (!isNaN(f) && !isNaN(t)) totalLinking += Math.max(0, t - f + 1);
     });
 
-    // مراجعة: جلسات المعلم + daily_reviews
+    // ── مراجعة: جلسات المعلم + daily_reviews ──
     let totalReview = 0;
     sessions.forEach(s => {
       const rf = parseInt(s.review_from), rt = parseInt(s.review_to);
