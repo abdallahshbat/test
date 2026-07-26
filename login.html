@@ -130,13 +130,14 @@
 
   <form id="loginForm">
     <div class="field">
-      <label for="username">اسم المستخدم</label>
+      <label for="email">البريد الإلكتروني</label>
       <input
-        type="text"
-        id="username"
-        placeholder="أدخل اسم المستخدم"
-        autocomplete="username"
+        type="email"
+        id="email"
+        placeholder="example@email.com"
+        autocomplete="email"
         required
+        style="direction:ltr;text-align:right"
       />
     </div>
 
@@ -219,47 +220,31 @@
     e.preventDefault();
     hideError();
 
-    const username = document.getElementById('username').value.trim();
+    const email    = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
 
-    if (!username || !password) {
-      showError('يرجى إدخال اسم المستخدم وكلمة المرور.');
+    if (!email || !password) {
+      showError('يرجى إدخال البريد الإلكتروني وكلمة المرور.');
       return;
     }
 
     setLoading(true);
 
     try {
-      // الخطوة 1: جلب email من جدول users عبر username
-      const { data: users, error: lookupError } = await supabaseClient
-        .from('users')
-        .select('email')
-        .eq('username', username)
-        .limit(1);
-
-      if (lookupError || !users || users.length === 0) {
-        showError('اسم المستخدم غير موجود.');
-        return;
-      }
-
-      const email = users[0].email;
-
-      // الخطوة 2: تسجيل الدخول عبر Supabase Auth
-      // الجلسة تُحفظ تلقائياً في sessionStorage عبر الـ client ولا تُكتب يدوياً
       const { data, error: signInError } = await supabaseClient.auth.signInWithPassword({
         email,
         password
       });
 
       if (signInError) {
-        showError('كلمة المرور غير صحيحة.');
+        showError('البريد الإلكتروني أو كلمة المرور غير صحيحة.');
         return;
       }
 
       redirectByRole(data.user);
 
     } catch (error) {
-      showError('حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.')
+      showError('حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.');
     } finally {
       setLoading(false);
     }
