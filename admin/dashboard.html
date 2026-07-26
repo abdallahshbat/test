@@ -1013,38 +1013,48 @@
           <div id="asManualPane">
             <form id="addStudentForm" onsubmit="submitStudent(event)">
               <div class="form-body" style="padding:0">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>الاسم الشخصي *</label>
-                    <input type="text" id="sf-name" class="form-control" placeholder="مثال: محمد أحمد العتيبي" required />
-                  </div>
-                  <div class="form-group">
-                    <label>اسم المستخدم *</label>
-                    <span class="hint">بلا مسافات — للدخول</span>
-                    <input type="text" id="sf-username" class="form-control" placeholder="مثال: محمد_عتيبي" required />
-                  </div>
+                <div class="form-group">
+                  <label>الاسم الثلاثي *</label>
+                  <input type="text" id="sf-name" class="form-control" placeholder="مثال: محمد أحمد العتيبي" required />
                 </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>رقم الجوال <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
-                    <input type="tel" id="sf-phone" class="form-control" placeholder="05xxxxxxxx" />
-                  </div>
-                  <div class="form-group">
-                    <label>الإيميل <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
-                    <input type="email" id="sf-email" class="form-control" placeholder="student@example.com" />
-                  </div>
+                <div class="form-group">
+                  <label>الإيميل *</label>
+                  <input type="email" id="sf-email" class="form-control" placeholder="student@example.com" required />
                 </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>البرنامج <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
-                    <select id="sf-program" class="form-control">
-                      <option value="">— اختر البرنامج —</option>
+                <div class="form-group">
+                  <label>رقم الجوال *</label>
+                  <div style="display:flex;gap:8px">
+                    <select id="sf-country" class="form-control" style="width:140px;flex-shrink:0">
+                      <option value="+966">🇸🇦 +966</option>
+                      <option value="+971">🇦🇪 +971</option>
+                      <option value="+965">🇰🇼 +965</option>
+                      <option value="+973">🇧🇭 +973</option>
+                      <option value="+974">🇶🇦 +974</option>
+                      <option value="+968">🇴🇲 +968</option>
+                      <option value="+967">🇾🇪 +967</option>
+                      <option value="+962">🇯🇴 +962</option>
+                      <option value="+963">🇸🇾 +963</option>
+                      <option value="+961">🇱🇧 +961</option>
+                      <option value="+20">🇪🇬 +20</option>
+                      <option value="+212">🇲🇦 +212</option>
+                      <option value="+213">🇩🇿 +213</option>
+                      <option value="+216">🇹🇳 +216</option>
+                      <option value="+218">🇱🇾 +218</option>
+                      <option value="+249">🇸🇩 +249</option>
+                      <option value="+1">🇺🇸 +1</option>
+                      <option value="+44">🇬🇧 +44</option>
+                      <option value="+49">🇩🇪 +49</option>
+                      <option value="+33">🇫🇷 +33</option>
+                      <option value="+90">🇹🇷 +90</option>
+                      <option value="+92">🇵🇰 +92</option>
+                      <option value="+91">🇮🇳 +91</option>
                     </select>
+                    <input type="tel" id="sf-phone" class="form-control" placeholder="5xxxxxxxx" required style="flex:1;direction:ltr" />
                   </div>
-                  <div class="form-group">
-                    <label>المجلد <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
-                    <input type="text" id="sf-folder" class="form-control" placeholder="مثال: المجلد الأول" />
-                  </div>
+                </div>
+                <div class="form-group">
+                  <label>كلمة المرور *</label>
+                  <input type="text" id="sf-password" class="form-control" placeholder="6 أحرف على الأقل" minlength="6" required style="direction:ltr" />
                 </div>
                 <div class="form-group">
                   <label>الخطة العلمية <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
@@ -1053,8 +1063,8 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <label>كلمة المرور *</label>
-                  <input type="password" id="sf-password" class="form-control" placeholder="6 أحرف على الأقل" minlength="6" required />
+                  <label>الغرف الصوتية <span style="color:var(--text-muted);font-weight:400">(اختياري — يمكن اختيار أكثر من غرفة)</span></label>
+                  <div id="sf-rooms-list" style="display:flex;flex-direction:column;gap:6px;max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:10px 12px"></div>
                 </div>
               </div>
               <div class="modal-footer" style="padding:16px 0 0">
@@ -1066,7 +1076,13 @@
           </div>
           <!-- TAB: EXCEL -->
           <div id="asExcelPane" style="display:none">
-            <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:12px">الأعمدة بالترتيب: الاسم — اسم المستخدم — الجوال — الإيميل — البرنامج — المجلد — كلمة المرور</p>
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:.85rem;color:#166534;line-height:1.7">
+              <strong>تنسيق الملف المطلوب — 3 أعمدة فقط:</strong><br>
+              العمود A: الاسم الثلاثي (إلزامي)<br>
+              العمود B: الإيميل (إلزامي)<br>
+              العمود C: رقم الجوال كاملاً مع مفتاح البلد مثال: 966512345678 (إلزامي)<br>
+              <span style="color:#854d0e">كلمة المرور تُولَّد تلقائياً من آخر 4 أرقام من الجوال</span>
+            </div>
             <div class="file-upload-area" onclick="document.getElementById('sf-excel').click()">
               <input type="file" id="sf-excel" accept=".xlsx,.xls" onchange="handleStudentExcel(this)" />
               <div class="file-upload-icon"><i data-lucide="file-spreadsheet" style="width:32px;height:32px"></i></div>
@@ -2955,20 +2971,28 @@
     document.getElementById('asTabExcel').classList.toggle('active', tab === 'excel');
   }
 
-  /* load programs + plans into selects */
+  /* load plans + rooms into student form */
   async function loadStudentFormDropdowns() {
-    const [progRes, planRes] = await Promise.all([
-      client.from('programs').select('id, name'),
-      client.from('study_plans').select('id, plan_name, book_name').order('plan_name')
+    const [planRes, roomRes] = await Promise.all([
+      client.from('study_plans').select('id, plan_name, book_name').order('plan_name'),
+      client.from('audio_rooms').select('id, name').order('name')
     ]);
-    const progSel = document.getElementById('sf-program');
-    (progRes.data || []).forEach(p => {
-      const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; progSel.appendChild(o);
-    });
     const planSel = document.getElementById('sf-plan');
     (planRes.data || []).forEach(p => {
       const o = document.createElement('option'); o.value = p.id; o.textContent = `${p.plan_name} — ${p.book_name}`; planSel.appendChild(o);
     });
+    const roomsList = document.getElementById('sf-rooms-list');
+    roomsList.innerHTML = '';
+    if (!(roomRes.data || []).length) {
+      roomsList.innerHTML = '<span style="color:var(--text-muted);font-size:.85rem">لا توجد غرف</span>';
+    } else {
+      (roomRes.data || []).forEach(r => {
+        const lbl = document.createElement('label');
+        lbl.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.9rem';
+        lbl.innerHTML = `<input type="checkbox" value="${r.id}" style="width:16px;height:16px;cursor:pointer"> ${r.name}`;
+        roomsList.appendChild(lbl);
+      });
+    }
   }
 
   /* SUBMIT MANUAL */
@@ -2976,19 +3000,20 @@
     e.preventDefault();
     const btn = document.getElementById('sfSubmitBtn');
     btn.disabled = true; btn.textContent = 'جارٍ الحفظ…';
-    const name      = document.getElementById('sf-name').value.trim();
-    const username  = document.getElementById('sf-username').value.trim();
-    const phone     = document.getElementById('sf-phone').value.trim();
-    const email     = document.getElementById('sf-email').value.trim();
-    const program_id= document.getElementById('sf-program').value || null;
-    const plan_id   = document.getElementById('sf-plan').value || null;
-    const password  = document.getElementById('sf-password').value;
+    const name     = document.getElementById('sf-name').value.trim();
+    const email    = document.getElementById('sf-email').value.trim();
+    const country  = document.getElementById('sf-country').value;
+    const phoneNum = document.getElementById('sf-phone').value.trim();
+    const phone    = country + phoneNum;
+    const password = document.getElementById('sf-password').value;
+    const plan_id  = document.getElementById('sf-plan').value || null;
+    const room_ids = [...document.querySelectorAll('#sf-rooms-list input[type=checkbox]:checked')].map(c => c.value);
     try {
       const { data: { session } } = await client.auth.getSession();
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/manage-student`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY },
-        body: JSON.stringify({ action: 'create', name, username, phone, email, password, program_id, plan_id })
+        body: JSON.stringify({ action: 'create', name, email, phone, password, plan_id, room_ids })
       });
       const result = await resp.json();
       if (!resp.ok || result.error) { showToast('خطأ: ' + (result.error || resp.statusText), 'error'); }
@@ -3008,14 +3033,18 @@
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
       pendingStudentRows = [];
-      const COLS = ['الاسم الشخصي','اسم المستخدم','رقم الجوال','الإيميل','البرنامج','المجلد','كلمة المرور'];
+      const COLS = ['الاسم الثلاثي','الإيميل','رقم الجوال','كلمة المرور (تلقائية)'];
       let html = `<table class="sf-table"><thead><tr>${COLS.map(c=>`<th>${c}</th>`).join('')}<th>الحالة</th></tr></thead><tbody>`;
       for (let i = 1; i < rows.length; i++) {
         const r = rows[i]; if (!r || !r[0]) continue;
-        const s = { name: String(r[0]||'').trim(), username: String(r[1]||'').trim(), phone: String(r[2]||'').trim(), email: String(r[3]||'').trim(), program: String(r[4]||'').trim(), folder: String(r[5]||'').trim(), password: String(r[6]||'').trim() };
-        const err = !s.name ? 'الاسم مطلوب' : !s.username ? 'المستخدم مطلوب' : s.password.length < 6 ? 'كلمة مرور قصيرة' : '';
+        const name  = String(r[0]||'').trim();
+        const email = String(r[1]||'').trim();
+        const phone = String(r[2]||'').trim().replace(/\D/g,'');
+        const password = phone.slice(-4);
+        const s = { name, email, phone, password };
+        const err = !name ? 'الاسم مطلوب' : !email ? 'الإيميل مطلوب' : !phone ? 'الجوال مطلوب' : phone.length < 4 ? 'جوال قصير جداً' : '';
         if (!err) pendingStudentRows.push(s);
-        html += `<tr><td>${s.name||'—'}</td><td>${s.username||'—'}</td><td>${s.phone||'—'}</td><td>${s.email||'—'}</td><td>${s.program||'—'}</td><td>${s.folder||'—'}</td><td>${s.password?'••••••':'—'}</td><td style="color:${err?'var(--danger)':'#2C3E35'};font-weight:700">${err||'✓ جاهز'}</td></tr>`;
+        html += `<tr><td>${name||'—'}</td><td>${email||'—'}</td><td>${phone||'—'}</td><td>${password||'—'}</td><td style="color:${err?'var(--danger)':'#2C3E35'};font-weight:700">${err||'✓ جاهز'}</td></tr>`;
       }
       html += '</tbody></table>';
       document.getElementById('sfExcelPreview').innerHTML = html;
@@ -3035,7 +3064,7 @@
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/manage-student`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY },
-        body: JSON.stringify({ action: 'bulk-create', students: pendingStudentRows.map(s => ({ name: s.name, username: s.username, phone: s.phone, email: s.email, password: s.password })) })
+        body: JSON.stringify({ action: 'bulk-create', students: pendingStudentRows.map(s => ({ name: s.name, email: s.email, phone: s.phone, password: s.password })) })
       });
       const result = await resp.json();
       const ok = (result.results || []).filter(r => r.success).length;
