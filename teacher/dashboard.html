@@ -10,7 +10,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Naskh Arabic',serif;background:#f0f4f8;color:#1a202c;min-height:100vh;direction:rtl}
-:root{--primary:#2d6a4f;--primary-light:#52b788;--accent:#f4a261;--danger:#e63946;--bg:#f0f4f8;--card:#fff;--text:#1a202c;--muted:#718096;--border:#e2e8f0;--radius:12px;--shadow:0 2px 8px rgba(0,0,0,.08)}
+:root{--primary:#374151;--primary-light:#52b788;--accent:#f4a261;--danger:#e63946;--bg:#f0f4f8;--card:#fff;--text:#1a202c;--muted:#718096;--border:#e2e8f0;--radius:12px;--shadow:0 2px 8px rgba(0,0,0,.08)}
 
 /* TOP BAR */
 .topbar{position:fixed;top:0;right:0;left:0;height:56px;background:var(--primary);color:#fff;display:flex;align-items:center;padding:0 16px;z-index:100;gap:12px}
@@ -49,7 +49,7 @@ textarea{resize:vertical;min-height:70px}
 .selected-student-bar.show{display:block}
 .selected-student-name{font-weight:700;font-size:1rem;color:var(--primary)}
 .selected-student-meta{font-size:.82rem;color:var(--muted);margin-top:4px}
-.last-memo-day{font-size:.85rem;color:#2d6a4f;font-weight:600;margin-top:4px}
+.last-memo-day{font-size:.85rem;color:#374151;font-weight:600;margin-top:4px}
 
 /* TRACK BUTTONS */
 .track-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
@@ -106,7 +106,7 @@ tr:hover td{background:#f7fafc}
 /* TOAST */
 .toast-wrap{position:fixed;top:68px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{padding:10px 20px;border-radius:10px;font-size:.9rem;font-weight:600;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.15);animation:fadeUp .3s ease}
-.toast.success{background:#2d6a4f}.toast.error{background:#e63946}
+.toast.success{background:#374151}.toast.error{background:#e63946}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
 .empty{text-align:center;color:var(--muted);padding:24px;font-size:.9rem}
@@ -556,7 +556,7 @@ async function loadReviewForm(studentId) {
       <div><label>المراجعة من حديث</label><input type="number" id="reviewFrom" min="1" placeholder="من"></div>
       <div><label>المراجعة إلى حديث</label><input type="number" id="reviewTo" min="1" placeholder="إلى"></div>
     </div>
-    ${submitted ? `<div style="margin-top:12px;text-align:center;font-size:.85rem;color:#2d6a4f;font-weight:700">🔒 الطالب اعتمد — للعرض فقط</div>` : `
+    ${submitted ? `<div style="margin-top:12px;text-align:center;font-size:.85rem;color:#374151;font-weight:700">🔒 الطالب اعتمد — للعرض فقط</div>` : `
     <div style="margin-top:16px">
       <button class="btn-primary" id="reviewSubmitBtn" onclick="submitReview()">رصد الربط والمراجعة</button>
     </div>`}`;
@@ -754,7 +754,7 @@ async function loadTeacherRooms() {
     const active = isActive(r);
     let btn = '';
     if (active || r.outside_behavior === 'always_visible') {
-      btn = `<a href="${r.meet_url}" target="_blank" rel="noopener" class="btn-primary" style="display:inline-block;text-align:center;text-decoration:none;background:#2d6a4f;color:#fff;border-radius:8px;padding:8px 18px;font-size:.85rem;font-weight:700;margin-top:8px">ادخل الغرفة</a>`;
+      btn = `<a href="${r.meet_url}" target="_blank" rel="noopener" class="btn-primary" style="display:inline-block;text-align:center;text-decoration:none;background:#374151;color:#fff;border-radius:8px;padding:8px 18px;font-size:.85rem;font-weight:700;margin-top:8px">ادخل الغرفة</a>`;
     } else if (r.outside_behavior === 'hidden') {
       btn = '';
     } else {
