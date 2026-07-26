@@ -987,7 +987,7 @@
       <div class="plans-header" style="margin-bottom:20px">
         <h2 style="font-size:1rem"><i data-lucide="graduation-cap" style="width:16px;height:16px;vertical-align:middle"></i> قائمة الطلاب المسجلين</h2>
         <div style="display:flex;gap:8px;align-items:center">
-          <input type="text" id="sfSearch" class="form-control" placeholder="بحث بالاسم أو المستخدم…" style="width:200px;margin:0" oninput="filterStudentsList()" />
+          <input type="text" id="sfSearch" class="form-control" placeholder="بحث بالاسم أو الإيميل أو الجوال…" style="width:240px;margin:0" oninput="filterStudentsList()" />
           <button class="btn-add" onclick="openAddStudentModal()"><i data-lucide="plus" style="width:14px;height:14px;vertical-align:middle"></i> إضافة طالب</button>
         </div>
       </div>
@@ -1023,34 +1023,7 @@
                 </div>
                 <div class="form-group">
                   <label>رقم الجوال *</label>
-                  <div style="display:flex;gap:8px">
-                    <select id="sf-country" class="form-control" style="width:140px;flex-shrink:0">
-                      <option value="+966">🇸🇦 +966</option>
-                      <option value="+971">🇦🇪 +971</option>
-                      <option value="+965">🇰🇼 +965</option>
-                      <option value="+973">🇧🇭 +973</option>
-                      <option value="+974">🇶🇦 +974</option>
-                      <option value="+968">🇴🇲 +968</option>
-                      <option value="+967">🇾🇪 +967</option>
-                      <option value="+962">🇯🇴 +962</option>
-                      <option value="+963">🇸🇾 +963</option>
-                      <option value="+961">🇱🇧 +961</option>
-                      <option value="+20">🇪🇬 +20</option>
-                      <option value="+212">🇲🇦 +212</option>
-                      <option value="+213">🇩🇿 +213</option>
-                      <option value="+216">🇹🇳 +216</option>
-                      <option value="+218">🇱🇾 +218</option>
-                      <option value="+249">🇸🇩 +249</option>
-                      <option value="+1">🇺🇸 +1</option>
-                      <option value="+44">🇬🇧 +44</option>
-                      <option value="+49">🇩🇪 +49</option>
-                      <option value="+33">🇫🇷 +33</option>
-                      <option value="+90">🇹🇷 +90</option>
-                      <option value="+92">🇵🇰 +92</option>
-                      <option value="+91">🇮🇳 +91</option>
-                    </select>
-                    <input type="tel" id="sf-phone" class="form-control" placeholder="5xxxxxxxx" required style="flex:1;direction:ltr" />
-                  </div>
+                  <input type="tel" id="sf-phone" class="form-control" placeholder="مثال: 966512345678" required style="direction:ltr" />
                 </div>
                 <div class="form-group">
                   <label>كلمة المرور *</label>
@@ -3002,9 +2975,7 @@
     btn.disabled = true; btn.textContent = 'جارٍ الحفظ…';
     const name     = document.getElementById('sf-name').value.trim();
     const email    = document.getElementById('sf-email').value.trim();
-    const country  = document.getElementById('sf-country').value;
-    const phoneNum = document.getElementById('sf-phone').value.trim();
-    const phone    = country + phoneNum;
+    const phone    = document.getElementById('sf-phone').value.trim();
     const password = document.getElementById('sf-password').value;
     const plan_id  = document.getElementById('sf-plan').value || null;
     const room_ids = [...document.querySelectorAll('#sf-rooms-list input[type=checkbox]:checked')].map(c => c.value);
@@ -3084,7 +3055,7 @@
   let allStudentsListData = [];
   async function loadStudentsList() {
     const { data } = await client.from('students')
-      .select('id, user_id, is_archived, users(id, name, username, phone), programs(name)')
+      .select('id, user_id, is_archived, users(id, name, email, phone)')
       .order('id', { ascending: false });
     allStudentsListData = data || [];
     renderStudentsList(allStudentsListData);
@@ -3094,13 +3065,12 @@
     const el = document.getElementById('sfStudentsList');
     if (!arr.length) { el.innerHTML = '<p class="empty-row" style="padding:20px;text-align:center;color:var(--text-muted)">لا يوجد طلاب مسجلون بعد</p>'; return; }
     el.innerHTML = `<table class="sf-table">
-      <thead><tr><th>#</th><th>الاسم</th><th>اسم المستخدم</th><th>الجوال</th><th>البرنامج</th><th>الحالة</th><th>إجراء</th></tr></thead>
+      <thead><tr><th>#</th><th>الاسم الثلاثي</th><th>الإيميل</th><th>الجوال</th><th>الحالة</th><th>إجراء</th></tr></thead>
       <tbody>${arr.map((s,i) => `<tr style="${s.is_archived ? 'opacity:.55;background:#f9f9f9' : ''}">
         <td style="color:var(--text-muted)">${i+1}</td>
         <td style="font-weight:700">${s.users?.name || '—'}</td>
-        <td style="color:var(--accent);font-weight:600">${s.users?.username || '—'}</td>
-        <td>${s.users?.phone || '—'}</td>
-        <td>${s.programs?.name || '—'}</td>
+        <td style="direction:ltr;text-align:right;color:var(--text-muted)">${s.users?.email || '—'}</td>
+        <td style="direction:ltr;text-align:right">${s.users?.phone || '—'}</td>
         <td>${s.is_archived ? '<span style="font-size:.75rem;font-weight:700;color:#b91c1c;background:#fee2e2;padding:2px 8px;border-radius:20px">مؤرشف</span>' : '<span style="font-size:.75rem;font-weight:700;color:#2C3E35;background:#D9EAE1;padding:2px 8px;border-radius:20px">نشط</span>'}</td>
         <td style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="btn-pw" data-uid="${s.users?.id||''}" data-name="${(s.users?.name||'').replace(/"/g,'&quot;')}" onclick="openResetPwModal(this.dataset.uid,this.dataset.name)">🔑 كلمة المرور</button>
@@ -3128,10 +3098,13 @@
   function filterStudentsList() {
     const q = document.getElementById('sfSearch').value.trim().toLowerCase();
     if (!q) { renderStudentsList(allStudentsListData); return; }
-    renderStudentsList(allStudentsListData.filter(s =>
-      (s.users?.name || '').toLowerCase().includes(q) ||
-      (s.users?.username || '').toLowerCase().includes(q)
-    ));
+    const digits = q.replace(/\D/g, '');
+    renderStudentsList(allStudentsListData.filter(s => {
+      if ((s.users?.name || '').toLowerCase().includes(q)) return true;
+      if ((s.users?.email || '').toLowerCase().includes(q)) return true;
+      if (digits && (s.users?.phone || '').replace(/\D/g,'').includes(digits)) return true;
+      return false;
+    }));
   }
 
   /* PASSWORD RESET MODAL */
