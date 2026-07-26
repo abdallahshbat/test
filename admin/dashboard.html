@@ -1080,35 +1080,28 @@
           <button class="modal-close" onclick="closeAddTeacherModal()">×</button>
         </div>
         <div class="modal-body">
-          <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:16px">يسجّل الدخول باسم المستخدم — الإيميل اختياري وإذا تُرك فارغاً يُنشأ تلقائياً</p>
           <form id="teacherForm" onsubmit="submitTeacher(event)">
             <div class="form-body" style="padding:0">
-              <div class="form-row">
-                <div class="form-group">
-                  <label>الاسم الكامل *</label>
-                  <input type="text" id="tf-name" class="form-control" placeholder="مثال: أحمد محمد العتيبي" required />
-                </div>
-                <div class="form-group">
-                  <label>اسم المستخدم *</label>
-                  <span class="hint">سيُستخدم للدخول — بلا مسافات</span>
-                  <input type="text" id="tf-username" class="form-control" placeholder="مثال: أحمد_عتيبي" required />
+              <div class="form-group">
+                <label>الاسم الثلاثي *</label>
+                <input type="text" id="tf-name" class="form-control" placeholder="مثال: أحمد محمد العتيبي" required />
+              </div>
+              <div class="form-group">
+                <label>الإيميل *</label>
+                <input type="email" id="tf-email" class="form-control" placeholder="teacher@example.com" required style="direction:ltr" />
+              </div>
+              <div class="form-group">
+                <label>كلمة المرور *</label>
+                <div style="position:relative">
+                  <input type="password" id="tf-password" class="form-control" placeholder="6 أحرف على الأقل" minlength="6" required style="direction:ltr;padding-left:44px" />
+                  <button type="button" onclick="toggleTfPassword()" tabindex="-1" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#6b7280;display:flex;align-items:center">
+                    <span id="tf-eye-icon"><i data-lucide="eye" style="width:18px;height:18px"></i></span>
+                  </button>
                 </div>
               </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>كلمة المرور *</label>
-                  <input type="password" id="tf-password" class="form-control" placeholder="6 أحرف على الأقل" minlength="6" required />
-                </div>
-                <div class="form-group">
-                  <label>الإيميل <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
-                  <input type="email" id="tf-email" class="form-control" placeholder="teacher@example.com" />
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>رقم الجوال <span style="color:var(--text-muted);font-weight:400">(اختياري)</span></label>
-                  <input type="tel" id="tf-phone" class="form-control" placeholder="05xxxxxxxx" />
-                </div>
+              <div class="form-group">
+                <label>الغرف الصوتية <span style="color:var(--text-muted);font-weight:400">(اختياري — يمكن اختيار أكثر من غرفة)</span></label>
+                <div id="tf-rooms-list" style="display:flex;flex-direction:column;gap:6px;max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:10px 12px"></div>
               </div>
             </div>
             <div class="modal-footer" style="padding:16px 0 0">
@@ -1246,14 +1239,17 @@
     <div class="view" id="view-add-teacher">
       <!-- جدول إدارة المعلمين -->
       <div class="card" style="margin-bottom:20px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
           <h2 style="font-size:1rem;font-weight:800;color:var(--accent)"><i data-lucide="users" style="width:16px;height:16px;vertical-align:middle"></i> إدارة المعلمين</h2>
-          <button class="btn-add" onclick="openAddTeacherModal()"><i data-lucide="plus" style="width:14px;height:14px;vertical-align:middle"></i> إضافة معلم</button>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" id="teacherSearch" class="form-control" placeholder="بحث بالاسم أو الإيميل أو الجوال…" style="width:240px;margin:0" oninput="filterTeachersList()" />
+            <button class="btn-add" onclick="openAddTeacherModal()"><i data-lucide="plus" style="width:14px;height:14px;vertical-align:middle"></i> إضافة معلم</button>
+          </div>
         </div>
         <div style="overflow-x:auto">
           <table class="tf-table" id="teacherMgmtTable">
             <thead><tr>
-              <th>#</th><th>الاسم</th><th>اسم المستخدم</th><th>الجوال</th><th>الحالة</th><th>كلمة المرور</th><th>الأرشفة</th>
+              <th>#</th><th>الاسم الثلاثي</th><th>الإيميل</th><th>الجوال</th><th>الحالة</th><th>كلمة المرور</th><th>الأرشفة</th>
             </tr></thead>
             <tbody id="teacherMgmtBody"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">جارٍ التحميل…</td></tr></tbody>
           </table>
@@ -2236,36 +2232,60 @@
   }
 
   /* ===== إدارة المعلمين (في صفحة الإضافة) ===== */
+  let allTeachersMgmtData = [];
+
   async function loadTeacherMgmt() {
     const body = document.getElementById('teacherMgmtBody');
     if (!body) return;
     body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:16px;color:var(--text-muted)">جارٍ التحميل…</td></tr>';
 
     const { data, error } = await client.from('teachers')
-      .select('id, user_id, is_archived, users(id, name, username, phone)')
+      .select('id, user_id, is_archived, users(id, name, email, phone)')
       .order('id', { ascending: false });
 
     if (error || !data?.length) {
       body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:16px;color:var(--text-muted)">لا يوجد معلمون</td></tr>'; return;
     }
     allTeachersData = data;
+    allTeachersMgmtData = data;
+    renderTeacherMgmt(data);
+  }
 
+  function renderTeacherMgmt(data) {
+    const body = document.getElementById('teacherMgmtBody');
+    if (!body) return;
+    if (!data.length) { body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:16px;color:var(--text-muted)">لا توجد نتائج</td></tr>'; return; }
     body.innerHTML = data.map((t, i) => {
       const u = t.users || {};
       const isArchived = t.is_archived;
+      const uid = u.id || '';
+      const uname = (u.name || '').replace(/"/g, '&quot;');
       return `<tr style="${isArchived ? 'opacity:.6;background:#f9f9f9' : ''}">
         <td style="color:var(--text-muted)">${i + 1}</td>
         <td style="font-weight:700">${u.name || '—'}</td>
-        <td style="color:var(--accent)">${u.username || '—'}</td>
-        <td>${u.phone || '—'}</td>
+        <td style="direction:ltr;text-align:right;color:var(--text-muted)">${u.email || '—'}</td>
+        <td style="direction:ltr;text-align:right">${u.phone || '—'}</td>
         <td><span style="padding:2px 8px;border-radius:20px;font-size:.75rem;font-weight:700;background:${isArchived?'#fee2e2':'#D9EAE1'};color:${isArchived?'#991b1b':'#2C3E35'}">${isArchived?'مؤرشف':'فعال'}</span></td>
-        <td><button class="btn-pw" data-uid="${u.id||''}" data-name="${(u.name||'').replace(/"/g,'&quot;')}" onclick="openResetPwModal(this.dataset.uid,this.dataset.name)">🔑 كلمة المرور</button></td>
+        <td><button class="btn-pw" data-uid="${uid}" data-name="${uname}" onclick="openResetPwModal(this.dataset.uid,this.dataset.name)">🔑 تغيير</button></td>
         <td>${isArchived
           ? `<button class="btn-pw" style="background:#D9EAE1;color:#2C3E35;border-color:#B8D4C4" onclick="toggleArchiveTeacher('${t.id}',false)">↩️ استعادة</button>`
           : `<button class="btn-pw" style="background:#fee2e2;color:#b91c1c;border-color:#fca5a5" onclick="toggleArchiveTeacher('${t.id}',true)">📦 أرشفة</button>`
         }</td>
       </tr>`;
     }).join('');
+  }
+
+  function filterTeachersList() {
+    const q = (document.getElementById('teacherSearch')?.value || '').trim().toLowerCase();
+    if (!q) { renderTeacherMgmt(allTeachersMgmtData); return; }
+    const digits = q.replace(/\D/g, '');
+    renderTeacherMgmt(allTeachersMgmtData.filter(t => {
+      const u = t.users || {};
+      if ((u.name || '').toLowerCase().includes(q)) return true;
+      if ((u.email || '').toLowerCase().includes(q)) return true;
+      if (digits && (u.phone || '').replace(/\D/g,'').includes(digits)) return true;
+      return false;
+    }));
   }
 
   /* ========== رصد جلسة التسميع (المشرف) ========== */
@@ -2929,6 +2949,8 @@
   function openAddTeacherModal() {
     resetForm();
     document.getElementById('addTeacherModal').classList.remove('hidden');
+    loadTeacherFormRooms();
+    lucide.createIcons();
   }
   function closeAddTeacherModal() {
     document.getElementById('addTeacherModal').classList.add('hidden');
@@ -3136,6 +3158,34 @@
     finally { btn.disabled = false; btn.textContent = 'حفظ كلمة المرور'; }
   }
 
+  function toggleTfPassword() {
+    const input = document.getElementById('tf-password');
+    const icon  = document.getElementById('tf-eye-icon');
+    const show  = input.type === 'password';
+    input.type  = show ? 'text' : 'password';
+    icon.innerHTML = show
+      ? '<i data-lucide="eye-off" style="width:18px;height:18px"></i>'
+      : '<i data-lucide="eye" style="width:18px;height:18px"></i>';
+    lucide.createIcons();
+  }
+
+  async function loadTeacherFormRooms() {
+    const roomsList = document.getElementById('tf-rooms-list');
+    if (!roomsList) return;
+    const { data } = await client.from('audio_rooms').select('id, name').order('name');
+    roomsList.innerHTML = '';
+    if (!(data || []).length) {
+      roomsList.innerHTML = '<span style="color:var(--text-muted);font-size:.85rem">لا توجد غرف</span>';
+    } else {
+      (data || []).forEach(r => {
+        const lbl = document.createElement('label');
+        lbl.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.9rem';
+        lbl.innerHTML = `<input type="checkbox" value="${r.id}" style="width:16px;height:16px;cursor:pointer"> ${r.name}`;
+        roomsList.appendChild(lbl);
+      });
+    }
+  }
+
   async function submitTeacher(e) {
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
@@ -3143,11 +3193,9 @@
     btn.textContent = 'جارٍ الحفظ…';
 
     const name     = document.getElementById('tf-name').value.trim();
-    const username = document.getElementById('tf-username').value.trim();
+    const email    = document.getElementById('tf-email').value.trim();
     const password = document.getElementById('tf-password').value;
-    const phone    = document.getElementById('tf-phone').value.trim();
-    const emailRaw = document.getElementById('tf-email').value.trim();
-    const email    = emailRaw || `user_${Date.now()}@huffaz.com`;
+    const room_ids = [...document.querySelectorAll('#tf-rooms-list input[type=checkbox]:checked')].map(c => c.value);
 
     try {
       const { data: { session } } = await client.auth.getSession();
@@ -3158,7 +3206,7 @@
           'Authorization': `Bearer ${session.access_token}`,
           'apikey': SUPABASE_ANON_KEY,
         },
-        body: JSON.stringify({ name, username, email, password, phone }),
+        body: JSON.stringify({ name, email, password, room_ids }),
       });
       const result = await resp.json();
       if (!resp.ok || result.error) {
