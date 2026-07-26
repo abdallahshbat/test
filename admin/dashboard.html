@@ -3742,17 +3742,26 @@
     let thead, buildRow;
     if (mode === 'day') {
       thead = `<tr>
-        <th>الطالب</th><th>المعلم</th><th>الواجبات المنجزة</th>
+        <th>الطالب</th><th>المعلم</th>
+        <th>سماع</th><th>حفظ</th><th>ربط</th><th>مراجعة</th>
         <th>تسميع</th><th>نطاق التسميع</th><th>الدرجة</th>
         <th>حالة الخطة</th><th>حالة التسميع</th><th></th>
       </tr>`;
       buildRow = r => {
         const scoreStr = r.score != null ? parseFloat(r.score).toFixed(1) + ' / 10' : '—';
         const recRange = r.recFrom != null ? `${r.recFrom} – ${r.recTo}` : '—';
+        const byKey = {};
+        (r.items || []).forEach(i => { byKey[i.key] = i.label; });
+        const cellVal = key => byKey[key]
+          ? `<span style="font-size:.78rem;font-weight:700;color:#16a34a">${byKey[key]}</span>`
+          : '<span style="color:#d1d5db;font-size:.82rem">—</span>';
         return `<tr class="${r._color}">
           <td style="font-weight:700">${r._name}</td>
           <td>${r._teacher}</td>
-          <td>${taskCells(r.items)}</td>
+          <td>${cellVal('listen')}</td>
+          <td>${cellVal('memo')}</td>
+          <td>${cellVal('link')}</td>
+          <td>${cellVal('review')}</td>
           <td>${r.hasSession ? '<span class="att-check">✓</span>' : '<span class="att-cross">✗</span>'}</td>
           <td>${recRange}</td>
           <td>${scoreStr}</td>
@@ -3859,14 +3868,19 @@
 
     let headers, dataRows;
     if (mode === 'day') {
-      headers = ['الطالب','المعلم','الخطة','الواجبات المنجزة','تسميع','من حديث','إلى حديث','الدرجة','حالة الخطة','حالة التسميع'];
-      dataRows = rows.map(r => [
-        r._name, r._teacher, r._plan,
-        (r.items || []).map(i => i.label).join(' | ') || 'لا شيء',
-        r.hasSession ? '✓' : '✗',
-        r.recFrom ?? '', r.recTo ?? '', r.score ?? '',
-        r.planStatus.text, r.recStatus.text
-      ]);
+      headers = ['الطالب','المعلم','الخطة','سماع','حفظ','ربط','مراجعة','تسميع','من حديث','إلى حديث','الدرجة','حالة الخطة','حالة التسميع'];
+      dataRows = rows.map(r => {
+        const byKey = {};
+        (r.items || []).forEach(i => { byKey[i.key] = i.label; });
+        return [
+          r._name, r._teacher, r._plan,
+          byKey['listen'] || '—', byKey['memo'] || '—',
+          byKey['link'] || '—', byKey['review'] || '—',
+          r.hasSession ? '✓' : '✗',
+          r.recFrom ?? '', r.recTo ?? '', r.score ?? '',
+          r.planStatus.text, r.recStatus.text
+        ];
+      });
     } else {
       headers = ['الطالب','المعلم','الخطة','أيام منجزة','حفظ','ربط','مراجعة','سماع (أيام)','جلسات التسميع','متوسط الدرجة','حالة الخطة','حالة التسميع'];
       dataRows = rows.map(r => [
