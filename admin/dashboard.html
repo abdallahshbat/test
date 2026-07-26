@@ -3482,9 +3482,11 @@
     // جلب البيانات
     const [plansRes, daysRes, progressRes, sessRes] = await Promise.all([
       client.from('study_plans').select('id, plan_name'),
-      client.from('study_plan_days').select('id, plan_id, day_number, memo_from, memo_to').order('day_number'),
+      client.from('study_plan_days')
+        .select('id, plan_id, day_number, memo_from, memo_to, link_from, link_to, review_from, review_to')
+        .order('day_number'),
       client.from('student_plan_progress')
-        .select('student_id, plan_day_id, task_key, completed')
+        .select('student_id, plan_day_id, task_key, completed_at')
         .eq('completed', true)
         .in('student_id', studentIds),
       client.from('recitation_sessions')
@@ -3494,20 +3496,25 @@
         .lte('date', dateTo)
     ]);
 
-    const plans    = plansRes.data  || [];
-    const allDays  = daysRes.data   || [];
+    const plans    = plansRes.data    || [];
+    const allDays  = daysRes.data     || [];
     const progress = progressRes.data || [];
-    const sessions = sessRes.data   || [];
+    const sessions = sessRes.data     || [];
 
     // فهارس
-    const dayById     = {};  allDays.forEach(d => { dayById[d.id] = d; });
-    const planById    = {};  plans.forEach(p => { planById[p.id] = p; });
-    // progress مجمّع: student_id → plan_day_id → task_key → true
-    const progMap = {};
+    const dayById  = {};  allDays.forEach(d => { dayById[d.id] = d; });
+    const planById = {};  plans.forEach(p => { planById[p.id] = p; });
+
+    // progByDate: student_id → date → [{ key, day }]
+    // يجمّع المهام حسب تاريخ إنجازها الفعلي (completed_at)
+    const progByDate = {};
     progress.forEach(p => {
-      if (!progMap[p.student_id]) progMap[p.student_id] = {};
-      if (!progMap[p.student_id][p.plan_day_id]) progMap[p.student_id][p.plan_day_id] = {};
-      progMap[p.student_id][p.plan_day_id][p.task_key] = true;
+      const day = dayById[p.plan_day_id];
+      if (!day || !p.completed_at) return;
+      const date = p.completed_at.slice(0, 10);
+      if (!progByDate[p.student_id]) progByDate[p.student_id] = {};
+      if (!progByDate[p.student_id][date]) progByDate[p.student_id][date] = [];
+      progByDate[p.student_id][date].push({ key: p.task_key, day });
     });
 
     // sessions مجمّع: student_id → date → [sessions]
@@ -3521,15 +3528,10 @@
     // لكل طالب — حساب البيانات
     const rows = [];
     for (const st of allStudents) {
-      const spa = (st.student_plan_assignments || []).find(a => a.plan_id === st.current_plan_id);
-      const assignedAt = spa?.assigned_at ? spa.assigned_at.slice(0, 10) : null;
-      const plan = planById[st.current_plan_id];
-      const planDays = allDays.filter(d => d.plan_id === st.current_plan_id);
-
       if (mode === 'day') {
-        rows.push(buildDayRow(st, dateFrom, planDays, assignedAt, progMap, sessMap, planById));
+        rows.push(buildDayRow(st, dateFrom, progByDate, sessMap, planById));
       } else {
-        rows.push(buildRangeRow(st, dateFrom, dateTo, planDays, assignedAt, progMap, sessMap, planById));
+        rows.push(buildRangeRow(st, dateFrom, dateTo, progByDate, sessMap, planById));
       }
     }
 
@@ -3548,140 +3550,87 @@
     renderAttTable(filtered, mode);
   }
 
-  function getDateForDay(assignedAt, dayNum) {
-    if (!assignedAt) return null;
-    const d = new Date(assignedAt);
-    d.setDate(d.getDate() + dayNum - 1);
-    return d.toISOString().slice(0, 10);
+  // بناء تسمية مهمة: "حفظ 30 – 38"
+  function taskLabel(key, day) {
+    if (key === 'listen') return 'سماع ✓';
+    if (key === 'memo')   return day.memo_from && day.memo_to   ? `حفظ ${day.memo_from} – ${day.memo_to}`     : 'حفظ ✓';
+    if (key === 'link')   return day.link_from && day.link_to   ? `ربط ${day.link_from} – ${day.link_to}`     : 'ربط ✓';
+    if (key === 'review') return day.review_from && day.review_to ? `مراجعة ${day.review_from} – ${day.review_to}` : 'مراجعة ✓';
+    return key;
   }
 
-  function buildDayRow(st, date, planDays, assignedAt, progMap, sessMap, planById) {
-    const stProg  = progMap[st.id] || {};
-    const stSess  = sessMap[st.id] || {};
-    const daySess = stSess[date] || [];
+  function buildDayRow(st, date, progByDate, sessMap, planById) {
+    const stProg  = progByDate[st.id] || {};
+    const dayTasks = stProg[date] || []; // المهام المنجزة في هذا اليوم بالضبط
+    const daySess  = (sessMap[st.id] || {})[date] || [];
 
-    // أيّ يوم من الخطة يقابل هذا التاريخ
-    let matchDay = null;
-    if (assignedAt) {
-      const start = new Date(assignedAt);
-      const target = new Date(date);
-      const diff = Math.round((target - start) / 86400000) + 1;
-      matchDay = planDays.find(d => d.day_number === diff) || null;
-    }
-
-    // مهام اليوم
-    let listen = false, memo = false, link = false, review = false;
-    if (matchDay) {
-      const dp = stProg[matchDay.id] || {};
-      listen = !!dp['listen'];
-      memo   = !!dp['memo'];
-      link   = !!dp['link'];
-      review = !!dp['review'];
-    }
-
-    const tasksCount = [listen, memo, link, review].filter(Boolean).length;
-    const hasPlanDay = !!matchDay;
-    const comp = hasPlanDay ? (tasksCount === 4 ? 'done' : tasksCount > 0 ? 'partial' : 'none') : 'none';
-
-    // تسميع
     const hasSession = daySess.length > 0;
     const lastSess   = daySess[daySess.length - 1];
     const teacher    = lastSess?.teachers?.users?.name || st.teachers?.users?.name || '—';
 
-    // انقطاع الخطة (من آخر يوم أنجز فيه شيء حتى هذا التاريخ)
-    const planGap = calcPlanGap(st.id, date, planDays, assignedAt, progMap);
-    // انقطاع التسميع
-    const recGap  = calcRecGap(st.id, date, sessMap);
+    const items = dayTasks.map(({ key, day }) => ({ key, label: taskLabel(key, day) }));
+    const comp  = items.length === 4 ? 'done' : items.length > 0 ? 'partial' : 'none';
 
-    // حالة مركبة
-    const planStatus  = planGapLabel(planGap);
-    const recStatus   = recGapLabel(recGap);
-    const rowColor    = getRowColor(comp, planGap, recGap);
-
-    // فرق التسميع عن المحفوظ
-    const lastHadithTo = daySess.length ? Math.max(...daySess.map(s => s.hadith_to || 0)) : null;
-    const memorized    = st.memorized_hadiths || 0;
-    const diff         = lastHadithTo !== null ? memorized - lastHadithTo : null;
+    const planGap   = calcPlanGapFromDates(st.id, date, progByDate);
+    const recGap    = calcRecGap(st.id, date, sessMap);
+    const planStatus = planGapLabel(planGap);
+    const recStatus  = recGapLabel(recGap);
 
     return {
       _id: st.id, _name: st.users?.name || '—',
       _teacher: teacher, _plan: planById[st.current_plan_id]?.plan_name || '—',
       _comp: comp, _recited: hasSession,
       _planGap: planGap, _recGap: recGap,
-      _color: rowColor,
-      // day-specific
-      listen, memo, link, review,
-      hasSession,
+      _color: getRowColor(comp, planGap, recGap),
+      items, hasSession,
       recFrom: lastSess?.hadith_from ?? null,
       recTo:   lastSess?.hadith_to   ?? null,
       score:   lastSess?.score       ?? null,
-      diff,
       planStatus, recStatus,
-      _planDays: planDays, _assignedAt: assignedAt, _sessMap: sessMap[st.id] || {}, _progMap: progMap[st.id] || {}
+      _progByDate: stProg, _sessMap: sessMap[st.id] || {}
     };
   }
 
-  function buildRangeRow(st, dateFrom, dateTo, planDays, assignedAt, progMap, sessMap, planById) {
-    const stProg = progMap[st.id] || {};
-    const stSess = sessMap[st.id] || {};
+  function buildRangeRow(st, dateFrom, dateTo, progByDate, sessMap, planById) {
+    const stProg = progByDate[st.id] || {};
+    const stSess = sessMap[st.id]    || {};
 
-    // حساب الأيام المنجزة (كل الواجبات الأربعة)
-    let doneDays = 0;
-    if (assignedAt) {
-      const start  = new Date(assignedAt);
-      const from   = new Date(dateFrom);
-      const to     = new Date(dateTo);
-      planDays.forEach(d => {
-        const dayDate = new Date(start);
-        dayDate.setDate(dayDate.getDate() + d.day_number - 1);
-        if (dayDate < from || dayDate > to) return;
-        const dp = stProg[d.id] || {};
-        if (dp['listen'] && dp['memo'] && dp['link'] && dp['review']) doneDays++;
-      });
+    // تجميع المهام في النطاق حسب النوع
+    const byKey = { listen: [], memo: [], link: [], review: [] };
+    Object.entries(stProg).forEach(([date, tasks]) => {
+      if (date < dateFrom || date > dateTo) return;
+      tasks.forEach(({ key, day }) => { if (byKey[key]) byKey[key].push(day); });
+    });
+
+    // بناء ملخص النطاق: min(from) – max(to) لكل نوع
+    function rangeSum(key, fromF, toF) {
+      const arr = byKey[key].filter(d => d[fromF] && d[toF]);
+      if (!arr.length) return byKey[key].length ? '✓' : null;
+      const minF = Math.min(...arr.map(d => parseInt(d[fromF])));
+      const maxT = Math.max(...arr.map(d => parseInt(d[toF])));
+      return `${minF} – ${maxT}`;
     }
+    const memoRange   = rangeSum('memo',   'memo_from',   'memo_to');
+    const linkRange   = rangeSum('link',   'link_from',   'link_to');
+    const reviewRange = rangeSum('review', 'review_from', 'review_to');
+    const listenCount = byKey['listen'].length;
+
+    // عدد الأيام التي أُنجز فيها شيء
+    const activeDates = Object.keys(stProg).filter(d => d >= dateFrom && d <= dateTo && stProg[d].length);
+    const doneDays = activeDates.length;
 
     // جلسات التسميع في النطاق
-    const rangeSessionsAll = Object.entries(stSess)
+    const rangeSess = Object.entries(stSess)
       .filter(([d]) => d >= dateFrom && d <= dateTo)
       .flatMap(([, s]) => s);
-    const sessionCount = rangeSessionsAll.length;
+    const sessionCount = rangeSess.length;
     const avgScore = sessionCount
-      ? (rangeSessionsAll.reduce((s, x) => s + (parseFloat(x.score) || 0), 0) / sessionCount).toFixed(2)
+      ? (rangeSess.reduce((s, x) => s + (parseFloat(x.score) || 0), 0) / sessionCount).toFixed(1)
       : null;
-    const totalRecited = sessionCount ? Math.max(...rangeSessionsAll.map(s => s.hadith_to || 0)) : 0;
 
-    // مجموع الأحاديث المحفوظة (من خطة الطالب حتى آخر يوم في النطاق)
-    let totalMemo = 0;
-    if (assignedAt) {
-      const start = new Date(assignedAt);
-      const to    = new Date(dateTo);
-      planDays.forEach(d => {
-        const dayDate = new Date(start);
-        dayDate.setDate(dayDate.getDate() + d.day_number - 1);
-        if (dayDate > to) return;
-        const dp = stProg[d.id] || {};
-        if (dp['memo'] && d.memo_to) totalMemo = Math.max(totalMemo, parseInt(d.memo_to) || 0);
-      });
-    }
-
-    // نسبة الإنجاز = أيام منجزة / إجمالي أيام الخطة في النطاق
-    let planDaysInRange = 0;
-    if (assignedAt) {
-      const start = new Date(assignedAt);
-      const from  = new Date(dateFrom);
-      const to    = new Date(dateTo);
-      planDays.forEach(d => {
-        const dayDate = new Date(start);
-        dayDate.setDate(dayDate.getDate() + d.day_number - 1);
-        if (dayDate >= from && dayDate <= to) planDaysInRange++;
-      });
-    }
-    const completionPct = planDaysInRange > 0 ? Math.round(doneDays / planDaysInRange * 100) : null;
-
-    // انقطاع (نحسبه حتى dateTo)
-    const planGap = calcPlanGap(st.id, dateTo, planDays, assignedAt, progMap);
+    const comp    = doneDays > 0 ? 'partial' : 'none';
+    const planGap = calcPlanGapFromDates(st.id, dateTo, progByDate);
     const recGap  = calcRecGap(st.id, dateTo, sessMap);
-    const comp    = doneDays === planDaysInRange && planDaysInRange > 0 ? 'done' : doneDays > 0 ? 'partial' : 'none';
 
     return {
       _id: st.id, _name: st.users?.name || '—',
@@ -3690,32 +3639,20 @@
       _comp: comp, _recited: sessionCount > 0,
       _planGap: planGap, _recGap: recGap,
       _color: getRowColor(comp, planGap, recGap),
-      // range-specific
-      doneDays, sessionCount, totalMemo, totalRecited,
-      avgScore, completionPct,
+      memoRange, linkRange, reviewRange, listenCount,
+      doneDays, sessionCount, avgScore,
       planStatus: planGapLabel(planGap), recStatus: recGapLabel(recGap),
-      _planDays: planDays, _assignedAt: assignedAt, _sessMap: sessMap[st.id] || {}, _progMap: progMap[st.id] || {}
+      _progByDate: stProg, _sessMap: stSess
     };
   }
 
-  function calcPlanGap(studentId, refDate, planDays, assignedAt, progMap) {
-    if (!assignedAt) return null;
-    const stProg = progMap[studentId] || {};
-    const ref    = new Date(refDate);
-    const start  = new Date(assignedAt);
-    // آخر يوم أنجز فيه شيء
-    let lastDone = null;
-    planDays.forEach(d => {
-      const dayDate = new Date(start);
-      dayDate.setDate(dayDate.getDate() + d.day_number - 1);
-      if (dayDate > ref) return;
-      const dp = stProg[d.id] || {};
-      if (dp['listen'] || dp['memo'] || dp['link'] || dp['review']) {
-        if (!lastDone || dayDate > lastDone) lastDone = new Date(dayDate);
-      }
-    });
-    if (!lastDone) return null;
-    return Math.round((ref - lastDone) / 86400000);
+  // حساب انقطاع الخطة بناءً على completed_at الفعلي
+  function calcPlanGapFromDates(studentId, refDate, progByDate) {
+    const stProg = progByDate[studentId] || {};
+    const dates  = Object.keys(stProg).filter(d => d <= refDate && stProg[d].length > 0).sort();
+    if (!dates.length) return null;
+    const last = dates[dates.length - 1];
+    return Math.round((new Date(refDate) - new Date(last)) / 86400000);
   }
 
   function calcRecGap(studentId, refDate, sessMap) {
@@ -3762,27 +3699,23 @@
   }
 
   function renderAttSummary(rows, mode) {
-    const cards = document.getElementById('att-summary-cards');
-    const totalStudents   = rows.length;
-    const doneToday       = rows.filter(r => r._comp === 'done').length;
-    const recitedToday    = rows.filter(r => r._recited).length;
-    const notRecited      = rows.filter(r => !r._recited).length;
-    const totalMemo       = rows.reduce((s, r) => s + (r.totalMemo || r._memorized || 0), 0);
-    const scores          = rows.filter(r => r.avgScore || r.score).map(r => parseFloat(r.avgScore || r.score) || 0).filter(x => x > 0);
-    const avgScore        = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : '—';
-    const totalSessions   = mode === 'day'
+    const cards         = document.getElementById('att-summary-cards');
+    const totalStudents = rows.length;
+    const withTasks     = rows.filter(r => r._comp !== 'none').length;
+    const recited       = rows.filter(r => r._recited).length;
+    const notRecited    = rows.filter(r => !r._recited).length;
+    const totalSessions = mode === 'day'
       ? rows.filter(r => r.hasSession).length
       : rows.reduce((s, r) => s + (r.sessionCount || 0), 0);
-    const totalRecitedH   = mode === 'range'
-      ? rows.reduce((s, r) => s + (r.totalRecited || 0), 0) : '—';
+    const scores  = rows.map(r => parseFloat(r.avgScore || r.score)).filter(x => x > 0);
+    const avgScore = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : '—';
 
     const cardData = [
       { val: totalStudents, lbl: 'إجمالي الطلاب' },
-      { val: doneToday,     lbl: 'منجزون' },
+      { val: withTasks,     lbl: 'نفّذوا واجبات' },
       { val: totalSessions, lbl: 'جلسات التسميع' },
-      { val: recitedToday,  lbl: 'سُمِّعوا' },
+      { val: recited,       lbl: 'سُمِّعوا' },
       { val: notRecited,    lbl: 'لم يُسمَّعوا' },
-      { val: mode === 'range' ? totalRecitedH : '—', lbl: 'أحاديث مسمَّعة' },
       { val: avgScore,      lbl: 'متوسط التقييم' },
     ];
     cards.innerHTML = cardData.map(c => `
@@ -3791,6 +3724,12 @@
         <div class="att-stat-lbl">${c.lbl}</div>
       </div>`).join('');
     cards.style.display = 'grid';
+  }
+
+  // عرض الواجبات مكدّسة داخل خلية
+  function taskCells(items) {
+    if (!items || !items.length) return '<span style="color:var(--text-muted);font-size:.78rem">لا شيء</span>';
+    return items.map(i => `<div style="font-size:.78rem;font-weight:600;white-space:nowrap;line-height:1.7">${i.label}</div>`).join('');
   }
 
   function renderAttTable(rows, mode) {
@@ -3803,25 +3742,20 @@
     let thead, buildRow;
     if (mode === 'day') {
       thead = `<tr>
-        <th>الطالب</th><th>المعلم</th><th>سماع</th><th>حفظ</th><th>ربط</th><th>مراجعة</th>
-        <th>تسميع</th><th>نطاق التسميع</th><th>الدرجة</th><th>فرق التسميع</th>
+        <th>الطالب</th><th>المعلم</th><th>الواجبات المنجزة</th>
+        <th>تسميع</th><th>نطاق التسميع</th><th>الدرجة</th>
         <th>حالة الخطة</th><th>حالة التسميع</th><th></th>
       </tr>`;
       buildRow = r => {
         const scoreStr = r.score != null ? parseFloat(r.score).toFixed(1) + ' / 10' : '—';
-        const diffStr  = r.diff  != null ? (r.diff >= 0 ? '+' : '') + r.diff : '—';
-        const recRange = r.recFrom != null ? `${r.recFrom} ← ${r.recTo}` : '—';
-        return `<tr class="${r._color}" onclick_noop>
+        const recRange = r.recFrom != null ? `${r.recFrom} – ${r.recTo}` : '—';
+        return `<tr class="${r._color}">
           <td style="font-weight:700">${r._name}</td>
           <td>${r._teacher}</td>
-          <td>${chk(r.listen)}</td>
-          <td>${chk(r.memo)}</td>
-          <td>${chk(r.link)}</td>
-          <td>${chk(r.review)}</td>
-          <td>${chk(r.hasSession)}</td>
+          <td>${taskCells(r.items)}</td>
+          <td>${r.hasSession ? '<span class="att-check">✓</span>' : '<span class="att-cross">✗</span>'}</td>
           <td>${recRange}</td>
           <td>${scoreStr}</td>
-          <td style="color:${r.diff < 0 ? '#dc2626' : '#16a34a'};font-weight:700">${diffStr}</td>
           <td><div class="att-status-line">${r.planStatus.icon} ${r.planStatus.text}</div></td>
           <td><div class="att-status-line">${r.recStatus.icon} ${r.recStatus.text}</div></td>
           <td><button class="att-btn-detail" onclick="openAttDetail('${r._id}')">تفاصيل</button></td>
@@ -3829,21 +3763,22 @@
       };
     } else {
       thead = `<tr>
-        <th>الطالب</th><th>المعلم</th><th>الخطة</th><th>أيام منجزة</th>
-        <th>جلسات التسميع</th><th>أحاديث محفوظة</th><th>أحاديث مسمَّعة</th>
-        <th>متوسط الدرجة</th><th>نسبة الإنجاز</th>
+        <th>الطالب</th><th>المعلم</th><th>الخطة</th>
+        <th>الحفظ</th><th>الربط</th><th>المراجعة</th><th>سماع</th>
+        <th>أيام نشطة</th><th>جلسات تسميع</th><th>متوسط الدرجة</th>
         <th>حالة الخطة</th><th>حالة التسميع</th><th></th>
       </tr>`;
       buildRow = r => `<tr class="${r._color}">
         <td style="font-weight:700">${r._name}</td>
         <td>${r._teacher}</td>
         <td>${r._plan}</td>
+        <td style="font-size:.8rem;font-weight:600">${r.memoRange   || '—'}</td>
+        <td style="font-size:.8rem;font-weight:600">${r.linkRange   || '—'}</td>
+        <td style="font-size:.8rem;font-weight:600">${r.reviewRange || '—'}</td>
+        <td>${r.listenCount || '—'}</td>
         <td>${r.doneDays}</td>
         <td>${r.sessionCount}</td>
-        <td>${r.totalMemo || '—'}</td>
-        <td>${r.totalRecited || '—'}</td>
         <td>${r.avgScore ?? '—'}</td>
-        <td>${r.completionPct != null ? r.completionPct + '%' : '—'}</td>
         <td><div class="att-status-line">${r.planStatus.icon} ${r.planStatus.text}</div></td>
         <td><div class="att-status-line">${r.recStatus.icon} ${r.recStatus.text}</div></td>
         <td><button class="att-btn-detail" onclick="openAttDetail('${r._id}')">تفاصيل</button></td>
@@ -3866,58 +3801,54 @@
     const modal = document.getElementById('attDetailModal');
     document.getElementById('attDetailTitle').textContent = `تقرير مفصل — ${row._name}`;
 
-    const planDays  = (row._planDays || []).sort((a, b) => a.day_number - b.day_number);
-    const assignedAt = row._assignedAt;
-    const stProg    = row._progMap || {};
-    const stSess    = row._sessMap || {};
-
-    const TASKS = ['listen','memo','link','review'];
-    const LABELS = { listen:'سماع', memo:'حفظ', link:'ربط', review:'مراجعة' };
+    const stProg = row._progByDate || {};   // date → [{key, label}]  (already built per-student)
+    const stSess = row._sessMap    || {};   // date → [session, ...]
 
     const head = document.getElementById('attDetailHead');
     const body = document.getElementById('attDetailBody');
 
     head.innerHTML = `<tr>
-      <th>اليوم</th><th>التاريخ</th><th>سماع</th><th>حفظ</th><th>ربط</th><th>مراجعة</th>
+      <th>التاريخ</th><th>الواجبات المنجزة</th>
       <th>تسميع</th><th>نطاق التسميع</th><th>المعلم</th><th>الدرجة</th>
     </tr>`;
 
+    // اجمع كل التواريخ التي فيها نشاط (خطة أو تسميع) ضمن النطاق
+    const dateFrom = attData.dateFrom;
+    const dateTo   = attData.mode === 'range' ? attData.dateTo : attData.dateFrom;
+
+    const allDates = new Set([
+      ...Object.keys(stProg).filter(d => d >= dateFrom && d <= dateTo),
+      ...Object.keys(stSess).filter(d => d >= dateFrom && d <= dateTo)
+    ]);
+    const sortedDates = [...allDates].sort();
+
     let rowsHtml = '';
-    planDays.forEach(d => {
-      const dayDate = assignedAt ? (() => {
-        const dt = new Date(assignedAt);
-        dt.setDate(dt.getDate() + d.day_number - 1);
-        return dt.toISOString().slice(0, 10);
-      })() : null;
-
-      // فلتر النطاق الزمني
-      if (attData.mode === 'range' && dayDate) {
-        if (dayDate < attData.dateFrom || dayDate > attData.dateTo) return;
-      }
-
-      const dp  = stProg[d.id] || {};
-      const listen = !!dp['listen'], memo = !!dp['memo'], link = !!dp['link'], review = !!dp['review'];
-
-      const daySess = dayDate ? (stSess[dayDate] || []) : [];
+    sortedDates.forEach(date => {
+      const tasks   = stProg[date] || [];
+      const daySess = stSess[date] || [];
       const hasSess = daySess.length > 0;
       const lastS   = daySess[daySess.length - 1];
 
-      const color = (listen && memo && link && review) ? '#f0fdf4'
-        : (!listen && !memo && !link && !review) ? '#f9fafb'
-        : '#fff7ed';
+      const tasksHtml = tasks.length
+        ? tasks.map(t => `<div style="font-size:.78rem;font-weight:600;line-height:1.8">${t.label}</div>`).join('')
+        : '<span style="color:var(--text-muted);font-size:.78rem">لا شيء</span>';
+
+      const color = tasks.length === 4 ? '#f0fdf4'
+        : tasks.length > 0 ? '#fff7ed'
+        : hasSess ? '#eff6ff'
+        : '#f9fafb';
 
       rowsHtml += `<tr style="background:${color}">
-        <td style="font-weight:700">${d.day_number}</td>
-        <td>${dayDate || '—'}</td>
-        <td>${chk(listen)}</td><td>${chk(memo)}</td><td>${chk(link)}</td><td>${chk(review)}</td>
+        <td style="font-weight:700;white-space:nowrap">${date}</td>
+        <td>${tasksHtml}</td>
         <td>${chk(hasSess)}</td>
         <td>${hasSess ? `${lastS.hadith_from} ← ${lastS.hadith_to}` : '—'}</td>
         <td>${hasSess ? (lastS.teachers?.users?.name || '—') : '—'}</td>
-        <td>${hasSess ? (parseFloat(lastS.score).toFixed(1) + ' / 10') : '—'}</td>
+        <td>${hasSess && lastS.score != null ? (parseFloat(lastS.score).toFixed(1) + ' / 10') : '—'}</td>
       </tr>`;
     });
 
-    body.innerHTML = rowsHtml || '<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text-muted)">لا توجد بيانات</td></tr>';
+    body.innerHTML = rowsHtml || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted)">لا توجد بيانات في هذا النطاق</td></tr>';
     modal.classList.remove('hidden');
   }
 
@@ -3928,19 +3859,22 @@
 
     let headers, dataRows;
     if (mode === 'day') {
-      headers = ['الطالب','المعلم','الخطة','سماع','حفظ','ربط','مراجعة','تسميع','من حديث','إلى حديث','الدرجة','فرق التسميع','حالة الخطة','حالة التسميع'];
+      headers = ['الطالب','المعلم','الخطة','الواجبات المنجزة','تسميع','من حديث','إلى حديث','الدرجة','حالة الخطة','حالة التسميع'];
       dataRows = rows.map(r => [
         r._name, r._teacher, r._plan,
-        r.listen?'✓':'✗', r.memo?'✓':'✗', r.link?'✓':'✗', r.review?'✓':'✗',
-        r.hasSession?'✓':'✗', r.recFrom??'', r.recTo??'', r.score??'',
-        r.diff??'', r.planStatus.text, r.recStatus.text
+        (r.items || []).map(i => i.label).join(' | ') || 'لا شيء',
+        r.hasSession ? '✓' : '✗',
+        r.recFrom ?? '', r.recTo ?? '', r.score ?? '',
+        r.planStatus.text, r.recStatus.text
       ]);
     } else {
-      headers = ['الطالب','المعلم','الخطة','أيام منجزة','جلسات التسميع','أحاديث محفوظة','أحاديث مسمَّعة','متوسط الدرجة','نسبة الإنجاز','حالة الخطة','حالة التسميع'];
+      headers = ['الطالب','المعلم','الخطة','أيام منجزة','حفظ','ربط','مراجعة','سماع (أيام)','جلسات التسميع','متوسط الدرجة','حالة الخطة','حالة التسميع'];
       dataRows = rows.map(r => [
         r._name, r._teacher, r._plan,
-        r.doneDays, r.sessionCount, r.totalMemo??'', r.totalRecited??'',
-        r.avgScore??'', r.completionPct!=null?r.completionPct+'%':'',
+        r.doneDays,
+        r.memoRange ?? '—', r.linkRange ?? '—', r.reviewRange ?? '—',
+        r.listenCount || 0,
+        r.sessionCount, r.avgScore ?? '',
         r.planStatus.text, r.recStatus.text
       ]);
     }
