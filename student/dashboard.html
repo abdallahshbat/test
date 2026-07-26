@@ -1541,17 +1541,36 @@ async function loadRoomsInAchieve() {
     const active = isRoomActive(r);
     const showBtn = active || r.outside_behavior === 'always_visible';
     const disabledBtn = !active && r.outside_behavior !== 'hidden' && r.outside_behavior !== 'always_visible';
-    return `<div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)">
-      <div style="flex-shrink:0;margin-top:3px">
-        <div style="width:12px;height:12px;border-radius:50%;background:${active ? '#3A9670' : '#C5BDB0'};box-shadow:${active ? '0 0 0 3px #D9EAE1' : 'none'};transition:background .3s"></div>
+    const btnHtml = showBtn
+      ? `<a href="${r.meet_url}" target="_blank" rel="noopener"
+           style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+                  width:52px;flex-shrink:0;align-self:stretch;
+                  background:var(--green-dark);color:#fff;border-radius:10px;
+                  text-decoration:none;font-size:.65rem;font-weight:700;padding:6px 4px;
+                  border:none;cursor:pointer;transition:opacity .15s">
+           <span style="font-size:1.2rem">📹</span>
+           <span>اتصال</span>
+         </a>`
+      : disabledBtn
+      ? `<button disabled
+           style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+                  width:52px;flex-shrink:0;align-self:stretch;
+                  background:var(--border);color:var(--text-muted);border-radius:10px;
+                  font-size:.65rem;font-weight:700;padding:6px 4px;border:none;cursor:not-allowed;opacity:.5">
+           <span style="font-size:1.2rem">📹</span>
+           <span>اتصال</span>
+         </button>`
+      : '';
+    return `<div style="display:flex;align-items:stretch;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+      <div style="flex-shrink:0;padding-top:4px">
+        <div style="width:10px;height:10px;border-radius:50%;background:${active ? '#3A9670' : '#C5BDB0'};box-shadow:${active ? '0 0 0 3px #D9EAE1' : 'none'};transition:background .3s"></div>
       </div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:.92rem;font-weight:800;color:var(--text-primary);margin-bottom:3px">🎤 ${r.name}</div>
-        <div style="font-size:.78rem;color:var(--text-secondary);margin-bottom:2px">📅 ${r.days.join(' · ')}</div>
-        <div style="font-size:.78rem;color:var(--text-secondary)">🕐 ${r.start_time.slice(0,5)} – ${r.end_time.slice(0,5)}</div>
-        ${showBtn ? `<a href="${r.meet_url}" target="_blank" rel="noopener" class="btn-primary btn-green" style="display:inline-block;text-align:center;text-decoration:none;margin-top:8px;font-size:.82rem;padding:7px 18px">📹 ادخل الغرفة</a>` : ''}
-        ${disabledBtn ? `<button class="btn-primary" style="margin-top:8px;opacity:.45;cursor:not-allowed;font-size:.82rem;padding:7px 18px" disabled>📹 ادخل الغرفة</button>` : ''}
+        <div style="font-size:.88rem;font-weight:800;color:var(--text-primary);margin-bottom:2px">🎤 ${r.name}</div>
+        <div style="font-size:.75rem;color:var(--text-secondary);margin-bottom:1px">📅 ${r.days.join(' · ')}</div>
+        <div style="font-size:.75rem;color:var(--text-secondary)">🕐 ${r.start_time.slice(0,5)} – ${r.end_time.slice(0,5)}</div>
       </div>
+      ${btnHtml}
     </div>`;
   }).join('');
   // إزالة آخر border
