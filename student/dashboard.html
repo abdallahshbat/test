@@ -487,8 +487,8 @@ body,.card,.sp-day-card,.sp-day-header,.stat-box,
   </button>
   <button class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 border-0 bg-transparent cursor-pointer text-slate-400 text-xs font-bold font-cairo relative transition-colors"
     id="nb-achieve" onclick="showView('achieve')">
-    <i data-lucide="medal" style="width:22px;height:22px"></i>
-    منجزاتي
+    <i data-lucide="home" style="width:22px;height:22px"></i>
+    الرئيسية
   </button>
   <button class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 border-0 bg-transparent cursor-pointer text-slate-400 text-xs font-bold font-cairo relative transition-colors"
     id="nb-sessions" onclick="showView('sessions')">
@@ -501,7 +501,7 @@ body,.card,.sp-day-card,.sp-day-header,.stat-box,
     الشرف
   </button>
   <button class="nav-btn flex-1 flex flex-col items-center justify-center gap-1 border-0 bg-transparent cursor-pointer text-slate-400 text-xs font-bold font-cairo relative transition-colors"
-    id="nb-rooms" onclick="showView('rooms')">
+    id="nb-rooms" onclick="showView('rooms')" style="display:none">
     <i data-lucide="video" style="width:22px;height:22px"></i>
     غرفي
   </button>
@@ -586,11 +586,26 @@ body,.card,.sp-day-card,.sp-day-header,.stat-box,
       <div class="progress-footnote"><span>بداية الخطة</span><span>نهاية الخطة</span></div>
     </div>
 
+    <!-- Audio Rooms (embedded) -->
+    <div class="card" id="roomsInAchieve">
+      <div class="card-header">
+        <div class="card-icon" style="background:#e0f2fe"><i data-lucide="mic" style="width:18px;height:18px;color:#0369a1"></i></div>
+        <div>
+          <div class="card-title">جلسات التسميع</div>
+          <div class="card-sub">غرفك الصوتية المسندة</div>
+        </div>
+      </div>
+      <div id="roomsListInAchieve">
+        <div class="skel skel-line"></div>
+        <div class="skel skel-line"></div>
+      </div>
+    </div>
+
     <!-- Stats -->
     <div class="card">
       <div class="card-header">
         <div class="card-icon gold"><i data-lucide="trophy" style="width:18px;height:18px;color:#B45309"></i></div>
-        <div><div class="card-title">منجزاتي</div></div>
+        <div><div class="card-title">الصفحة الرئيسية</div></div>
       </div>
       <div class="stats-grid" id="statsGrid">
         <div class="skel skel-stat"></div>
@@ -674,7 +689,7 @@ body,.card,.sp-day-card,.sp-day-header,.stat-box,
         <div class="card-icon gold"><i data-lucide="star" style="width:18px;height:18px;color:#B45309"></i></div>
         <div>
           <div class="card-title">لوحة الشرف</div>
-          <div class="card-sub">أفضل 10 طلاب</div>
+          <div class="card-sub">ترتيب جميع الطلاب</div>
         </div>
       </div>
       <div id="honorList">
@@ -755,7 +770,7 @@ async function init() {
   document.getElementById('studentNameTop').textContent = userData.name || session.user.email;
   await loadStudentData();
   await loadSpProgress();
-  await Promise.all([loadStudyPlan(), loadStats(), loadSessions(), loadHonor(), loadExams(), checkDailyReview()]);
+  await Promise.all([loadStudyPlan(), loadStats(), loadSessions(), loadHonor(), loadExams(), checkDailyReview(), loadRoomsInAchieve()]);
 }
 
 async function loadStudentData() {
@@ -1246,14 +1261,25 @@ async function loadStats() {
   }, 0);
   const totalReview = revTeacher + revStudent;
 
+  const gapNum = parseInt(gap);
+  const gapStyle = !isNaN(gapNum)
+    ? gapNum <= 3
+      ? 'background:#d1fae5;border-color:#6ee7b7'
+      : gapNum <= 7
+        ? 'background:#fef9c3;border-color:#fde047'
+        : 'background:#fee2e2;border-color:#fca5a5'
+    : '';
+  const gapNumColor = !isNaN(gapNum)
+    ? gapNum <= 3 ? '#065f46' : gapNum <= 7 ? '#92400e' : '#9f1239'
+    : 'var(--text-primary)';
   grid.innerHTML = `
-    <div class="stat-box"><div class="stat-num">${recited || '—'}</div><div class="stat-lbl">📖 أحاديث مسمّعة</div></div>
-    <div class="stat-box"><div class="stat-num">${memorized}</div><div class="stat-lbl">🧠 أحاديث محفوظة</div></div>
-    <div class="stat-box"><div class="stat-num">${cnt}</div><div class="stat-lbl">🎯 عدد الجلسات</div></div>
-    <div class="stat-box"><div class="stat-num">${avgScore}</div><div class="stat-lbl">⭐ متوسط التقييم / 10</div></div>
-    <div class="stat-box" style="grid-column:1/-1"><div class="stat-num">${gap}</div><div class="stat-lbl">📊 فرق الحفظ والتسميع</div></div>
-    <div class="stat-box"><div class="stat-num">${totalLink}</div><div class="stat-lbl">🔗 صفحات الربط</div></div>
-    <div class="stat-box"><div class="stat-num">${totalReview}</div><div class="stat-lbl">📚 صفحات المراجعة</div></div>
+    <div class="stat-box"><div class="stat-num">${recited || '—'}</div><div class="stat-lbl">أحاديث مسمّعة</div></div>
+    <div class="stat-box"><div class="stat-num">${memorized}</div><div class="stat-lbl">أحاديث محفوظة</div></div>
+    <div class="stat-box"><div class="stat-num">${cnt}</div><div class="stat-lbl">عدد الجلسات</div></div>
+    <div class="stat-box"><div class="stat-num">${avgScore}</div><div class="stat-lbl">متوسط التقييم / 10</div></div>
+    <div class="stat-box" style="grid-column:1/-1;${gapStyle}"><div class="stat-num" style="color:${gapNumColor}">${gap}</div><div class="stat-lbl" style="color:${gapNumColor}">فرق الحفظ والتسميع</div></div>
+    <div class="stat-box"><div class="stat-num">${totalLink}</div><div class="stat-lbl">صفحات الربط</div></div>
+    <div class="stat-box"><div class="stat-num">${totalReview}</div><div class="stat-lbl">صفحات المراجعة</div></div>
   `;
   if (totalH > 0) {
     document.getElementById('progressSection').style.display = 'block';
@@ -1360,7 +1386,7 @@ async function loadSessions() {
   const list = document.getElementById('sessionsList');
   if (!studentData) { list.innerHTML = '<div class="empty">لا توجد بيانات</div>'; return; }
   let sessQuery = client.from('recitation_sessions')
-    .select('id, date, hadith_from, hadith_to, score, notes')
+    .select('id, date, hadith_from, hadith_to, score, teachers(users(name))')
     .eq('student_id', studentData.id)
     .order('date', { ascending: false });
   if (studentData.planAssignedAt) sessQuery = sessQuery.gte('date', studentData.planAssignedAt.slice(0, 10));
@@ -1369,13 +1395,16 @@ async function loadSessions() {
   list.innerHTML = data.map(s => {
     const score = parseFloat(s.score);
     const cls = score >= 8.5 ? 'green' : score >= 7 ? 'yellow' : 'red';
+    const teacherName = s.teachers?.users?.name || '—';
     return `<div class="session-row">
       <div class="session-top">
         <span class="session-date">${s.date || '—'}</span>
         <span class="score-badge ${cls}">${isNaN(score) ? '—' : score.toFixed(2)}/10</span>
       </div>
-      <div class="session-range">الأحاديث ${s.hadith_from || '—'} – ${s.hadith_to || '—'}</div>
-      ${s.notes ? `<div class="session-note">${s.notes}</div>` : ''}
+      <div class="session-range" style="display:flex;justify-content:space-between;align-items:center">
+        <span>الأحاديث ${s.hadith_from || '—'} – ${s.hadith_to || '—'}</span>
+        <span style="font-size:.72rem;color:var(--text-muted)">${teacherName}</span>
+      </div>
     </div>`;
   }).join('');
 }
@@ -1423,7 +1452,7 @@ async function loadHonor() {
     .filter(([, v]) => v.scores.length)
     .map(([id, v]) => ({ id, name: v.name, avg: v.scores.reduce((a, b) => a + b, 0) / v.scores.length }))
     .sort((a, b) => b.avg - a.avg)
-    .slice(0, 10);
+    ;
   if (!ranked.length) { list.innerHTML = '<div class="empty-state"><span class="empty-icon">🌟</span><div class="empty-text">لا توجد بيانات بعد</div></div>'; return; }
   const medals = ['🥇','🥈','🥉'];
   const myStudentId = studentData?.id;
@@ -1474,7 +1503,55 @@ function showView(name) {
   const nb = document.getElementById('nb-' + name);
   if (nb) nb.classList.add('active');
   if (name === 'rooms') loadRooms();
+  if (name === 'achieve') loadRoomsInAchieve();
   if (name === 'study') refreshDayLockStates();
+}
+
+/* ========== AUDIO ROOMS (embedded in achieve) ========== */
+async function loadRoomsInAchieve() {
+  const list = document.getElementById('roomsListInAchieve');
+  if (!list) return;
+  if (!studentData) { list.innerHTML = '<div class="empty-state"><span class="empty-icon">🎤</span><div class="empty-text">لا توجد بيانات</div></div>'; return; }
+  const { data, error } = await client.from('room_assignments')
+    .select('room_id, audio_rooms(id, name, meet_url, days, start_time, end_time, outside_behavior)')
+    .eq('assignee_type', 'student')
+    .eq('assignee_id', studentData.id);
+  if (error || !data?.length) {
+    list.innerHTML = '<div class="empty-state"><span class="empty-icon">🎤</span><div class="empty-text">لم تُسند لك أي غرف صوتية بعد</div></div>';
+    return;
+  }
+  const AR_DAYS = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  function isRoomActive(r) {
+    const now = new Date();
+    const todayAr = AR_DAYS[now.getDay()];
+    if (!r.days.includes(todayAr)) return false;
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    const nowTime = hh + ':' + mm;
+    return nowTime >= r.start_time.slice(0,5) && nowTime <= r.end_time.slice(0,5);
+  }
+  list.innerHTML = data.map(a => {
+    const r = a.audio_rooms;
+    if (!r) return '';
+    const active = isRoomActive(r);
+    const showBtn = active || r.outside_behavior === 'always_visible';
+    const disabledBtn = !active && r.outside_behavior !== 'hidden' && r.outside_behavior !== 'always_visible';
+    return `<div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)">
+      <div style="flex-shrink:0;margin-top:3px">
+        <div style="width:12px;height:12px;border-radius:50%;background:${active ? '#10b981' : '#cbd5e1'};box-shadow:${active ? '0 0 0 3px #d1fae5' : 'none'};transition:background .3s"></div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.92rem;font-weight:800;color:var(--text-primary);margin-bottom:3px">🎤 ${r.name}</div>
+        <div style="font-size:.78rem;color:var(--text-secondary);margin-bottom:2px">📅 ${r.days.join(' · ')}</div>
+        <div style="font-size:.78rem;color:var(--text-secondary)">🕐 ${r.start_time.slice(0,5)} – ${r.end_time.slice(0,5)}</div>
+        ${showBtn ? `<a href="${r.meet_url}" target="_blank" rel="noopener" class="btn-primary btn-green" style="display:inline-block;text-align:center;text-decoration:none;margin-top:8px;font-size:.82rem;padding:7px 18px">📹 ادخل الغرفة</a>` : ''}
+        ${disabledBtn ? `<button class="btn-primary" style="margin-top:8px;opacity:.45;cursor:not-allowed;font-size:.82rem;padding:7px 18px" disabled>📹 ادخل الغرفة</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  // إزالة آخر border
+  const rows = list.querySelectorAll('[style*="border-bottom"]');
+  if (rows.length) rows[rows.length-1].style.borderBottom = 'none';
 }
 
 /* ========== AUDIO ROOMS ========== */
