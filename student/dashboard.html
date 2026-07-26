@@ -1569,9 +1569,6 @@ async function loadRoomsInAchieve() {
         <div style="font-size:.75rem;color:var(--text-secondary);margin-bottom:1px">📅 ${r.days.join(' · ')}</div>
         <div style="font-size:.75rem;color:var(--text-secondary)">🕐 ${r.start_time.slice(0,5)} – ${r.end_time.slice(0,5)}</div>
       </div>
-      <div style="flex-shrink:0;padding-top:4px">
-        <div style="width:10px;height:10px;border-radius:50%;background:${active ? '#3A9670' : '#C5BDB0'};box-shadow:${active ? '0 0 0 3px #D9EAE1' : 'none'};transition:background .3s"></div>
-      </div>
     </div>`;
   }).filter(Boolean);
   if (!rows.length) {
