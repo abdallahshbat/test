@@ -13,15 +13,18 @@
 
     :root {
       --sidebar-w: 260px;
-      --sidebar-bg: #1a3c2e;
-      --sidebar-hover: #245c44;
-      --sidebar-active: #2d7a57;
-      --accent: #2d7a57;
-      --text-main: #1f2937;
-      --text-muted: #6b7280;
-      --bg: #f3f4f6;
+      --sidebar-bg: #1A2820;
+      --sidebar-hover: #243529;
+      --sidebar-active: #2C3E35;
+      --accent: #2C3E35;
+      --gold: #C9A84C;
+      --gold-dark: #9E7A2A;
+      --gold-light: #F7F0DC;
+      --text-main: #1A1A1A;
+      --text-muted: #6B7280;
+      --bg: #F5F3EF;
       --card-bg: #ffffff;
-      --border: #e5e7eb;
+      --border: #E5E0D8;
       --danger: #dc2626;
     }
 
@@ -106,15 +109,15 @@
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 28px; }
     .stat-card { background: var(--card-bg); border-radius: 14px; padding: 22px 24px; border: 1px solid var(--border); display: flex; align-items: center; gap: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
-    .stat-icon.green  { background: #d1fae5; }
+    .stat-icon.green  { background: #D9EAE1; }
     .stat-icon.blue   { background: #dbeafe; }
-    .stat-icon.amber  { background: #fef3c7; }
+    .stat-icon.amber  { background: #F7F0DC; }
     .stat-icon.purple { background: #ede9fe; }
     .stat-value { font-size: 1.8rem; font-weight: 800; color: var(--text-main); line-height: 1; }
     .stat-label { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; }
 
     .welcome-card {
-      background: linear-gradient(135deg, #1a3c2e 0%, #2d7a57 100%);
+      background: linear-gradient(135deg, #1A2820 0%, #2C3E35 100%);
       border-radius: 16px; padding: 28px 32px; color: #fff;
       margin-bottom: 28px;
       display: flex; align-items: center; justify-content: space-between;
@@ -128,15 +131,15 @@
     .att-stat-val { font-size:1.6rem;font-weight:900;color:var(--accent);line-height:1 }
     .att-stat-lbl { font-size:.72rem;color:var(--text-muted);margin-top:4px;font-weight:600 }
     .att-table { width:100%;border-collapse:collapse;font-size:.83rem }
-    .att-table th { background:#f9fafb;padding:10px 12px;text-align:right;font-weight:700;color:var(--text-muted);border-bottom:2px solid var(--border);white-space:nowrap;font-size:.78rem }
+    .att-table th { background:#F7F5F1;padding:10px 12px;text-align:right;font-weight:700;color:var(--text-muted);border-bottom:2px solid var(--border);white-space:nowrap;font-size:.78rem }
     .att-table td { padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap }
-    .att-table tr.att-green td { background:#f0fdf4 }
+    .att-table tr.att-green td { background:#EEF3F1 }
     .att-table tr.att-yellow td { background:#fefce8 }
     .att-table tr.att-orange td { background:#fff7ed }
     .att-table tr.att-red td { background:#fef2f2 }
-    .att-table tr.att-gray td { background:#f9fafb }
+    .att-table tr.att-gray td { background:#F7F5F1 }
     .att-table tr:hover td { filter:brightness(.97) }
-    .att-check { color:#16a34a;font-size:1rem;font-weight:700 }
+    .att-check { color:#3A7A60;font-size:1rem;font-weight:700 }
     .att-cross { color:#dc2626;font-size:1rem;font-weight:700 }
     .att-status-line { display:flex;align-items:center;gap:4px;font-size:.75rem;white-space:nowrap }
     .att-btn-detail { font-size:.75rem;padding:3px 10px;background:#e0f2fe;color:#0369a1;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600 }
@@ -145,9 +148,9 @@
     .home-stats-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px }
     .home-stat-card { background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 3px rgba(0,0,0,.04) }
     .home-stat-icon { width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0 }
-    .home-stat-icon.green  { background:#d1fae5;color:#16a34a }
+    .home-stat-icon.green  { background:#D9EAE1;color:#3A7A60 }
     .home-stat-icon.blue   { background:#dbeafe;color:#2563eb }
-    .home-stat-icon.amber  { background:#fef3c7;color:#d97706 }
+    .home-stat-icon.amber  { background:#F7F0DC;color:#C9A84C }
     .home-stat-icon.purple { background:#ede9fe;color:#7c3aed }
     .home-stat-icon.rose   { background:#ffe4e6;color:#e11d48 }
     .home-stat-icon.teal   { background:#ccfbf1;color:#0d9488 }
@@ -176,10 +179,10 @@
     .home-alert-card.warning { background:#fefce8;border:1px solid #fde047 }
     .home-alert-icon { width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0 }
     .home-alert-card.danger .home-alert-icon { background:#fecaca;color:#dc2626 }
-    .home-alert-card.warning .home-alert-icon { background:#fef08a;color:#ca8a04 }
+    .home-alert-card.warning .home-alert-icon { background:#fef08a;color:#B8923C }
     .home-alert-num { font-size:1.5rem;font-weight:900;line-height:1 }
     .home-alert-card.danger .home-alert-num { color:#dc2626 }
-    .home-alert-card.warning .home-alert-num { color:#ca8a04 }
+    .home-alert-card.warning .home-alert-num { color:#B8923C }
     .home-alert-lbl { font-size:.78rem;color:var(--text-muted);margin-top:2px }
 
     .section-placeholder {
@@ -198,14 +201,14 @@
       display: flex; align-items: center; justify-content: center;
       z-index: 9999; flex-direction: column; gap: 16px;
     }
-    .loader { width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top-color: #1a3c2e; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    .loader { width: 40px; height: 40px; border: 4px solid #E5E0D8; border-top-color: #1A2820; border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-text { font-size: 0.9rem; color: var(--text-muted); }
 
     /* FORM */
     .form-card { background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.06); max-width: 680px; }
     .form-card-header { padding: 22px 28px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
-    .form-card-header .icon { width: 42px; height: 42px; border-radius: 10px; background: #d1fae5; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+    .form-card-header .icon { width: 42px; height: 42px; border-radius: 10px; background: #D9EAE1; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
     .form-card-header h2 { font-size: 1.05rem; font-weight: 700; }
     .form-card-header p { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
     .form-body { padding: 26px 28px; }
@@ -218,7 +221,7 @@
 
     .form-footer { padding: 18px 28px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
     .btn-submit { padding: 10px 28px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.2s, opacity 0.2s; }
-    .btn-submit:hover:not(:disabled) { background: #245c44; }
+    .btn-submit:hover:not(:disabled) { background: #243529; }
     .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-reset { padding: 10px 20px; background: transparent; color: var(--text-muted); border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: border-color 0.2s, color 0.2s; }
     .btn-reset:hover { border-color: #9ca3af; color: var(--text-main); }
@@ -226,7 +229,7 @@
     #toast {
       position: fixed; bottom: 28px; left: 50%;
       transform: translateX(-50%) translateY(20px);
-      background: #1f2937; color: #fff;
+      background: #1A1A1A; color: #fff;
       padding: 12px 22px; border-radius: 10px;
       font-size: 0.9rem; font-weight: 600;
       opacity: 0; pointer-events: none;
@@ -234,7 +237,7 @@
       z-index: 999; white-space: nowrap;
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    #toast.success { background: #065f46; }
+    #toast.success { background: #2C3E35; }
     #toast.error   { background: #991b1b; }
 
     /* STUDENT FILES */
@@ -243,12 +246,12 @@
     .search-input { flex: 1; padding: 8px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.88rem; font-family: inherit; outline: none; }
     .search-input:focus { border-color: var(--accent); }
     table { width: 100%; border-collapse: collapse; }
-    th { background: #f9fafb; color: var(--text-muted); font-size: 0.78rem; font-weight: 700; padding: 10px 16px; text-align: right; border-bottom: 1px solid var(--border); }
+    th { background: #F7F5F1; color: var(--text-muted); font-size: 0.78rem; font-weight: 700; padding: 10px 16px; text-align: right; border-bottom: 1px solid var(--border); }
     td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 0.88rem; vertical-align: middle; }
     tr:last-child td { border: none; }
-    tr:hover td { background: #f9fafb; }
-    .btn-view { padding: 5px 14px; background: #d1fae5; color: #065f46; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; }
-    .btn-view:hover { background: #a7f3d0; }
+    tr:hover td { background: #F7F5F1; }
+    .btn-view { padding: 5px 14px; background: #D9EAE1; color: #2C3E35; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .btn-view:hover { background: #B8D4C4; }
     .btn-danger { padding: 5px 12px; background: #fee2e2; color: #991b1b; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; }
     .btn-danger:hover { background: #fca5a5; }
     .empty-row { text-align: center; color: var(--text-muted); padding: 40px; font-size: 0.9rem; }
@@ -265,15 +268,15 @@
     .detail-field:last-child { border: none; }
     .detail-field .key { color: var(--text-muted); }
     .detail-field .val { font-weight: 600; color: var(--text-main); }
-    .btn-back-list { padding: 8px 18px; background: #f3f4f6; color: var(--text-main); border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; margin-bottom: 20px; }
-    .btn-back-list:hover { background: #e5e7eb; }
+    .btn-back-list { padding: 8px 18px; background: #F5F3EF; color: var(--text-main); border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; margin-bottom: 20px; }
+    .btn-back-list:hover { background: #E5E0D8; }
     .sessions-mini { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 18px; }
     .sessions-mini h3 { font-size: 0.88rem; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; }
     .session-mini-row { display: flex; justify-content: space-between; font-size: 0.83rem; padding: 6px 0; border-bottom: 1px solid var(--border); }
     .session-mini-row:last-child { border: none; }
     .score-chip { padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
-    .chip-green { background: #d1fae5; color: #065f46; }
-    .chip-yellow { background: #fef9c3; color: #92400e; }
+    .chip-green { background: #D9EAE1; color: #2C3E35; }
+    .chip-yellow { background: #F7F0DC; color: #92400e; }
     .chip-red { background: #fee2e2; color: #991b1b; }
 
     /* MODAL */
@@ -294,7 +297,7 @@
     }
     .modal-header h2 { font-size: 1rem; font-weight: 700; }
     .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-muted); line-height: 1; padding: 2px 6px; border-radius: 6px; }
-    .modal-close:hover { background: #f3f4f6; }
+    .modal-close:hover { background: #F5F3EF; }
     .modal-body { padding: 22px 24px; }
     .modal-footer { padding: 16px 24px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
 
@@ -302,7 +305,7 @@
     .plans-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
     .plans-header h2 { font-size: 1.05rem; font-weight: 700; }
     .btn-add { padding: 9px 20px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; }
-    .btn-add:hover { background: #245c44; }
+    .btn-add:hover { background: #243529; }
     .plans-table-wrap { background: var(--card-bg); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; }
 
     .plan-days-wrap { background: var(--card-bg); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; margin-top: 20px; }
@@ -338,11 +341,11 @@
     .tf-table td { padding:10px 12px;border-bottom:1px solid var(--border) }
     .as-tab-btn:not(.active):hover { border-color:var(--accent); color:var(--accent); }
     .sf-table { width:100%; border-collapse:collapse; font-size:.84rem; }
-    .sf-table th { padding:11px 14px; background:#f9fafb; font-weight:700; color:var(--text-muted); text-align:right; border-bottom:1px solid var(--border); font-size:.78rem; white-space:nowrap; }
+    .sf-table th { padding:11px 14px; background:#F7F5F1; font-weight:700; color:var(--text-muted); text-align:right; border-bottom:1px solid var(--border); font-size:.78rem; white-space:nowrap; }
     .sf-table td { padding:11px 14px; border-bottom:1px solid var(--border); vertical-align:middle; }
     .sf-table tr:last-child td { border:none; }
-    .sf-table tr:hover td { background:#f9fafb; }
-    .btn-pw { padding:5px 14px; background:#fef3c7; color:#92400e; border:1px solid #fcd34d; border-radius:7px; font-size:.78rem; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap; }
+    .sf-table tr:hover td { background:#F7F5F1; }
+    .btn-pw { padding:5px 14px; background:#F7F0DC; color:#92400e; border:1px solid #fcd34d; border-radius:7px; font-size:.78rem; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap; }
     .btn-pw:hover { background:#fde68a; }
 
     /* ── رصد جلسة التسميع ── */
@@ -369,7 +372,7 @@
     .rs-counter-btn { width:48px; height:48px; border-radius:50%; border:none; font-size:1.4rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform .1s; }
     .rs-counter-btn:active { transform:scale(.93); }
     .rs-btn-minus { background:#fee2e2; color:#e63946; }
-    .rs-btn-plus { background:#dcfce7; color:#16a34a; }
+    .rs-btn-plus { background:#D9EAE1; color:#3A7A60; }
     .rs-counter-val { font-size:1.5rem; font-weight:800; color:var(--text-main); min-width:36px; text-align:center; }
     .rs-counter-penalty { font-size:.75rem; color:var(--text-muted); text-align:center; margin-top:4px; }
     .rs-score-display { background:var(--accent); color:#fff; border-radius:12px; padding:20px; text-align:center; margin-bottom:16px; }
@@ -690,7 +693,7 @@
       <!-- أعلى الطلاب + نشاط المعلمين -->
       <div class="home-panels">
         <div class="home-panel-card">
-          <div class="home-panel-title"><i data-lucide="trophy" style="width:16px;height:16px;color:#d97706"></i> أعلى 5 طلاب إنجازاً</div>
+          <div class="home-panel-title"><i data-lucide="trophy" style="width:16px;height:16px;color:#C9A84C"></i> أعلى 5 طلاب إنجازاً</div>
           <div id="homeTopStudents"><p style="color:var(--text-muted);font-size:.85rem">جارٍ التحميل…</p></div>
         </div>
         <div class="home-panel-card">
@@ -776,7 +779,7 @@
 
           <div style="display:flex;gap:8px;align-self:flex-end">
             <button class="btn-submit" onclick="runAttendance()" style="padding:8px 22px;font-size:.88rem">عرض</button>
-            <button class="btn-submit" onclick="exportAttendanceExcel()" style="padding:8px 16px;font-size:.88rem;background:#065f46" title="تصدير Excel"><i data-lucide="download" style="width:15px;height:15px;vertical-align:middle"></i> Excel</button>
+            <button class="btn-submit" onclick="exportAttendanceExcel()" style="padding:8px 16px;font-size:.88rem;background:#2C3E35" title="تصدير Excel"><i data-lucide="download" style="width:15px;height:15px;vertical-align:middle"></i> Excel</button>
           </div>
         </div>
       </div>
@@ -1332,7 +1335,7 @@
 
     <div class="view" id="view-settings"><div class="section-placeholder"><div class="ph-icon"><i data-lucide="settings" style="width:32px;height:32px"></i></div><h3>الإعدادات العامة</h3><p>إعدادات المنصة العامة ستكون هنا</p></div></div>
 
-  <footer style="text-align:center;padding:14px 16px 20px;font-size:.75rem;color:#9ca3af">صُنع بإتقان عبر <span style="color:#2d7a57;font-weight:600">منصة أثر</span></footer>
+  <footer style="text-align:center;padding:14px 16px 20px;font-size:.75rem;color:#9ca3af">صُنع بإتقان عبر <span style="color:#2C3E35;font-weight:600">منصة أثر</span></footer>
   </div>
 </div>
 
@@ -1458,10 +1461,10 @@
               <td><button class="btn-view" style="font-size:.78rem;padding:4px 10px" onclick="openAssignRoomsModal('student','${s.id}','${(s.users?.name || '').replace(/'/g, "\\'")}')">🎤 إسناد الغرف</button></td>
               <td>${s.current_plan_id && s._planDaysTotal > 0 ? (() => {
                 const pct = Math.round((s._planDaysDone / s._planDaysTotal) * 100);
-                const color = pct >= 80 ? '#065f46' : pct >= 40 ? '#92400e' : '#991b1b';
-                return `<div style="min-width:100px"><div style="font-size:.72rem;color:var(--text-muted);margin-bottom:3px">${s._planDaysDone}/${s._planDaysTotal} يوم</div><div style="background:#e5e7eb;border-radius:6px;height:6px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${color};border-radius:6px"></div></div><div style="font-size:.7rem;font-weight:700;color:${color};margin-top:2px">${pct}%</div></div>`;
+                const color = pct >= 80 ? '#2C3E35' : pct >= 40 ? '#92400e' : '#991b1b';
+                return `<div style="min-width:100px"><div style="font-size:.72rem;color:var(--text-muted);margin-bottom:3px">${s._planDaysDone}/${s._planDaysTotal} يوم</div><div style="background:#E5E0D8;border-radius:6px;height:6px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${color};border-radius:6px"></div></div><div style="font-size:.7rem;font-weight:700;color:${color};margin-top:2px">${pct}%</div></div>`;
               })() : '<span style="color:var(--text-muted);font-size:.8rem">—</span>'}</td>
-              <td><span style="padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;background:${s.is_archived ? '#fee2e2' : '#d1fae5'};color:${s.is_archived ? '#991b1b' : '#065f46'}">${s.is_archived ? 'مؤرشف' : 'نشط'}</span></td>
+              <td><span style="padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;background:${s.is_archived ? '#fee2e2' : '#D9EAE1'};color:${s.is_archived ? '#991b1b' : '#2C3E35'}">${s.is_archived ? 'مؤرشف' : 'نشط'}</span></td>
               <td><button class="btn-view" onclick="openStudentDetail('${s.id}','${(s.users?.id || '')}')">عرض الملف</button></td>
             </tr>
           `).join('')}
@@ -1528,7 +1531,7 @@
       ? `<div style="overflow-x:auto">
           <table style="width:100%;border-collapse:collapse;font-size:.83rem">
             <thead>
-              <tr style="background:var(--bg-secondary,#f3f4f6);text-align:right">
+              <tr style="background:var(--bg-secondary,#F5F3EF);text-align:right">
                 <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">#</th>
                 <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">التاريخ</th>
                 <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">المعلم الراصد</th>
@@ -1540,10 +1543,10 @@
             <tbody>
               ${sessions.map((s, i) => {
                 const sc = parseFloat(s.score);
-                const scoreColor = sc >= 8.5 ? '#065f46' : sc >= 7 ? '#92400e' : '#991b1b';
-                const scoreBg    = sc >= 8.5 ? '#d1fae5' : sc >= 7 ? '#fef3c7' : '#fee2e2';
+                const scoreColor = sc >= 8.5 ? '#2C3E35' : sc >= 7 ? '#92400e' : '#991b1b';
+                const scoreBg    = sc >= 8.5 ? '#D9EAE1' : sc >= 7 ? '#F7F0DC' : '#fee2e2';
                 const teacherName = s.teachers?.users?.name || '—';
-                return `<tr style="border-bottom:1px solid var(--border-color,#e5e7eb)">
+                return `<tr style="border-bottom:1px solid var(--border-color,#E5E0D8)">
                   <td style="padding:8px 12px;color:var(--text-muted)">${i + 1}</td>
                   <td style="padding:8px 12px">${s.date || '—'}</td>
                   <td style="padding:8px 12px;font-weight:600">${teacherName}</td>
@@ -1591,12 +1594,12 @@
         <h3>📖 تقدم الخطة العلمية</h3>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <span style="font-size:.85rem;color:var(--text-muted)">${doneTasks} / ${totalTasks} مهمة مكتملة</span>
-          <span style="font-size:1rem;font-weight:800;color:${planPct>=80?'#065f46':planPct>=40?'#92400e':'#991b1b'}">${planPct}%</span>
+          <span style="font-size:1rem;font-weight:800;color:${planPct>=80?'#2C3E35':planPct>=40?'#92400e':'#991b1b'}">${planPct}%</span>
         </div>
-        <div style="background:#e5e7eb;border-radius:8px;height:10px;overflow:hidden;margin-bottom:10px">
+        <div style="background:#E5E0D8;border-radius:8px;height:10px;overflow:hidden;margin-bottom:10px">
           <div style="width:${planPct}%;height:100%;background:${planPct>=80?'#10b981':planPct>=40?'#f59e0b':'#ef4444'};border-radius:8px"></div>
         </div>
-        ${todayProgress.length ? `<div style="font-size:.82rem;font-weight:600;color:#065f46;margin-bottom:4px">✅ إنجاز اليوم (${todayProgress.length} مهمة):</div>
+        ${todayProgress.length ? `<div style="font-size:.82rem;font-weight:600;color:#2C3E35;margin-bottom:4px">✅ إنجاز اليوم (${todayProgress.length} مهمة):</div>
         <div style="font-size:.8rem;color:var(--text-muted)">${todayProgress.map(p => {const l={memo:'حفظ',link:'ربط',review:'مراجعة'};return l[p.task_key]||p.task_key;}).join(' · ')}</div>` : '<div style="font-size:.82rem;color:#e67e22">لم ينجز الطالب أي مهمة اليوم بعد</div>'}
       </div>` : ''}
       <div class="sessions-mini">
@@ -2034,7 +2037,7 @@
           <td style="color:var(--text-muted)">${i + 1}</td>
           <td style="font-weight:700">${name}</td>
           <td><button class="btn-view" style="font-size:.78rem;padding:4px 10px" onclick="openAssignRoomsModal('teacher','${t.id}','${name.replace(/'/g,"\\'")}')">🎤 إسناد الغرف</button></td>
-          <td><span style="padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;background:${isArchived?'#fee2e2':'#d1fae5'};color:${isArchived?'#991b1b':'#065f46'}">${isArchived?'مؤرشف':'فعال'}</span></td>
+          <td><span style="padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;background:${isArchived?'#fee2e2':'#D9EAE1'};color:${isArchived?'#991b1b':'#2C3E35'}">${isArchived?'مؤرشف':'فعال'}</span></td>
           <td><button class="btn-view" style="background:var(--accent);color:#fff;font-size:.78rem;padding:4px 10px" onclick="openTeacherProfile('${t.id}')">👤 عرض الملف</button></td>
           <td><button class="btn-view" style="font-size:.78rem;padding:4px 10px" onclick="openTeacherLogPage('${t.id}')">📋 سجل الرصد</button></td>
         </tr>`;
@@ -2091,7 +2094,7 @@
           <div style="font-size:1.3rem;font-weight:800;color:var(--text-main)">${u.name || '—'}</div>
           <div style="font-size:.85rem;color:var(--text-muted);margin-top:2px">معلم · انضم ${joinDate}</div>
           <div style="margin-top:6px">
-            <span style="background:#d1fae5;color:#065f46;padding:2px 10px;border-radius:20px;font-size:.75rem;font-weight:700">${sessionCount} جلسة رصد</span>
+            <span style="background:#D9EAE1;color:#2C3E35;padding:2px 10px;border-radius:20px;font-size:.75rem;font-weight:700">${sessionCount} جلسة رصد</span>
           </div>
         </div>
       </div>
@@ -2195,8 +2198,8 @@
 
     body.innerHTML = rows.map((r, i) => {
       const sc = parseFloat(r.score);
-      const scoreColor = sc >= 8.5 ? '#065f46' : sc >= 7 ? '#92400e' : '#991b1b';
-      const scoreBg    = sc >= 8.5 ? '#d1fae5' : sc >= 7 ? '#fef3c7' : '#fee2e2';
+      const scoreColor = sc >= 8.5 ? '#2C3E35' : sc >= 7 ? '#92400e' : '#991b1b';
+      const scoreBg    = sc >= 8.5 ? '#D9EAE1' : sc >= 7 ? '#F7F0DC' : '#fee2e2';
       return `<tr>
         <td style="color:var(--text-muted)">${i + 1}</td>
         <td>${r.date || '—'}</td>
@@ -2205,7 +2208,7 @@
         <td style="font-size:.82rem;color:var(--text-muted)">${r.programName}</td>
         <td>${r.hadithFrom ?? '—'}</td>
         <td>${r.hadithTo ?? '—'}</td>
-        <td><span style="padding:2px 8px;border-radius:20px;font-size:.78rem;font-weight:700;background:${isNaN(sc)?'#f3f4f6':scoreBg};color:${isNaN(sc)?'#6b7280':scoreColor}">${isNaN(sc) ? '—' : sc % 1 === 0 ? sc : sc.toFixed(2)}/10</span></td>
+        <td><span style="padding:2px 8px;border-radius:20px;font-size:.78rem;font-weight:700;background:${isNaN(sc)?'#F5F3EF':scoreBg};color:${isNaN(sc)?'#6b7280':scoreColor}">${isNaN(sc) ? '—' : sc % 1 === 0 ? sc : sc.toFixed(2)}/10</span></td>
         <td style="font-size:.8rem;color:var(--text-muted)">${r.notes}</td>
       </tr>`;
     }).join('');
@@ -2260,10 +2263,10 @@
         <td style="font-weight:700">${u.name || '—'}</td>
         <td style="color:var(--accent)">${u.username || '—'}</td>
         <td>${u.phone || '—'}</td>
-        <td><span style="padding:2px 8px;border-radius:20px;font-size:.75rem;font-weight:700;background:${isArchived?'#fee2e2':'#d1fae5'};color:${isArchived?'#991b1b':'#065f46'}">${isArchived?'مؤرشف':'فعال'}</span></td>
+        <td><span style="padding:2px 8px;border-radius:20px;font-size:.75rem;font-weight:700;background:${isArchived?'#fee2e2':'#D9EAE1'};color:${isArchived?'#991b1b':'#2C3E35'}">${isArchived?'مؤرشف':'فعال'}</span></td>
         <td><button class="btn-pw" data-uid="${u.id||''}" data-name="${(u.name||'').replace(/"/g,'&quot;')}" onclick="openResetPwModal(this.dataset.uid,this.dataset.name)">🔑 كلمة المرور</button></td>
         <td>${isArchived
-          ? `<button class="btn-pw" style="background:#d1fae5;color:#065f46;border-color:#a7f3d0" onclick="toggleArchiveTeacher('${t.id}',false)">↩️ استعادة</button>`
+          ? `<button class="btn-pw" style="background:#D9EAE1;color:#2C3E35;border-color:#B8D4C4" onclick="toggleArchiveTeacher('${t.id}',false)">↩️ استعادة</button>`
           : `<button class="btn-pw" style="background:#fee2e2;color:#b91c1c;border-color:#fca5a5" onclick="toggleArchiveTeacher('${t.id}',true)">📦 أرشفة</button>`
         }</td>
       </tr>`;
@@ -2495,7 +2498,7 @@
       if (r.type === 'hafiz') {
         const s = r.s;
         const detail = `${s.folder ? 'مجلد ' + s.folder + ' — ' : ''}${s.hadith_from ? 'حديث ' + s.hadith_from + ' – ' + s.hadith_to : '—'}`;
-        return `<tr><td>${s.date}</td><td><span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:10px;font-size:.75rem;font-weight:700">حفظ</span></td><td style="font-size:.85rem">${detail}</td><td style="font-weight:700;color:var(--accent)">${s.score != null ? Number(s.score).toFixed(2) : '—'}</td></tr>`;
+        return `<tr><td>${s.date}</td><td><span style="background:#D9EAE1;color:#15803d;padding:2px 8px;border-radius:10px;font-size:.75rem;font-weight:700">حفظ</span></td><td style="font-size:.85rem">${detail}</td><td style="font-weight:700;color:var(--accent)">${s.score != null ? Number(s.score).toFixed(2) : '—'}</td></tr>`;
       } else {
         const d = r.d;
         const detail = `ربط: ${d.link_from || '—'} – ${d.link_to || '—'} | مراجعة: ${d.review_range_from || '—'} – ${d.review_range_to || '—'}`;
@@ -2570,7 +2573,7 @@
     const body = document.getElementById('recitationLogBody');
     if (!data.length) { body.innerHTML = '<p class="empty-row">لا توجد نتائج</p>'; return; }
     body.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.83rem">
-      <thead><tr style="background:var(--bg-secondary,#f3f4f6);text-align:right">
+      <thead><tr style="background:var(--bg-secondary,#F5F3EF);text-align:right">
         <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">#</th>
         <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">التاريخ</th>
         <th style="padding:8px 12px;font-weight:700;color:var(--text-muted)">اسم الطالب</th>
@@ -2582,9 +2585,9 @@
       <tbody>
         ${data.map((s, i) => {
           const sc = parseFloat(s.score);
-          const scoreColor = sc >= 8.5 ? '#065f46' : sc >= 7 ? '#92400e' : '#991b1b';
-          const scoreBg    = sc >= 8.5 ? '#d1fae5' : sc >= 7 ? '#fef3c7' : '#fee2e2';
-          return `<tr style="border-bottom:1px solid var(--border-color,#e5e7eb)">
+          const scoreColor = sc >= 8.5 ? '#2C3E35' : sc >= 7 ? '#92400e' : '#991b1b';
+          const scoreBg    = sc >= 8.5 ? '#D9EAE1' : sc >= 7 ? '#F7F0DC' : '#fee2e2';
+          return `<tr style="border-bottom:1px solid var(--border-color,#E5E0D8)">
             <td style="padding:8px 12px;color:var(--text-muted)">${i+1}</td>
             <td style="padding:8px 12px">${s.date || '—'}</td>
             <td style="padding:8px 12px;font-weight:600">${s.students?.users?.name || '—'}</td>
@@ -2675,9 +2678,9 @@
     const medals = ['🥇', '🥈', '🥉'];
     list.innerHTML = ranked.map((s, i) => {
       const rankIcon = medals[i] || `<span style="font-size:.9rem;font-weight:700;color:var(--text-muted)">${i + 1}</span>`;
-      const scoreColor = s.avg >= 8.5 ? '#065f46' : s.avg >= 7 ? '#92400e' : '#991b1b';
-      const scoreBg    = s.avg >= 8.5 ? '#d1fae5' : s.avg >= 7 ? '#fef3c7' : '#fee2e2';
-      return `<div style="display:flex;align-items:center;gap:12px;padding:11px 10px;border-bottom:1px solid var(--border-color,#e5e7eb)${i===0?' background:#fffbeb;border-radius:10px;':''}" >
+      const scoreColor = s.avg >= 8.5 ? '#2C3E35' : s.avg >= 7 ? '#92400e' : '#991b1b';
+      const scoreBg    = s.avg >= 8.5 ? '#D9EAE1' : s.avg >= 7 ? '#F7F0DC' : '#fee2e2';
+      return `<div style="display:flex;align-items:center;gap:12px;padding:11px 10px;border-bottom:1px solid var(--border-color,#E5E0D8)${i===0?' background:#FAF5E8;border-radius:10px;':''}" >
         <span style="font-size:1.15rem;min-width:32px;text-align:center">${rankIcon}</span>
         <span style="flex:1;font-size:.9rem;font-weight:${i < 3 ? '800' : '600'};color:${i === 0 ? '#92400e' : 'var(--text-primary)'}">${s.name}</span>
         <span style="font-size:.75rem;color:var(--text-muted);min-width:60px;text-align:center">${s.sessions} جلسة</span>
@@ -2762,10 +2765,10 @@
 
     body.innerHTML = rows.map((r, i) => {
       const pct    = r.progress_total > 0 ? Math.round((r.progress_done / r.progress_total) * 100) : 0;
-      const color  = pct >= 80 ? '#065f46' : pct >= 40 ? '#92400e' : '#991b1b';
+      const color  = pct >= 80 ? '#2C3E35' : pct >= 40 ? '#92400e' : '#991b1b';
       const dateStr = r.assigned_at ? new Date(r.assigned_at).toLocaleDateString('ar-SA') : '—';
       const progressHtml = r.progress_total > 0
-        ? `<div style="min-width:110px"><div style="font-size:.72rem;color:var(--text-muted);margin-bottom:3px">${r.progress_done}/${r.progress_total} يوم</div><div style="background:#e5e7eb;border-radius:6px;height:6px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${color};border-radius:6px"></div></div><div style="font-size:.7rem;font-weight:700;color:${color};margin-top:2px">${pct}%</div></div>`
+        ? `<div style="min-width:110px"><div style="font-size:.72rem;color:var(--text-muted);margin-bottom:3px">${r.progress_done}/${r.progress_total} يوم</div><div style="background:#E5E0D8;border-radius:6px;height:6px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${color};border-radius:6px"></div></div><div style="font-size:.7rem;font-weight:700;color:${color};margin-top:2px">${pct}%</div></div>`
         : '<span style="color:var(--text-muted);font-size:.8rem">لا يوجد</span>';
       return `<tr>
         <td>${i + 1}</td>
@@ -2838,13 +2841,13 @@
       ? scoredSessions.reduce((a, s) => a + parseFloat(s.score), 0) / scoredSessions.length
       : null;
 
-    const statCard = (label, val, color = '#1a3c2e') =>
-      `<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;text-align:center">
+    const statCard = (label, val, color = '#1A2820') =>
+      `<div style="background:#F7F5F1;border:1px solid #E5E0D8;border-radius:10px;padding:12px 16px;text-align:center">
         <div style="font-size:1.4rem;font-weight:800;color:${color}">${val}</div>
         <div style="font-size:.75rem;color:var(--text-muted);margin-top:2px">${label}</div>
       </div>`;
 
-    const scoreColor = avgScore == null ? '#1a3c2e' : avgScore >= 8.5 ? '#065f46' : '#92400e';
+    const scoreColor = avgScore == null ? '#1A2820' : avgScore >= 8.5 ? '#2C3E35' : '#92400e';
     summaryDiv.innerHTML =
       statCard('أيام الخطة المنجزة', `${daysDone} / ${daysTotal}`) +
       statCard('جلسات التسميع', sessionCount) +
@@ -2860,7 +2863,7 @@
 
     sessBody.innerHTML = sessions.map(s => {
       const sc = parseFloat(s.score);
-      const scoreColor2 = sc >= 8.5 ? '#065f46' : sc >= 7 ? '#92400e' : '#991b1b';
+      const scoreColor2 = sc >= 8.5 ? '#2C3E35' : sc >= 7 ? '#92400e' : '#991b1b';
       return `<tr>
         <td>${s.date || '—'}</td>
         <td>${s.teachers?.users?.name || '—'}</td>
@@ -3006,7 +3009,7 @@
         const s = { name: String(r[0]||'').trim(), username: String(r[1]||'').trim(), phone: String(r[2]||'').trim(), email: String(r[3]||'').trim(), program: String(r[4]||'').trim(), folder: String(r[5]||'').trim(), password: String(r[6]||'').trim() };
         const err = !s.name ? 'الاسم مطلوب' : !s.username ? 'المستخدم مطلوب' : s.password.length < 6 ? 'كلمة مرور قصيرة' : '';
         if (!err) pendingStudentRows.push(s);
-        html += `<tr><td>${s.name||'—'}</td><td>${s.username||'—'}</td><td>${s.phone||'—'}</td><td>${s.email||'—'}</td><td>${s.program||'—'}</td><td>${s.folder||'—'}</td><td>${s.password?'••••••':'—'}</td><td style="color:${err?'var(--danger)':'#065f46'};font-weight:700">${err||'✓ جاهز'}</td></tr>`;
+        html += `<tr><td>${s.name||'—'}</td><td>${s.username||'—'}</td><td>${s.phone||'—'}</td><td>${s.email||'—'}</td><td>${s.program||'—'}</td><td>${s.folder||'—'}</td><td>${s.password?'••••••':'—'}</td><td style="color:${err?'var(--danger)':'#2C3E35'};font-weight:700">${err||'✓ جاهز'}</td></tr>`;
       }
       html += '</tbody></table>';
       document.getElementById('sfExcelPreview').innerHTML = html;
@@ -3063,11 +3066,11 @@
         <td style="color:var(--accent);font-weight:600">${s.users?.username || '—'}</td>
         <td>${s.users?.phone || '—'}</td>
         <td>${s.programs?.name || '—'}</td>
-        <td>${s.is_archived ? '<span style="font-size:.75rem;font-weight:700;color:#b91c1c;background:#fee2e2;padding:2px 8px;border-radius:20px">مؤرشف</span>' : '<span style="font-size:.75rem;font-weight:700;color:#065f46;background:#d1fae5;padding:2px 8px;border-radius:20px">نشط</span>'}</td>
+        <td>${s.is_archived ? '<span style="font-size:.75rem;font-weight:700;color:#b91c1c;background:#fee2e2;padding:2px 8px;border-radius:20px">مؤرشف</span>' : '<span style="font-size:.75rem;font-weight:700;color:#2C3E35;background:#D9EAE1;padding:2px 8px;border-radius:20px">نشط</span>'}</td>
         <td style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="btn-pw" data-uid="${s.users?.id||''}" data-name="${(s.users?.name||'').replace(/"/g,'&quot;')}" onclick="openResetPwModal(this.dataset.uid,this.dataset.name)">🔑 كلمة المرور</button>
           ${s.is_archived
-            ? `<button class="btn-pw" style="background:#d1fae5;color:#065f46;border-color:#a7f3d0" onclick="toggleArchiveStudent('${s.id}',false)">↩️ استعادة</button>`
+            ? `<button class="btn-pw" style="background:#D9EAE1;color:#2C3E35;border-color:#B8D4C4" onclick="toggleArchiveStudent('${s.id}',false)">↩️ استعادة</button>`
             : `<button class="btn-pw" style="background:#fee2e2;color:#b91c1c;border-color:#fca5a5" onclick="toggleArchiveStudent('${s.id}',true)">📦 أرشفة</button>`
           }
         </td>
@@ -3753,7 +3756,7 @@
         const byKey = {};
         (r.items || []).forEach(i => { byKey[i.key] = i.label; });
         const cellVal = key => byKey[key]
-          ? `<span style="font-size:.78rem;font-weight:700;color:#16a34a">${byKey[key]}</span>`
+          ? `<span style="font-size:.78rem;font-weight:700;color:#3A7A60">${byKey[key]}</span>`
           : '<span style="color:#d1d5db;font-size:.82rem">—</span>';
         return `<tr class="${r._color}">
           <td style="font-weight:700">${r._name}</td>
@@ -3842,10 +3845,10 @@
         ? tasks.map(t => `<div style="font-size:.78rem;font-weight:600;line-height:1.8">${t.label}</div>`).join('')
         : '<span style="color:var(--text-muted);font-size:.78rem">لا شيء</span>';
 
-      const color = tasks.length === 4 ? '#f0fdf4'
+      const color = tasks.length === 4 ? '#EEF3F1'
         : tasks.length > 0 ? '#fff7ed'
         : hasSess ? '#eff6ff'
-        : '#f9fafb';
+        : '#F7F5F1';
 
       rowsHtml += `<tr style="background:${color}">
         <td style="font-weight:700;white-space:nowrap">${date}</td>
